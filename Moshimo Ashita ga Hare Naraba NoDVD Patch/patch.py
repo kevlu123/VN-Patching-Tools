@@ -1,4 +1,6 @@
 """
+Copyright (C) 2023 Kevin Lu
+
 Moshi Ashita Ga Hare Naraba (If Tomorrow's Weather is Fine) - NoDVD Patch
 
 Japanese locale is still required to run the game.

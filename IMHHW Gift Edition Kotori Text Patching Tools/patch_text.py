@@ -1,3 +1,5 @@
+# Copyright (C) 2023 Kevin Lu
+
 import sys
 import json
 import textwrap

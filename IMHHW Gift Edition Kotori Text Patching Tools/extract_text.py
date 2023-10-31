@@ -1,3 +1,5 @@
+# Copyright (C) 2023 Kevin Lu
+
 import json
 import sys
 

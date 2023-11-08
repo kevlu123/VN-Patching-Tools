@@ -1,0 +1,218 @@
+[
+    {
+        "offset": 933,
+        "size": 36,
+        "name_offset": 901,
+        "name": "【碧】",
+        "jp": "「ハァ、ハァ、ハァ……」",
+        "text": "Ha, Ha, Ha..."
+    },
+    {
+        "offset": 1488,
+        "size": 75,
+        "name_offset": 0,
+        "name": "",
+        "jp": "風車が建ち並ぶ丘を、ロードバイクで駆け抜けていく。",
+        "text": "I ride my road bike through the hill lined with windmills."
+    },
+    {
+        "offset": 1721,
+        "size": 126,
+        "name_offset": 0,
+        "name": "",
+        "jp": "斜面を昇ってくる風が、玉の汗を滴らせる身体を冷まし、故郷へ向かう背中を押してくれる。",
+        "text": "The wind flowing up the slope cools the drops of sweat dripping from my body and pushes me further towards my hometown."
+    },
+    {
+        "offset": 3065,
+        "size": 33,
+        "name_offset": 0,
+        "name": "",
+        "jp": "懐かしい、風ヶ浦の風。",
+        "text": "The wind of Kazegaura feels so nostalgic."
+    },
+    {
+        "offset": 3429,
+        "size": 93,
+        "name_offset": 0,
+        "name": "",
+        "jp": "東京で就職してから数ヶ月。夏休みを貰って、初めての帰郷だった。",
+        "text": "It has been a few months since I started working in Tokyo. I had received some days off work and decided to come back home for the first time since I left."
+    },
+    {
+        "offset": 3680,
+        "size": 51,
+        "name_offset": 0,
+        "name": "",
+        "jp": "せっかくだから自転車で帰ってきた。",
+        "text": "It was a good opportunity to come back on my bike."
+    },
+    {
+        "offset": 4654,
+        "size": 45,
+        "name_offset": 4622,
+        "name": "【碧】",
+        "jp": "「ここの風を感じたかったんだ」",
+        "text": "\"I've wanted to feel the wind here.\""
+    },
+    {
+        "offset": 5472,
+        "size": 99,
+        "name_offset": 0,
+        "name": "",
+        "jp": "風車の丘に吹く風はとくに気持ちいい。空で感じるほどではないけれど。",
+        "text": "The wind blowing on the hill of windmills feels particularly good. Not as good as the wind in the sky though."
+    },
+    {
+        "offset": 6702,
+        "size": 63,
+        "name_offset": 0,
+        "name": "",
+        "jp": "丘を通り抜けて湖を回り込み、市街地に入る。",
+        "text": "I pass through the hill and around the lake, and enter the city area."
+    },
+    {
+        "offset": 7228,
+        "size": 66,
+        "name_offset": 0,
+        "name": "",
+        "jp": "もうしばらく走ると、古びた洋館が見えてきた。",
+        "text": "After riding a while longer, the old western house came into view."
+    },
+    {
+        "offset": 8080,
+        "size": 69,
+        "name_offset": 0,
+        "name": "",
+        "jp": "トビウオ荘。恵風学園に通う生徒のための学生寮。",
+        "text": "Flying Fish Manor. A boarding house for the students of Keifuu Academy."
+    },
+    {
+        "offset": 8554,
+        "size": 33,
+        "name_offset": 8522,
+        "name": "【碧】",
+        "jp": "「変わってないな……」",
+        "text": "\"Nothing has changed...\""
+    },
+    {
+        "offset": 8745,
+        "size": 66,
+        "name_offset": 0,
+        "name": "",
+        "jp": "一年前まで、この“女子寮”で寮母をしていた。",
+        "text": "Until a year ago, I was the dorm mother of this girls' dormitory."
+    },
+    {
+        "offset": 8969,
+        "size": 102,
+        "name_offset": 0,
+        "name": "",
+        "jp": "男子生徒である俺が、女子寮で寮母というのは、今思うと無茶苦茶な話だ。",
+        "text": "It sounds absurd when I think about it now - me as a male student being the dorm mother of a girls' dormitory."
+    },
+    {
+        "offset": 9229,
+        "size": 90,
+        "name_offset": 0,
+        "name": "",
+        "jp": "それ故の苦労もあったけど、ここで暮らした日々は充実していた。",
+        "text": "There had been a few incidents, but the days I spent living here were full."
+    },
+    {
+        "offset": 9477,
+        "size": 42,
+        "name_offset": 0,
+        "name": "",
+        "jp": "色んな思い出が詰まった場所。",
+        "text": "It was a place with many memories."
+    },
+    {
+        "offset": 9677,
+        "size": 51,
+        "name_offset": 0,
+        "name": "",
+        "jp": "今日はここで懐かしいメンバーが――",
+        "text": "Here today, the old members-"
+    },
+    {
+        "offset": 9954,
+        "size": 18,
+        "name_offset": 9922,
+        "name": "【碧】",
+        "jp": "「……ん？」",
+        "text": "\"...nn?\""
+    },
+    {
+        "offset": 10434,
+        "size": 36,
+        "name_offset": 10396,
+        "name": "【ハット】",
+        "jp": "「クワッ……クワッ……」",
+        "text": "\"Quack... Quack...\""
+    },
+    {
+        "offset": 10671,
+        "size": 15,
+        "name_offset": 10639,
+        "name": "【碧】",
+        "jp": "「ハット」",
+        "text": "\"Hat!\""
+    },
+    {
+        "offset": 10994,
+        "size": 15,
+        "name_offset": 10956,
+        "name": "【ハット】",
+        "jp": "「クワ？」",
+        "text": "\"Quaa?\""
+    },
+    {
+        "offset": 11686,
+        "size": 21,
+        "name_offset": 11648,
+        "name": "【ハット】",
+        "jp": "「ガァガァ！」",
+        "text": "\"Gaa gaa!\""
+    },
+    {
+        "offset": 11865,
+        "size": 90,
+        "name_offset": 0,
+        "name": "",
+        "jp": "さっそく再会した懐かしい友人が、翼をひろげて飛び込んできた。",
+        "text": "The old friend whom I had just reunited with spread his wings and dashed into me."
+    },
+    {
+        "offset": 12156,
+        "size": 60,
+        "name_offset": 12124,
+        "name": "【碧】",
+        "jp": "「ハット、久しぶりだな。元気だったか？」",
+        "text": "\"Hat, it's been such a long time! How have you been?\""
+    },
+    {
+        "offset": 12565,
+        "size": 33,
+        "name_offset": 12527,
+        "name": "【ハット】",
+        "jp": "「グワッ！　グワッ！」",
+        "text": "\"Quack! Quack!\""
+    },
+    {
+        "offset": 12799,
+        "size": 36,
+        "name_offset": 12767,
+        "name": "【碧】",
+        "jp": "「ははは、そうかそうか」",
+        "text": "\"Hahaha, that's good to hear.\""
+    },
+    {
+        "offset": 13342,
+        "size": 139,
+        "name_offset": 0,
+        "name": "",
+        "jp": "今日はここ――トビウオ荘で、懐かしいメンバーが集まって、休暇を過ごす予定だった。",
+        "text": "Today at the Flying Fish Manor, my old friends would gather here to spend our day off."
+    }
+]

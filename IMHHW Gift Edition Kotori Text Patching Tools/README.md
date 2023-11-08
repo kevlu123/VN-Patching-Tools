@@ -1,5 +1,13 @@
 # Text Patching Tools for If My Heart Had Wings Gift Edition Kotori
 
+## English Translation Patch
+
+I have created an English translation patch which you can find in the ./en_tl_patch folder in this repository. All feedback is welcome.
+
+I have not patched any menus because the game is so short that they are unlikely to be used much if at all. Most menus already have English text or are intuitive enough.
+
+If you would like to create your own translation patch, you can follow the instructions below. If your language does not render well in the Yu Gothic (original) or Consolas (patched) fonts, you can submit an issue.
+
 ## Extracting the original text (optional)
 
 You can find the extracted text in the ./text folder in this repository. If you want to extract the text yourself, you can follow the instructions below.
@@ -37,7 +45,5 @@ Note: This newly generated file is not a properly encoded .arc file and cannot b
 The original game uses the Yu Gothic font drawn with the GDI API. However, this monospace font cuts off wide characters such as "M" and makes the text hard to read.
 
 To fix this, change the font to Consolas by running `python patch_font.py <original.exe> <output.exe>`.
-
-Note: The font patch overwrites some error handling code to make room for custom logic. It is very unlikely for the error handling code to be run anyway.
 
 Note: The game does not require Locale Emulator.

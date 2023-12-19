@@ -1,0 +1,8 @@
+patching_temp/
+patch_files/
+sysgraphic/
+edited_sysgraphic/
+rio/
+edited_rio/
+tlcache.json
+workflow.svg

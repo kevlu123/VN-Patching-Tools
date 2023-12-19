@@ -1,0 +1,23 @@
+FD Routes and files:
+ATF - Inherited Wings - Kotori - Epilogue (17 files)
+-BEF - Wings Of Dreams - Amane - Prologue (6 files)
+-HOT - Inexpressible Emotion - Hotaru (5 files)
+-KAN - Unfamiliar Answer - Kanako (19 files)
+-HUS - Kazato Sisters - Twins (1 file)
+-NOV - The day I found my wings - Kotori (1 file)
+AKA - New Wings - Akari (8 files)
+-AGS - Agera/Hotaru (1 file)
+
+JP -> EN differences
+
+MoveBackground (st01, 6, 0, 128, 10, 11, 12, 13)
+MoveBackground (st01, 6, 0, 240, 10, 11, 12, 13)
+
+SoundEffect (charASA, ASA_0397.OGG, 0, 0, 0, 0, 10, 0, 0, 101, 0, 0, 0, 0)
+SoundEffect (charASA, ASA_0397.OGG, 0, 0, 0, 0, 10, 0, 0, 101, 0, 0, 0, 0, 0, 0, 0, 0)
+
+Effect1 (bg01, effect01, 1, 0, 2, 128, 5, 6, 0, 0, 9, 0, 0, 0)
+Effect1 (bg01, effect01, 1, 0, 2, 192, 5, 6, 0, 0, 25, 0, 0, 0)
+
+ExecuteFunction (openCgBrowser, HOT_05_020S.png, 0, 0)
+ExecuteFunction (openCgBrowser, HOT_05_020S.png, 0, 0, 0)

@@ -1,2 +1,3 @@
-ignore/
-*.SCRIPT
+ignore*
+__pycache__/
+.vscode/

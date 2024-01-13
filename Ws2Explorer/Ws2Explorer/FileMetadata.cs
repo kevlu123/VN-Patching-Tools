@@ -1,14 +1,7 @@
 namespace Ws2Explorer;
 
-public class FileMetadata {
-    public string Name { get; }
-    public long? Length { get; }
-    public int? Crc32 { get; }
-    public bool IsFolder { get; }
-
-    public FileMetadata(string name, long? len, bool isBinaryFile = true) {
-        Name = name;
-        Length = len;
-        IsFolder = !isBinaryFile && len == null;
-    }
+public class FileMetadata(string name, long? len, bool isBinaryFile = true) {
+    public string Name { get; } = name;
+    public long? Length { get; } = len;
+    public bool IsFolder { get; } = !isBinaryFile && len == null;
 }

@@ -398,7 +398,6 @@ public partial class MainWindow : Form {
                 fileListView.Items.Add(new ListViewItem(new[] {
                     "..",
                     "",
-                    "",
                 }));
             }
 
@@ -421,10 +420,9 @@ public partial class MainWindow : Form {
                     continue;
                 }
                 fileListView.Items.Add(new ListViewItem(new[] {
-                child.Name + (child.IsFolder ? "/" : ""),
-                child.Length.ToString() ?? "",
-                child.Crc32?.ToString("X8") ?? "",
-            }));
+                    child.Name + (child.IsFolder ? "/" : ""),
+                    child.Length.ToString() ?? "",
+                }));
             }
         } finally {
             fileListView.EndUpdate();

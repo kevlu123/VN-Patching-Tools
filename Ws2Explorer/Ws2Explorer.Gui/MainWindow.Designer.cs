@@ -63,7 +63,6 @@ partial class MainWindow {
         fileListView = new ListView();
         fileListViewNameColumn = new ColumnHeader();
         fileListViewSizeColumn = new ColumnHeader();
-        fileListViewCrc32Column = new ColumnHeader();
         statusStrip = new StatusStrip();
         statusLabel = new ToolStripStatusLabel();
         fillerLabel = new ToolStripStatusLabel();
@@ -365,7 +364,7 @@ partial class MainWindow {
         // 
         // fileListView
         // 
-        fileListView.Columns.AddRange(new ColumnHeader[] { fileListViewNameColumn, fileListViewSizeColumn, fileListViewCrc32Column });
+        fileListView.Columns.AddRange(new ColumnHeader[] { fileListViewNameColumn, fileListViewSizeColumn });
         fileListView.Dock = DockStyle.Fill;
         fileListView.Location = new Point(4, 31);
         fileListView.Name = "fileListView";
@@ -386,11 +385,6 @@ partial class MainWindow {
         // 
         fileListViewSizeColumn.Text = "Size";
         fileListViewSizeColumn.TextAlign = HorizontalAlignment.Right;
-        // 
-        // fileListViewCrc32Column
-        // 
-        fileListViewCrc32Column.Text = "CRC32";
-        fileListViewCrc32Column.TextAlign = HorizontalAlignment.Right;
         // 
         // statusStrip
         // 
@@ -702,7 +696,6 @@ partial class MainWindow {
     private ListView fileListView;
     private ColumnHeader fileListViewNameColumn;
     private ColumnHeader fileListViewSizeColumn;
-    private ColumnHeader fileListViewCrc32Column;
     private StatusStrip statusStrip;
     private ToolStripStatusLabel statusLabel;
     private ToolStripStatusLabel taskLabel;

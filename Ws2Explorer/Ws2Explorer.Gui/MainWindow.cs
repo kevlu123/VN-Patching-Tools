@@ -26,7 +26,7 @@ public partial class MainWindow : Form {
         private readonly Scintilla outputControl;
         private readonly Func<CancellationTokenSource> ctsGetter;
         private readonly Ws2Explorer.Program program;
-        private readonly List<string> history = [];
+        private readonly List<string> history = new();
         private int historyIndex;
 
         public event EventHandler OnUpdateRequired = delegate { };
@@ -134,7 +134,7 @@ public partial class MainWindow : Form {
             if (part.Length > 0) {
                 parts.Add(part);
             }
-            return [.. parts];
+            return parts.ToArray();
         }
     }
 
@@ -544,7 +544,7 @@ public partial class MainWindow : Form {
             if (saveFileDialog.ShowDialog() != CommonFileDialogResult.Ok) {
                 return;
             }
-            destinations = [saveFileDialog.FileName];
+            destinations = new[] { saveFileDialog.FileName };
         }
 
         try {
@@ -574,7 +574,7 @@ public partial class MainWindow : Form {
         foreach (var filename in GetSelectedFilenames()) {
             files.Add(await folder.GetChild(filename, cts.Token, progress));
         }
-        return [.. files];
+        return files.ToArray();
     }
 
     private async Task OpenBinaryFile(BinaryFile file) {
@@ -587,7 +587,7 @@ public partial class MainWindow : Form {
         textPreviewBox.SetTextBypassReadonly("");
 
         if (file is Ws2File ws2) {
-            fileInfoLabel.Text += $"WS2 ({ws2.Ws2Version.ToString().Replace('_', '.')})";
+            fileInfoLabel.Text = $"WS2 ({ws2.Ws2Version.ToString().Replace('_', '.')})";
         } else if (file is ImageFile imageFile) {
             fileInfoLabel.Text = $"{imageFile.ImageType} ({imageFile.Image.Width}x{imageFile.Image.Height})";
         } else if (file.IsText) {
@@ -735,7 +735,7 @@ public partial class MainWindow : Form {
     }
 
     private async Task<string?> AutocompletePath(string path) {
-        var splitIndex = path.LastIndexOfAny(['\\', '/']);
+        var splitIndex = path.LastIndexOfAny(new[] { '\\', '/' });
         if (splitIndex == -1) {
             return null;
         }
@@ -882,8 +882,8 @@ public partial class MainWindow : Form {
                     }
 
                     await currentFolder.CopyFiles(
-                        [targetFilename],
-                        [currentBinaryFile.Name],
+                        new[] { targetFilename },
+                        new[] { currentBinaryFile.Name },
                         _ => true,
                         cts.Token,
                         progress

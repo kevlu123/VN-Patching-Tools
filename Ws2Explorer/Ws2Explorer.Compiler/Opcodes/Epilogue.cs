@@ -36,7 +36,7 @@ public class Epilogue : IOpcode {
         writer.Write(Arg8);
     }
 
-    public JsonArray Serialize() => new() { Arg1, Arg2 };
+    public JsonArray Serialize() => new() { Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8 };
 
     public void Deserialize(JsonArray args, Ws2Version version) {
         Arg1 = (byte)args[0]!;

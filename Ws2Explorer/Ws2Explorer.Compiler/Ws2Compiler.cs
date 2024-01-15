@@ -157,7 +157,7 @@ public static class Ws2Compiler {
             var opcodeName = entry["op"]?.ToString() ?? throw new ArgumentException("Opcode name is missing");
             if (opcodeName == "Epilogue") {
                 opcode = new Epilogue();
-            } if (opcodeName == "Label") {
+            } else if (opcodeName == "Label") {
                 opcode = new Label();
             } else {
                 var opcodeNumber = byte.Parse(opcodeName[2..4], System.Globalization.NumberStyles.HexNumber);

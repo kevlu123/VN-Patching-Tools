@@ -1,11 +1,12 @@
-using System.Diagnostics;
 using System.Text.Json.Nodes;
 
 namespace Ws2Explorer.Compiler.Opcodes;
 
 public class GenericOpcode : IOpcode {
     public byte OpcodeNumber { get; }
-    public string Name => $"Op{OpcodeNumber:X2}";
+    public string Name => names.TryGetValue(OpcodeNumber, out var name)
+        ? $"Op{OpcodeNumber:X2}_{name}"
+        : $"Op{OpcodeNumber:X2}";
     public IEnumerable<int>? Labels { get; private set; }
 
     public List<object> Arguments { get; } = new();
@@ -163,6 +164,58 @@ public class GenericOpcode : IOpcode {
             .Select(n => (byte)n)
             .Select<byte, (byte, OpcodeConstructor)>(n => (n, () => new GenericOpcode(n)))
             .ToArray();
+
+    private static readonly Dictionary<byte, string> names = new() {
+        { 0x00, "Null" },
+        { 0x01, "Condition" },
+        { 0x02, "Jump2" },
+        { 0x04, "RunFile" },
+        { 0x06, "Jump" },
+        { 0x07, "NextFile" },
+        { 0x09, "LayerConfig" },
+        { 0x0B, "SetFlag" },
+        { 0x0F, "ShowChoice" },
+        { 0x11, "SetTimer" },
+        { 0x12, "StartTimer" },
+        { 0x14, "DisplayMessage" },
+        { 0x15, "SetDisplayName" },
+        { 0x1A, "OpenTItle" },
+        { 0x1C, "ExecuteFunction" },
+        { 0x1E, "PlayMusic" },
+        { 0x1F, "StopMusic" },
+        { 0x20, "MusicUnk1" },
+        { 0x28, "SoundEffect" },
+        { 0x29, "SoundUnk1" },
+        { 0x2A, "SoundUnk2" },
+        { 0x2E, "CharMessageStart" },
+        { 0x33, "SetBackground" },
+        { 0x34, "UsePnaPackage" },
+        { 0x35, "PlayMovie" },
+        { 0x37, "ClearLayer" },
+        { 0x38, "VariableUnk3" },
+        { 0x39, "DisplayCharacterImage" },
+        { 0x3A, "UnkBackground2" },
+        { 0x3F, "LayersList" },
+        { 0x40, "SetMask" },
+        { 0x41, "UnkBackground3" },
+        { 0x45, "DragBackground" },
+        { 0x46, "MoveBackground" },
+        { 0x47, "Effect1" },
+        { 0x48, "Effect2" },
+        { 0x51, "VariableUnk51" },
+        { 0x52, "VariableUnk2" },
+        { 0x53, "VariableUnk4" },
+        { 0x56, "RainStart" },
+        { 0x57, "UnkBackground1" },
+        { 0x58, "Effect3" },
+        { 0x5C, "RainEnd" },
+        { 0x66, "ShowGraphic" },
+        { 0x6E, "SetVariable" },
+        { 0x6F, "VariableUnk" },
+        { 0xF0, "UnkScreen" },
+        { 0xFF, "FileEnd" },
+    };
+
 
     private static readonly Dictionary<byte, string> templates1 = new() {
         { 0x00, "" },

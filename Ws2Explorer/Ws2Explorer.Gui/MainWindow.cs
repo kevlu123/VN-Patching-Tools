@@ -179,7 +179,7 @@ public partial class MainWindow : Form {
     private readonly VideoView videoPreviewBox;
 #endif
 
-    public MainWindow() {
+    public MainWindow(string? openPath) {
         instance = this;
         InitializeComponent();
 
@@ -274,12 +274,14 @@ public partial class MainWindow : Form {
             config = new Config() { SavePath = config.SavePath };
         }
 
-        if (config.OpenFolder.Length > 0) {
-            try {
+        try {
+            if (openPath != null) {
+                _ = OpenFolderFromPath(openPath);
+            } else if (config.OpenFolder.Length > 0) {
                 _ = OpenFolderFromPath(config.OpenFolder);
-            } catch {
-                config.OpenFolder = "";
             }
+        } catch {
+            config.OpenFolder = "";
         }
 
         if (currentFolder == null) {
@@ -1036,7 +1038,7 @@ public partial class MainWindow : Form {
             ShowStatus("No folder open");
             return;
         }
-        if (currentFolder.CanRenameChildren) {
+        if (!currentFolder.CanRenameChildren) {
             ShowStatus("This folder type does not support renaming files");
             return;
         }

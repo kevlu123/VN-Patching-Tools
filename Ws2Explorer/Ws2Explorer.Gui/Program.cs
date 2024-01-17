@@ -1,14 +1,11 @@
 namespace Ws2Explorer.Gui;
 
 static class Program {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
     [STAThread]
-    static void Main() {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
+    static void Main(string[] args) {
+        var openPath = args.Length > 0 ? args[0] : null;
+
         ApplicationConfiguration.Initialize();
-        Application.Run(new MainWindow());
+        Application.Run(new MainWindow(openPath));
     }
 }

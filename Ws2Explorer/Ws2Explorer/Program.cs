@@ -1,3 +1,6 @@
+using System.Text;
+using Ws2Explorer.Compiler;
+
 namespace Ws2Explorer;
 
 public class Program {
@@ -74,21 +77,23 @@ public class Program {
 
     private void PrintHelp() {
         WriteOutput("Usage:");
-        WriteOutput("  help                                           Show this help text.");
-        WriteOutput("  pwd                                            Print current working directory.");
-        WriteOutput("  cd [path]                                      Change current working directory (GUI only).");
-        WriteOutput("  ls [path]                                      List files in directory.");
+        WriteOutput("  help                                  Show this help text.");
+        WriteOutput("  pwd                                   Print current working directory.");
+        WriteOutput("  cd [path]                             Change current working directory (GUI only).");
+        WriteOutput("  ls [path]                             List files in directory.");
         WriteOutput("");
-        WriteOutput("  cp <src> <dst>                                 Copy files.");
-        WriteOutput("  rm <path>                                      Delete files.");
-        WriteOutput("  swap <folder> <file1> <file2>                  Swap the contents of two files in the same folder.");
-        WriteOutput("  rename <path> <new_filename>                   Rename files.");
-        WriteOutput("  edit <path> [program]                          Open an external program to edit a file in-place.");
+        WriteOutput("  cp <src> <dst>                        Copy files.");
+        WriteOutput("  rm <path>                             Delete files.");
+        WriteOutput("  swap <folder> <file1> <file2>         Swap the contents of two files in the same folder.");
+        WriteOutput("  rename <path> <new_filename>          Rename files.");
+        WriteOutput("  edit <path> [program]                 Open an external program to edit a file in-place.");
         WriteOutput("");
-        WriteOutput("  decompile <ws2_file> <output_path>             Decompile a ws2 file.");
-        WriteOutput("  compile <code_file> <output_path>              Compile a ws2 file.");
-        WriteOutput("  extract_text <ws2> <output_path>               Extract text from ws2 files.");
-        WriteOutput("  insert_text <text> <output_path>               Insert extracted text back into existing ws2 files.");
+        WriteOutput("  version <ws2_file>                    Print the version of a ws2 file.");
+        WriteOutput("  extract_text <ws2> <output_path>      Extract text from ws2 files.");
+        WriteOutput("  insert_text <text> <output_path>      Insert extracted text back into existing ws2 files.");
+        WriteOutput("  decompile <ws2_file> <output_path>    Decompile a ws2 file.");
+        WriteOutput("  compile <code_file> <output_path> <v1|v2|v3|v4> [-e]");
+        WriteOutput("                                        Compile a ws2 file using the given ws2 version (optionally with encryption).");
         WriteOutput("");
         WriteOutput("To edit names and choices, decompilation along with find and replace using an external text editor is recommended.");
     }
@@ -162,8 +167,30 @@ public class Program {
     private async Task CompileFile(string[] args, CancellationToken ct) {
         var src = args[1];
         var dst = args[2];
-        var dstFolder = await Folder.GetFolder(dst, ct, progress);
-        await dstFolder.CopyFiles(new[] { src }, new[] { "opcodes.json" }, _ => true, ct, progress);
+        var version = args[3] switch {
+            "v1" => Ws2Version.V1,
+            "v2" => Ws2Version.V2,
+            "v3" => Ws2Version.V3,
+            "v4" => Ws2Version.V4,
+            _ => throw new ArgumentException($"Unknown version {args[1]}.")
+        };
+        var encrypt = args.Length > 4 && args[4] == "-e";
+
+        var file = await Folder.GetFile(src, ct, progress);
+        if (file is not BinaryFile srcFile) {
+            throw new InvalidDataException($"File {src} is not a regular file.");
+        }
+
+        var json = srcFile.GetText(Encoding.UTF8);
+        var opcodes = Ws2Compiler.DeserializeFromJson(json, version);
+        var compiled = Ws2Compiler.Compile(opcodes, version, encrypt);
+        
+        var tempOutputPath = Path.GetTempFileName();
+        await using (var tempOutput = File.Create(tempOutputPath)) {
+            await compiled.CopyToAsync(tempOutput, ct);
+        }
+
+        await CopyFiles(new[] { "cp", tempOutputPath, dst }, ct);
     }
 
     private async Task ExtractText(string[] args, CancellationToken ct) {

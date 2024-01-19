@@ -16,6 +16,70 @@ public class Ws2File : BinaryFile, IFolder {
     public bool Encrypted { get; }
     public bool CanRenameChildren => false;
 
+    public string[] Text => opcodes.OfType<Op14_DisplayMessage>().Select(op => op.Message).ToArray();
+
+    public string[] CharacterNames => opcodes
+        .OfType<Op15_SetDisplayName>()
+        .Select(op => op.CharacterName)
+        .Distinct()
+        .ToArray();
+
+    public string[][] Choices => opcodes
+        .OfType<Op0F_ShowChoice>()
+        .Select(op => op.Choices.Select(c => c.Text).ToArray())
+        .ToArray();
+    
+    public async Task ReplaceText(string[] text, CancellationToken ct, ITaskProgress? progress) {
+        ReplaceTextNoRebuild(text);
+        await RebuildStream(opcodes, ct, progress);
+    }
+
+    public async Task ReplaceCharacterNames(Dictionary<string, string> names, CancellationToken ct, ITaskProgress? progress) {
+        ReplaceCharacterNamesNoRebuild(names);
+        await RebuildStream(opcodes, ct, progress);
+    }
+
+    public async Task ReplaceChoices(Dictionary<string, string> choices, CancellationToken ct, ITaskProgress? progress) {
+        ReplaceChoicesNoRebuild(choices);
+        await RebuildStream(opcodes, ct, progress);
+    }
+
+    public async Task ReplaceTextNamesChoices(string[] text, Dictionary<string, string> names, Dictionary<string, string> choices, CancellationToken ct, ITaskProgress? progress) {
+        ReplaceTextNoRebuild(text);
+        ReplaceCharacterNamesNoRebuild(names);
+        ReplaceChoicesNoRebuild(choices);
+        await RebuildStream(opcodes, ct, progress);
+    }
+
+    private void ReplaceTextNoRebuild(string[] text) {
+        var oldLines = opcodes.OfType<Op14_DisplayMessage>().ToArray();
+        if (text.Length != oldLines.Length) {
+            throw new InvalidDataException($"Number of lines does not match number of messages. Expected {oldLines.Length}, got {text.Length}");
+        }
+
+        foreach (var (oldLine, newLine) in oldLines.Zip(text)) {
+            oldLine.Message = newLine;
+        }
+    }
+
+    private void ReplaceCharacterNamesNoRebuild(Dictionary<string, string> names) {
+        foreach (var op in opcodes.OfType<Op15_SetDisplayName>()) {
+            if (names.TryGetValue(op.CharacterName, out var newName)) {
+                op.CharacterName = newName;
+            }
+        }
+    }
+
+    private void ReplaceChoicesNoRebuild(Dictionary<string, string> choices) {
+        foreach (var op in opcodes.OfType<Op0F_ShowChoice>()) {
+            foreach (var choice in op.Choices) {
+                if (choices.TryGetValue(choice.Text, out var newText)) {
+                    choice.Text = newText;
+                }
+            }
+        }
+    }
+
     public Ws2File(IFolder? parent, string name, BinaryStream stream) : base(parent, name, stream) {
         stream.Reset();
         opcodes = Ws2Compiler.Decompile(Stream.MemoryStream, out var version, out var encrypted);
@@ -89,46 +153,32 @@ public class Ws2File : BinaryFile, IFolder {
 
         switch (to[0]) {
             case DECOMPILATION_FILENAME:
-                UpdateDecompilation(binaryFile.Stream);
+                await UpdateDecompilation(binaryFile.Stream, ct, progress);
                 break;
             case TEXT_FILENAME:
-                UpdateText(binaryFile.Stream);
+                await UpdateText(binaryFile.Stream, ct, progress);
                 break;
             default:
                 throw new InvalidOperationException();
         }
-
-        if (Parent != null) {
-            await Parent.NotifyChildChanged(Name, Stream, ct, progress);
-        }
     }
 
-    private void UpdateDecompilation(BinaryStream newData) {
+    private async Task UpdateDecompilation(BinaryStream newData, CancellationToken ct, ITaskProgress? progress) {
         var (data, start, len) = newData.RawBuffer;
         var json = Encoding.UTF8.GetString(data, start, len);
 
         var opcodes = Ws2Compiler.DeserializeFromJson(json, Ws2Version);
-        RebuildStream(opcodes);
+        await RebuildStream(opcodes, ct, progress);
     }
 
-    private void UpdateText(BinaryStream newData) {
+    private async Task UpdateText(BinaryStream newData, CancellationToken ct, ITaskProgress? progress) {
         var textFile = AsText(null, "", newData);
-        var newLines = textFile.GetText(textFile.SuggestedEncoding!)
+        var text = textFile.GetText(textFile.SuggestedEncoding!)
             .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-        var oldLines = opcodes.OfType<Op14_DisplayMessage>().ToArray();
-
-        if (newLines.Length != oldLines.Length) {
-            throw new InvalidDataException($"Number of lines in text file does not match number of messages. Expected {oldLines.Length}, got {newLines.Length}");
-        }
-
-        foreach (var (oldLine, newLine) in oldLines.Zip(newLines)) {
-            oldLine.Message = newLine;
-        }
-        RebuildStream(opcodes);
+        await ReplaceText(text, ct, progress);
     }
 
-    private void RebuildStream(List<IOpcode> opcodes) {
+    private async Task RebuildStream(List<IOpcode> opcodes, CancellationToken ct, ITaskProgress? progress) {
         Stream compiled;
         try {
             compiled = Ws2Compiler.Compile(opcodes, Ws2Version, Encrypted);
@@ -142,6 +192,10 @@ public class Ws2File : BinaryFile, IFolder {
         compiled.CopyTo(Stream.MemoryStream);
 
         this.opcodes = opcodes;
+
+        if (Parent != null) {
+            await Parent.NotifyChildChanged(Name, Stream, ct, progress);
+        }
     }
 
     public Task SwapChildren(string a, string b, CancellationToken ct, ITaskProgress? progress) {

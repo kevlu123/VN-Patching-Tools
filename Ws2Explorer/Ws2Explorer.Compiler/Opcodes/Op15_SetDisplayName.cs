@@ -3,32 +3,42 @@ using System.Text.Json.Nodes;
 namespace Ws2Explorer.Compiler.Opcodes;
 
 public class Op15_SetDisplayName : IOpcode {
-    public string CharacterName { get; set; } = "";
+    public string FullCharacterName { get; set; } = "";
     public byte Arg1 { get; set; }
 
+    public string CharacterName {
+        get => FullCharacterName[Prefix.Length..];
+        set => FullCharacterName = Prefix + value;
+    }
+    
+    public string Prefix {
+        get => (FullCharacterName.StartsWith("%LC") || FullCharacterName.StartsWith("%LF")) ? FullCharacterName[..3] : "";
+        set => FullCharacterName = value + CharacterName;
+    }
+
     public int GetArgumentsLength(Ws2Version version) {
-        return SjisEncoding.Encoding.GetByteCount(CharacterName) + 1
+        return SjisEncoding.Encoding.GetByteCount(FullCharacterName) + 1
             + (version >= Ws2Version.V3 ? 1 : 0);
     }
 
     public void Decompile(Ws2Reader reader, Ws2Version version) {
-        CharacterName = reader.ReadString();
+        FullCharacterName = reader.ReadString();
         Arg1 = version >= Ws2Version.V3 ? reader.ReadByte() : (byte)0;
     }
 
     public void Compile(Ws2Writer writer, Ws2Version version) {
-        writer.Write(CharacterName);
+        writer.Write(FullCharacterName);
         if (version >= Ws2Version.V3) {
             writer.Write(Arg1);
         }
     }
 
     public JsonArray Serialize() {
-        return new JsonArray { CharacterName, Arg1 };
+        return new JsonArray { CharacterName, Prefix, Arg1 };
     }
 
     public void Deserialize(JsonArray args, Ws2Version version) {
-        CharacterName = (string)args[0]!;
-        Arg1 = (byte)args[1]!;
+        FullCharacterName = (string)args[0]! + (string)args[1]!;
+        Arg1 = (byte)args[2]!;
     }
 }

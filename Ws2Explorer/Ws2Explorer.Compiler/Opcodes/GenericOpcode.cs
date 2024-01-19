@@ -45,6 +45,14 @@ public class GenericOpcode : IOpcode {
         return len;
     }
 
+    public void UpdateLabels(IDictionary<int, int> changes) {
+        for (int i = 0; i < Arguments.Count; i++) {
+            if (Arguments[i] is int label) {
+                Arguments[i] = changes[label];
+            }
+        }
+    }
+
     public void Decompile(Ws2Reader reader, Ws2Version version) {
         object ReadUInt16s() {
             ushort[] arr = new ushort[reader.ReadByte()];

@@ -357,7 +357,7 @@ partial class MainWindow {
         showTerminalMenuItem.CheckOnClick = true;
         showTerminalMenuItem.Name = "showTerminalMenuItem";
         showTerminalMenuItem.ShortcutKeyDisplayString = "Ctrl+~";
-        showTerminalMenuItem.ShortcutKeys = Keys.Control | Keys.Oem3;
+        showTerminalMenuItem.ShortcutKeys = Keys.Control | Keys.Oemtilde;
         showTerminalMenuItem.Size = new Size(234, 22);
         showTerminalMenuItem.Text = "Show Terminal";
         showTerminalMenuItem.CheckStateChanged += MenuViewShowTerminalCheckChanged;

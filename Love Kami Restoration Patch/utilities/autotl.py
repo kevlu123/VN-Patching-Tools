@@ -4,6 +4,11 @@ import textwrap
 import deepl
 import json
 import sys
+import os
+import pathlib
+
+this_dir = pathlib.Path(__file__).parent.absolute()
+os.chdir(this_dir.parent)
 
 LINE_WIDTH = 48
 

@@ -5,4 +5,6 @@ edited_sysgraphic/
 rio/
 edited_rio/
 tlcache.json
-workflow.svg
+
+bin/
+obj/

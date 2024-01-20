@@ -7,16 +7,16 @@ The H-scenes are machine translated and the gallery for the English releases hav
 
 ## Downloads
 
-Download, unzip, and replace the game files.
+Download, unzip, and replace the game files with the new ones.
 
-| Game            | Applicable Version        | Download |
-|-----------------|---------------------------|----------|
-| Divinity Stage  | <https://vndb.org/r49129> | |
-| Sweet Stars     | <https://vndb.org/r52608> | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/LoveKami/Sweet.Stars.zip> |
-| Useless Goddess | <https://vndb.org/r51504> | |
-| Trouble Goddess | <https://vndb.org/r52609> | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/LoveKami/Trouble.Goddess.zip> |
-| Healing Harem   | <https://vndb.org/r60067> | |
-| Pureness Harem  | <https://vndb.org/r60066> | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/LoveKami/Pureness.Harem.zip> |
+| Game            | Applicable Version        | Patch Size | Download |
+|-----------------|---------------------------|:----------:|----------|
+| Divinity Stage  | <https://vndb.org/r49129> | 601MB      | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/LoveKamiEn/Divinity.Stage.zip> |
+| Sweet Stars     | <https://vndb.org/r52608> | 353MB      | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/LoveKami/Sweet.Stars.zip> |
+| Useless Goddess | <https://vndb.org/r51504> | 613MB      | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/LoveKamiEn/Useless.Goddess.zip> |
+| Trouble Goddess | <https://vndb.org/r52609> | 321MB      | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/LoveKami/Trouble.Goddess.zip> |
+| Healing Harem   | <https://vndb.org/r60067> | 658MB      | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/LoveKamiEn/Healing.Harem.zip> |
+| Pureness Harem  | <https://vndb.org/r60066> | 224MB      | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/LoveKami/Pureness.Harem.zip> |
 
 ## Exe Patch Notes
 

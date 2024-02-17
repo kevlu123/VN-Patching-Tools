@@ -98,11 +98,32 @@ public class BinaryStream {
         return Encoding.Unicode.GetString(bytes.ToArray());
     }
 
+    public void WriteStringSjis(string value) {
+        writer.Write(PrettyNameEncoding.Sjis.GetBytes(value));
+        writer.Write((byte)0);
+    }
+
+    public string ReadStringSjis() {
+        var bytes = new List<byte>();
+        while (true) {
+            var b = reader.ReadByte();
+            if (b == 0) {
+                break;
+            }
+
+            bytes.Add(b);
+        }
+
+        return PrettyNameEncoding.Sjis.GetString(bytes.ToArray());
+    }
+
     public async Task<IFile> Deduce(IFolder? parent, string name) {
         Reset();
         if (Length <= BinaryFile.MAX_TEXT_SIZE) {
             try { return BinaryFile.AsText(parent, name, this); } catch { Reset(); }
         }
+
+        try { return new PanFile(parent, name, this); } catch { Reset(); }
 
         // Potentially long-running
         return await Task.Run(() => {

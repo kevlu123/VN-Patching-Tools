@@ -408,11 +408,11 @@ public partial class MainWindow : Form {
                     return a.IsFolder ? -1 : 1;
                 }
 
-                var extA = Path.GetExtension(a.Name);
-                var extB = Path.GetExtension(b.Name);
-                if (extA != extB) {
-                    return string.Compare(extA, extB, StringComparison.OrdinalIgnoreCase);
-                }
+                //var extA = Path.GetExtension(a.Name);
+                //var extB = Path.GetExtension(b.Name);
+                //if (extA != extB) {
+                //    return string.Compare(extA, extB, StringComparison.OrdinalIgnoreCase);
+                //}
 
                 return string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
             });
@@ -546,7 +546,11 @@ public partial class MainWindow : Form {
             if (saveFileDialog.ShowDialog() != CommonFileDialogResult.Ok) {
                 return;
             }
-            destinations = new[] { saveFileDialog.FileName };
+            var dst = saveFileDialog.FileName;
+            if (dst.EndsWith(".*")) {
+                dst = dst[..^2];
+            }
+            destinations = new[] { dst };
         }
 
         try {
@@ -833,8 +837,8 @@ public partial class MainWindow : Form {
     }
 
     private async Task OpenExternalEditor(string editorType, string editorPath) {
-        var currentFolder = this.currentFolder;
         var currentBinaryFile = this.currentBinaryFile;
+        var currentFolder = currentBinaryFile?.Parent;
         if (currentFolder == null || currentBinaryFile == null) {
             ShowStatus("Select a file to open");
             return;
@@ -854,7 +858,7 @@ public partial class MainWindow : Form {
             } else {
                 try {
                     var ext = Path.GetExtension(currentBinaryFileFullPath);
-                    targetFilename = Path.GetTempFileName() + ext;
+                    targetFilename = $"{Path.GetTempFileName()}.{currentBinaryFile.Name}{ext}";
                     await using var tempFileStream = File.Create(targetFilename);
                     await currentBinaryFile.Stream.CopyToAsync(tempFileStream, cts.Token);
                 } catch (Exception ex) {
@@ -868,32 +872,41 @@ public partial class MainWindow : Form {
                 return;
             }
 
-            try {
-                Process proc = Process.Start(editorPath, $"\"{targetFilename}\"");
+            bool complete = false;
+            while (!complete) {
+                try {
+                    Process proc = Process.Start(editorPath, $"\"{targetFilename}\"");
 
-                await proc.WaitForExitAsync(cts.Token);
+                    await proc.WaitForExitAsync(cts.Token);
 
-                if (!currentBinaryFile.IsRealFile) {
-                    var newData = await File.ReadAllBytesAsync(targetFilename, cts.Token);
+                    if (!currentBinaryFile.IsRealFile) {
+                        var newData = await File.ReadAllBytesAsync(targetFilename, cts.Token);
 
-                    if (newData.Length == currentBinaryFile.Stream.Length &&
-                        newData.SequenceEqual(currentBinaryFile.Stream.MemoryStream.ToArray()))
-                    {
-                        ShowStatus("No changes made");
-                        return;
+                        if (newData.Length == currentBinaryFile.Stream.Length &&
+                            newData.SequenceEqual(currentBinaryFile.Stream.MemoryStream.ToArray())) {
+                            ShowStatus("No changes made");
+                            return;
+                        }
+
+                        await currentFolder.CopyFiles(
+                            new[] { targetFilename },
+                            new[] { currentBinaryFile.Name },
+                            _ => true,
+                            cts.Token,
+                            progress
+                        );
+                        ShowStatus("Changes applied");
                     }
-
-                    await currentFolder.CopyFiles(
-                        new[] { targetFilename },
-                        new[] { currentBinaryFile.Name },
-                        _ => true,
-                        cts.Token,
-                        progress
-                    );
-                    ShowStatus("Changes applied");
+                    complete = true;
+                } catch (Exception ex) {
+                    var dialogResult = MessageBox.Show(
+                        $"Copy failed for '{targetFilename}': {ex.GetMessage()}\n\n",
+                        "Error",
+                        MessageBoxButtons.RetryCancel);
+                    if (dialogResult == DialogResult.Cancel) {
+                        complete = true;
+                    }
                 }
-            } catch (Exception ex) {
-                ShowErrorMessageBox($"Copy failed for '{targetFilename}': {ex.GetMessage()}");
             }
         } finally {
             if (!currentBinaryFile.IsRealFile && targetFilename != null) {
@@ -1202,6 +1215,39 @@ public partial class MainWindow : Form {
         if (WindowState == FormWindowState.Normal) {
             restoredWindowSize = Size;
         }
+    }
+
+    private async void MenuEditDuplicateButtonClicked(object sender, EventArgs e) {
+        var currentBinaryFile = this.currentBinaryFile;
+        var currentFolder = currentBinaryFile?.Parent;
+        if (currentBinaryFile == null || currentFolder == null) {
+            ShowStatus("No file open");
+            return;
+        }
+
+        using (var guard = new TaskGuard()) {
+            if (!guard.Acquired) {
+                return;
+            }
+
+            var tempFilename = Path.GetTempFileName();
+            var newFilename = currentBinaryFile.Name + ".bak";
+
+            try {
+                await using (var tempFile = File.Create(tempFilename)) {
+                    await currentBinaryFile.Stream.MemoryStream.CopyToAsync(tempFile, cts.Token);
+                }
+                await currentFolder.CopyFiles(new[] { tempFilename }, new[] { newFilename }, ShowConfirmationPrompt, cts.Token, progress);
+            } catch (Exception ex) {
+                ShowErrorMessageBox($"Cannot duplicate file: {ex.GetMessage()}");
+            } finally {
+                try {
+                    File.Delete(tempFilename);
+                } catch { }
+            }
+        }
+
+        await ReopenFolder();
     }
 }
 

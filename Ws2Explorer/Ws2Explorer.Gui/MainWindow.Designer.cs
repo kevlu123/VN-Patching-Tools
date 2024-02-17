@@ -45,6 +45,7 @@ partial class MainWindow {
         renameToolStripMenuItem = new ToolStripMenuItem();
         deleteToolStripMenuItem = new ToolStripMenuItem();
         swapFilesToolStripMenuItem = new ToolStripMenuItem();
+        toolStripMenuItem2 = new ToolStripMenuItem();
         toolStripSeparator3 = new ToolStripSeparator();
         copyToolStripMenuItem = new ToolStripMenuItem();
         pasteToolStripMenuItem = new ToolStripMenuItem();
@@ -186,7 +187,7 @@ partial class MainWindow {
         // 
         // editToolStripMenuItem
         // 
-        editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { editInApplicationToolStripMenuItem, editHexToolStripMenuItem, toolStripSeparator4, copyFullPathToolStripMenuItem, toolStripSeparator10, renameToolStripMenuItem, deleteToolStripMenuItem, swapFilesToolStripMenuItem, toolStripSeparator3, copyToolStripMenuItem, pasteToolStripMenuItem });
+        editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { editInApplicationToolStripMenuItem, editHexToolStripMenuItem, toolStripSeparator4, copyFullPathToolStripMenuItem, toolStripSeparator10, renameToolStripMenuItem, deleteToolStripMenuItem, swapFilesToolStripMenuItem, toolStripMenuItem2, toolStripSeparator3, copyToolStripMenuItem, pasteToolStripMenuItem });
         editToolStripMenuItem.Name = "editToolStripMenuItem";
         editToolStripMenuItem.Size = new Size(39, 20);
         editToolStripMenuItem.Text = "Edit";
@@ -248,6 +249,14 @@ partial class MainWindow {
         swapFilesToolStripMenuItem.Size = new Size(225, 22);
         swapFilesToolStripMenuItem.Text = "Swap";
         swapFilesToolStripMenuItem.Click += MenuEditSwapFileClicked;
+        // 
+        // toolStripMenuItem2
+        // 
+        toolStripMenuItem2.Name = "toolStripMenuItem2";
+        toolStripMenuItem2.ShortcutKeys = Keys.Control | Keys.D;
+        toolStripMenuItem2.Size = new Size(225, 22);
+        toolStripMenuItem2.Text = "Duplicate";
+        toolStripMenuItem2.Click += MenuEditDuplicateButtonClicked;
         // 
         // toolStripSeparator3
         // 
@@ -385,6 +394,7 @@ partial class MainWindow {
         // 
         fileListViewSizeColumn.Text = "Size";
         fileListViewSizeColumn.TextAlign = HorizontalAlignment.Right;
+        fileListViewSizeColumn.Width = 80;
         // 
         // statusStrip
         // 
@@ -751,4 +761,5 @@ partial class MainWindow {
     private ScintillaNET.Scintilla terminalOutputTextBox;
     private ToolStripMenuItem showTerminalMenuItem;
     private ToolStripStatusLabel fileInfoLabel;
+    private ToolStripMenuItem toolStripMenuItem2;
 }

@@ -8,7 +8,7 @@ if (args.Length == 0) {
 }
 
 int total = 0;
-int failed = 0;
+var failed = new List<(string file, string reason)>();
 
 var root = await Folder.GetFolder(args[0], CancellationToken.None, null);
 foreach (var arcMeta in root.ListChildren()) {
@@ -29,7 +29,8 @@ foreach (var arcMeta in root.ListChildren()) {
         if (ws2 is not BinaryFile ws2File) {
             continue;
         }
-        await Console.Out.WriteLineAsync($"  {arcFolder.FullPath}/{ws2File.Name}");
+        var path = $"{arcFolder.FullPath}/{ws2File.Name}";
+        await Console.Out.WriteLineAsync($"  {path}");
 
         try {
             ws2File.Stream.Reset();
@@ -43,15 +44,22 @@ foreach (var arcMeta in root.ListChildren()) {
             var original = ws2File.Stream.MemoryStream.ToArray();
             if (!original.SequenceEqual(recompiledMemoryStream.ToArray())) {
                 await Console.Out.WriteLineAsync("Recompilation not the same.");
-                failed++;
+                failed.Add((path, "Recompilation not the same."));
                 //await File.WriteAllBytesAsync(ws2File.Name[..^3] + "recompiled.ws2", recompiledMemoryStream.ToArray());
             }
         } catch (Exception ex) {
             await Console.Out.WriteLineAsync(ex.ToString());
-            failed++;
+            failed.Add((path, ex.ToString()));
         }
         total++;
     }
 }
 
-await Console.Out.WriteLineAsync($"{total - failed}/{total} passed.");
+if (failed.Count > 0) {
+    await Console.Out.WriteLineAsync("Failed:");
+    foreach (var (file, reason) in failed) {
+        await Console.Out.WriteLineAsync($"  {file}: {reason}");
+    }
+}
+
+await Console.Out.WriteLineAsync($"{total - failed.Count}/{total} passed.");

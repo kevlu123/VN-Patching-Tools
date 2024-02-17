@@ -115,6 +115,7 @@ public static class Ws2Compiler {
             }
         }
 
+        labelChanges[0] = 0;
         foreach (var opcode in numberedOpcodes) {
             opcode.UpdateLabels(labelChanges);
             writer.Write(opcode.OpcodeNumber);

@@ -1,43 +1,197 @@
+using System.Text;
+using System.Text.Json;
+
 namespace Ws2Explorer;
 
+public class PnaHeaderFile : BinaryFile {
+    private static readonly JsonSerializerOptions jsonOptions = new() {
+        WriteIndented = true,
+    };
+
+    public class Fields {
+        public int Signature { get; set; }
+        public int Unknown1 { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public int FileCount { get; set; }
+
+        public static Fields FromJson(BinaryStream stream) {
+            var json = Encoding.UTF8.GetString(stream.MemoryStream.ToArray());
+            return JsonSerializer.Deserialize<Fields>(json, jsonOptions) ?? throw new InvalidDataException("Invalid JSON.");
+        }
+
+        public static Fields FromBytes(BinaryStream stream) {
+            return new Fields {
+                Signature = stream.ReadInt32(),
+                Unknown1 = stream.ReadInt32(),
+                Width = stream.ReadInt32(),
+                Height = stream.ReadInt32(),
+                FileCount = stream.ReadInt32(),
+            };
+        }
+
+        public byte[] ToBytes() {
+            var bytes = new byte[Size];
+            var stream = new BinaryStream(bytes, 0, bytes.Length);
+            stream.WriteInt32(Signature);
+            stream.WriteInt32(Unknown1);
+            stream.WriteInt32(Width);
+            stream.WriteInt32(Height);
+            stream.WriteInt32(FileCount);
+            return bytes;
+        }
+    }
+
+    public PnaHeaderFile(IFolder? parent, string name, BinaryStream stream) : base(parent, name, stream) {
+        fields = Fields.FromJson(stream);
+    }
+
+    public static PnaHeaderFile FromBytes(IFolder? parent, string name, BinaryStream stream) {
+        var json = JsonSerializer.Serialize(Fields.FromBytes(stream), jsonOptions);
+        var bytes = Encoding.UTF8.GetBytes(json);
+        return new PnaHeaderFile(parent, name, new BinaryStream(bytes, 0, bytes.Length));
+    }
+
+    public Fields GetFields() {
+        return new() {
+            Signature = Signature,
+            Unknown1 = Unknown1,
+            Width = Width,
+            Height = Height,
+            FileCount = FileCount,
+        };
+    }
+
+    public void SetFields(Fields fields) {
+        this.fields = fields;
+        var json = JsonSerializer.Serialize(fields, jsonOptions);
+        var bytes = Encoding.UTF8.GetBytes(json);
+        Stream = new BinaryStream(bytes, 0, bytes.Length);
+    }
+
+    private Fields fields;
+    public const int Size = 20;
+
+    public int Signature => fields.Signature;
+    public int Unknown1 => fields.Unknown1;
+    public int Width => fields.Width;
+    public int Height => fields.Height;
+    public int FileCount => fields.FileCount;
+}
+
+public class PnaImageMetaFile : BinaryFile {
+    private static readonly JsonSerializerOptions jsonOptions = new() {
+        WriteIndented = true,
+    };
+
+    public class Fields {
+        public int Zero { get; set; }
+        public int FileId { get; set; }
+        public int OffsetX { get; set; } // Relative to the top left of the image given by the main PNA header
+        public int OffsetY { get; set; } //
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public int Unknown1 { get; set; }
+        public int Unknown2 { get; set; }
+        public float Unknown3 { get; set; }
+        public int DataLen { get; set; }
+
+        public static Fields FromJson(BinaryStream stream) {
+            var json = Encoding.UTF8.GetString(stream.MemoryStream.ToArray());
+            return JsonSerializer.Deserialize<Fields>(json, jsonOptions) ?? throw new InvalidDataException("Invalid JSON.");
+        }
+
+        public static Fields FromBytes(BinaryStream stream) {
+            return new Fields {
+                Zero = stream.ReadInt32(),
+                FileId = stream.ReadInt32(),
+                OffsetX = stream.ReadInt32(),
+                OffsetY = stream.ReadInt32(),
+                Width = stream.ReadInt32(),
+                Height = stream.ReadInt32(),
+                Unknown1 = stream.ReadInt32(),
+                Unknown2 = stream.ReadInt32(),
+                Unknown3 = stream.ReadSingle(),
+                DataLen = stream.ReadInt32(),
+            };
+        }
+
+        public byte[] ToBytes() {
+            var bytes = new byte[Size];
+            var stream = new BinaryStream(bytes, 0, bytes.Length);
+            stream.WriteInt32(Zero);
+            stream.WriteInt32(FileId);
+            stream.WriteInt32(OffsetX);
+            stream.WriteInt32(OffsetY);
+            stream.WriteInt32(Width);
+            stream.WriteInt32(Height);
+            stream.WriteInt32(Unknown1);
+            stream.WriteInt32(Unknown2);
+            stream.WriteSingle(Unknown3);
+            stream.WriteInt32(DataLen);
+            return bytes;
+        }
+    }
+
+    public PnaImageMetaFile(IFolder? parent, string name, BinaryStream stream) : base(parent, name, stream) {
+        fields = Fields.FromJson(stream);
+    }
+
+    public static PnaImageMetaFile FromBytes(IFolder? parent, string name, BinaryStream stream) {
+        var json = JsonSerializer.Serialize(Fields.FromBytes(stream), jsonOptions);
+        var bytes = Encoding.UTF8.GetBytes(json);
+        return new PnaImageMetaFile(parent, name, new BinaryStream(bytes, 0, bytes.Length));
+    }
+
+    public Fields GetFields() {
+        return new() {
+            Zero = Zero,
+            FileId = FileID,
+            OffsetX = OffsetX,
+            OffsetY = OffsetY,
+            Width = Width,
+            Height = Height,
+            Unknown1 = Unknown1,
+            Unknown2 = Unknown2,
+            Unknown3 = Unknown3,
+            DataLen = DataLen,
+        };
+    }
+
+    public void SetFields(Fields fields) {
+        this.fields = fields;
+        var json = JsonSerializer.Serialize(fields, jsonOptions);
+        var bytes = Encoding.UTF8.GetBytes(json);
+        Stream = new BinaryStream(bytes, 0, bytes.Length);
+    }
+
+    private Fields fields;
+    public const int Size = 40;
+
+    public int Zero => fields.Zero;
+    public int FileID => fields.FileId;
+    public int OffsetX => fields.OffsetX;
+    public int OffsetY => fields.OffsetY;
+    public int Width => fields.Width;
+    public int Height => fields.Height;
+    public int Unknown1 => fields.Unknown1;
+    public int Unknown2 => fields.Unknown2;
+    public float Unknown3 => fields.Unknown3;
+    public int DataLen => fields.DataLen;
+}
+
 public class PnaFile : BinaryFile, IFolder {
-    private class Header {
-        public const int Size = 20;
-        public int Signature;
-        public int Unknown1;
-        public int Unknown2;
-        public int Unknown3;
-        public int FileCount;
-    }
+    private const string HEADER_NAME = "header.json";
 
-    private class SubHeader {
-        public const int Size = 40;
-        public int Zero;
-        public int FileID;
-        public int Unknown1;
-        public int Unknown2;
-        public int Width;
-        public int Height;
-        public int Unknown3;
-        public int Unknown4;
-        public int Unknown5;
-        public int DataLen;
-    }
-
-    private readonly Header header;
-    private readonly Dictionary<string, (SubHeader header, BinaryStream stream)> children = new();
+    private readonly PnaHeaderFile header;
+    private readonly Dictionary<string, PnaImageMetaFile> imageMetas = new();
+    private readonly Dictionary<string, BinaryStream> images = new();
 
     public bool CanRenameChildren => false;
 
     public PnaFile(IFolder? parent, string name, BinaryStream stream) : base(parent, name, stream) {
         stream.Reset();
-        header = new Header {
-            Signature = stream.ReadInt32(),
-            Unknown1 = stream.ReadInt32(),
-            Unknown2 = stream.ReadInt32(),
-            Unknown3 = stream.ReadInt32(),
-            FileCount = stream.ReadInt32(),
-        };
+        header = PnaHeaderFile.FromBytes(this, HEADER_NAME, stream.GetSubStream(0, PnaHeaderFile.Size));
 
         if (header.Signature != 0x50414E50) {
             throw new InvalidDataException("Invalid header");
@@ -45,90 +199,63 @@ public class PnaFile : BinaryFile, IFolder {
 
         var offset = (40 * header.FileCount) + 20;
         for (int i = 0; i < header.FileCount; i++) {
-            var subHeader = new SubHeader {
-                Zero = stream.ReadInt32(),
-                FileID = stream.ReadInt32(),
-                Unknown1 = stream.ReadInt32(),
-                Unknown2 = stream.ReadInt32(),
-                Width = stream.ReadInt32(),
-                Height = stream.ReadInt32(),
-                Unknown3 = stream.ReadInt32(),
-                Unknown4 = stream.ReadInt32(),
-                Unknown5 = stream.ReadInt32(),
-                DataLen = stream.ReadInt32(),
-            };
+            var imageHeader = PnaImageMetaFile.FromBytes(this, $"meta{i:000}.json", stream.GetSubStream(20 + (i * 40), 40));
 
-            BinaryStream childStream;
-            if (subHeader.Zero != 0 || subHeader.Width < 0 || subHeader.Height < 0 || subHeader.DataLen < 0) {
-                childStream = new BinaryStream(Array.Empty<byte>(), 0, 0);
+            BinaryStream imageStream;
+            if (imageHeader.Zero != 0 || imageHeader.Width < 0 || imageHeader.Height < 0 || imageHeader.DataLen < 0) {
+                imageStream = new BinaryStream(Array.Empty<byte>(), 0, 0);
             } else {
-                childStream = stream.GetSubStream(offset, subHeader.DataLen);
+                imageStream = stream.GetSubStream(offset, imageHeader.DataLen);
             }
-            children.Add(i.ToString("D3"), (subHeader, childStream));
-            offset += subHeader.DataLen;
+            imageMetas.Add(imageHeader.Name, imageHeader);
+            images.Add($"img{i:000}.png", imageStream);
+            offset += imageHeader.DataLen;
         }
     }
 
     public List<FileMetadata> ListChildren() {
-        return children.
-            Select(x => new FileMetadata(x.Key, x.Value.stream.Length)).
-            ToList();
+        return new[] { new FileMetadata(HEADER_NAME, null) }
+            .Concat(images.Select(x => new FileMetadata(x.Key, x.Value.Length)))
+            .Concat(imageMetas.Select(x => new FileMetadata(x.Key, null)))
+            .ToList();
     }
 
     public async Task<IFile> GetChild(string name, CancellationToken ct, ITaskProgress? progress) {
-        if (children.TryGetValue(name, out var child)) {
-            return await Task.Run(() => new ImageFile(this, name, child.stream));
+        if (name == HEADER_NAME) {
+            return await Task.FromResult<IFile>(header);
+        } else if (images.TryGetValue(name, out var child)) {
+            try {
+                return await Task.Run(() => new ImageFile(this, name, child));
+            } catch (InvalidDataException) {
+                return await Task.Run(() => new BinaryFile(this, name, child));
+            }
+        } else if (imageMetas.TryGetValue(name, out var meta)) {
+            return await Task.FromResult<IFile>(meta);
         }
+
         throw new FileNotFoundException(name);
     }
 
-    private SubHeader GetSubHeader(string name) {
-        if (children.TryGetValue(name, out var child)) {
-            return child.header;
-        }
-        throw new FileNotFoundException(name);
-    }
-
-    public async Task NotifyChildChanged(string child, BinaryStream newData, CancellationToken ct, ITaskProgress? progress) {
-        // This should never run anyway!
-        children[child] = (GetSubHeader(child), newData);
-        await RebuildStream(progress, ct);
+    public Task NotifyChildChanged(string child, BinaryStream newData, CancellationToken ct, ITaskProgress? progress) {
+        throw new InvalidOperationException();
     }
 
     private async Task RebuildStream(ITaskProgress? progress, CancellationToken ct) {
-        var children = this.children
-            .OrderBy(x => x.Key.ToLower())
-            .ToArray();
-        var totalLength = Header.Size
-            + (SubHeader.Size * children.Length)
-            + children.Sum(x => x.Value.stream.Length);
+        var totalLength = PnaHeaderFile.Size
+            + (PnaImageMetaFile.Size * header.FileCount)
+            + images.Sum(x => x.Value.Length);
         var buffer = new byte[totalLength];
         Stream = new BinaryStream(buffer, 0, buffer.Length);
 
-        Stream.WriteInt32(header.Signature);
-        Stream.WriteInt32(header.Unknown1);
-        Stream.WriteInt32(header.Unknown2);
-        Stream.WriteInt32(header.Unknown3);
-        Stream.WriteInt32(children.Length);
-
-        foreach (var child in children) {
-            Stream.WriteInt32(child.Value.header.Zero);
-            Stream.WriteInt32(child.Value.header.FileID);
-            Stream.WriteInt32(child.Value.header.Unknown1);
-            Stream.WriteInt32(child.Value.header.Unknown2);
-            Stream.WriteInt32(child.Value.header.Width);
-            Stream.WriteInt32(child.Value.header.Height);
-            Stream.WriteInt32(child.Value.header.Unknown3);
-            Stream.WriteInt32(child.Value.header.Unknown4);
-            Stream.WriteInt32(child.Value.header.Unknown5);
-            Stream.WriteInt32(child.Value.stream.Length);
+        Stream.WriteBytes(header.GetFields().ToBytes());
+        foreach (var (_, meta) in imageMetas.OrderBy(x => x.Key)) {
+            Stream.WriteBytes(meta.GetFields().ToBytes());
         }
 
-        using var pm = new ProgressManager($"Rebuilding {Name}", progress, children.Length);
-        foreach (var child in children) {
-            var childStream = child.Value.stream;
-            childStream.Reset();
-            await childStream.MemoryStream.CopyToAsync(Stream.MemoryStream, ct);
+        using var pm = new ProgressManager($"Rebuilding {Name}", progress, images.Count);
+        foreach (var (_, image) in images.OrderBy(x => x.Key)) {
+            image.Reset();
+            await image.MemoryStream.CopyToAsync(Stream.MemoryStream, ct);
             pm.Step();
         }
 
@@ -150,65 +277,131 @@ public class PnaFile : BinaryFile, IFolder {
             .Where(x => x.Count() > 1)
             .Select(x => x.Key)
             .ToList()
-            .ForEach(x => throw new ArgumentException($"Duplicate destination {x}", nameof(to))); // Foreach run at most once
+            .ForEach(x => throw new ArgumentException($"Duplicate destination {x}", nameof(to)));
 
-        var nonExisting = to.Except(children.Keys);
+        var nonExisting = to.Except(imageMetas.Keys).Except(images.Keys).Except(new[] { HEADER_NAME });
         if (nonExisting.Any()) {
             throw new NotSupportedException($"Only replacement is supported. File(s) not found in PNA file: {string.Join(", ", nonExisting)}");
         }
 
-        var srcFiles = new List<ImageFile>();
+        var metaTransfers = new List<(PnaImageMetaFile.Fields src, string dst)>();
+        var imageTransfers = new List<(ImageFile src, string dst)>();
+        PnaHeaderFile.Fields? newHeader = null;
         foreach (var (from, dst) in fromFullPath.Zip(to)) {
             var srcFile = await Folder.GetFile(from, ct, progress);
-            if (srcFile is not ImageFile img) {
-                throw new NotSupportedException($"{from} is not an image.");
-            }
-            if (srcFile.Parent is not PnaFile) {
-                var header = children[dst].header;
-                if (img.Image.Width != header.Width || img.Image.Height != header.Height) {
-                    var fromSize = $"{img.Image.Width}x{img.Image.Height}";
-                    var toSize = $"{header.Width}x{header.Height}";
-                    throw new NotSupportedException($"{from} is {fromSize} but expected {toSize}.");
+            if (dst == HEADER_NAME) {
+                if (srcFile is not BinaryFile binaryFile || !binaryFile.IsText) {
+                    throw new NotSupportedException($"{from} is not a PNA header.");
                 }
+                newHeader = PnaHeaderFile.Fields.FromJson(binaryFile.Stream);
+            } else if (IsMetaName(dst)) {
+                if (srcFile is not BinaryFile binaryFile || !binaryFile.IsText) {
+                    throw new NotSupportedException($"{from} is not a PNA image metadata header.");
+                }
+                var fields = PnaImageMetaFile.Fields.FromJson(binaryFile.Stream);
+                metaTransfers.Add((fields, dst));
+            } else {
+                if (srcFile is not ImageFile imageFile) {
+                    throw new NotSupportedException($"{from} is not an image.");
+                }
+                imageTransfers.Add((imageFile, dst));
             }
-            srcFiles.Add(img);
         }
 
-        foreach (var (srcFile, dst) in srcFiles.Zip(to)) {
-            if (srcFile.Parent is PnaFile parentPna) {
-                var header = parentPna.GetSubHeader(srcFile.Name);
-                children[dst] = (header, srcFile.Stream);
-            } else {
-                var header = children[dst].header;
-                header.DataLen = srcFile.Stream.Length;
-                children[dst] = (header, srcFile.Stream);
+        foreach (var (src, dst) in imageTransfers) {
+            images[dst] = src.Stream;
+            var fields = imageMetas[ImageToMetaName(dst)].GetFields();
+            fields.DataLen = src.Stream.Length;
+            if (OperatingSystem.IsWindows() && OperatingSystem.IsWindowsVersionAtLeast(6, 1)) {
+                fields.Width = src.Image.Width;
+                fields.Height = src.Image.Height;
             }
+            imageMetas[ImageToMetaName(dst)].SetFields(fields);
+        }
+
+        foreach (var (src, dst) in metaTransfers) {
+            // Only update some safe fields as to not corrupt the file
+            var fields = imageMetas[dst].GetFields();
+            fields.OffsetX = src.OffsetX;
+            fields.OffsetY = src.OffsetY;
+            fields.Unknown1 = src.Unknown1;
+            fields.Unknown2 = src.Unknown2;
+            fields.Unknown3 = src.Unknown3;
+            fields.FileId = src.FileId;
+            imageMetas[dst].SetFields(fields);
+        }
+
+        if (newHeader != null) {
+            // Only update some safe fields as to not corrupt the file
+            var fields = header.GetFields();
+            fields.Width = newHeader.Width;
+            fields.Height = newHeader.Height;
+            fields.Unknown1 = newHeader.Unknown1;
+            header.SetFields(fields);
         }
 
         await RebuildStream(progress, ct);
     }
 
     public async Task SwapChildren(string a, string b, CancellationToken ct, ITaskProgress? progress) {
-        if (!children.ContainsKey(a)) {
-            throw new FileNotFoundException(a);
+        if (imageMetas.ContainsKey(a)) {
+            if (imageMetas.ContainsKey(b)) {
+                (imageMetas[a], imageMetas[b]) = (imageMetas[b], imageMetas[a]);
+                (images[MetaToImageName(a)], images[MetaToImageName(b)]) = (images[MetaToImageName(b)], images[MetaToImageName(a)]);
+            } else {
+                throw new NotSupportedException("Invalid swap targets");
+            }
+        } else if (images.ContainsKey(a)) {
+            if (images.ContainsKey(b)) {
+                (images[a], images[b]) = (images[b], images[a]);
+                (imageMetas[ImageToMetaName(a)], imageMetas[ImageToMetaName(b)])
+                    = (imageMetas[ImageToMetaName(b)], imageMetas[ImageToMetaName(a)]);
+            } else {
+                throw new NotSupportedException("Invalid swap targets");
+            }
+        } else {
+            throw new NotSupportedException("Invalid swap targets");
         }
-        if (!children.ContainsKey(b)) {
-            throw new FileNotFoundException(b);
-        }
-        (children[b], children[a]) = (children[a], children[b]);
+
         await RebuildStream(progress, ct);
     }
 
     public async Task DeleteChildren(string[] names, CancellationToken ct, ITaskProgress? progress) {
-        var nonExisting = names.Except(children.Keys);
+        var nonExisting = names.Except(imageMetas.Keys).Except(images.Keys);
         if (nonExisting.Any()) {
             throw new FileNotFoundException(string.Join(", ", nonExisting));
         }
 
+        if (names.Contains(HEADER_NAME)) {
+            throw new NotSupportedException("Cannot delete main header");
+        }
+
         foreach (var name in names) {
-            children.Remove(name);
+            if (IsMetaName(name)) {
+                imageMetas.Remove(name);
+                images.Remove(MetaToImageName(name));
+            } else if (IsImageName(name)) {
+                imageMetas.Remove(ImageToMetaName(name));
+                images.Remove(name);
+            }
         }
 
         await RebuildStream(progress, ct);
+    }
+
+    private static string ImageToMetaName(string name) {
+        return $"meta{name[3..^4]}.json";
+    }
+
+    private static string MetaToImageName(string name) {
+        return $"img{name[4..^5]}.png";
+    }
+
+    private static bool IsMetaName(string name) {
+        return name.StartsWith("meta") && name.EndsWith(".json");
+    }
+
+    private static bool IsImageName(string name) {
+        return name.StartsWith("img") && name.EndsWith(".png");
     }
 }

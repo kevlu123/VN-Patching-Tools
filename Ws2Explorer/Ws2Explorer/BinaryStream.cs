@@ -59,6 +59,14 @@ public class BinaryStream {
         return reader.ReadInt32();
     }
 
+    public void WriteSingle(float value) {
+        writer.Write(value);
+    }
+
+    public float ReadSingle() {
+        return reader.ReadSingle();
+    }
+
     public void WriteStringUTF16(string value) {
         writer.Write(Encoding.Unicode.GetBytes(value));
         writer.Write((short)0);

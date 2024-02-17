@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace Ws2Explorer;
 
@@ -19,7 +21,10 @@ public class ImageFile : BinaryFile {
        0xFF, 0xD8, 0xFF, 0xE0,
     };
 
-    public Image Image { get; }
+    private readonly Image? image = null;
+
+    [SupportedOSPlatform("windows6.1")]
+    public Image Image => image ?? throw new PlatformNotSupportedException();
     public string ImageType { get; }
 
     public ImageFile(IFolder? parent, string name, BinaryStream stream) : base(parent, name, stream) {
@@ -31,7 +36,9 @@ public class ImageFile : BinaryFile {
 
             var slice = data.Skip(start).Take(magic.Length);
             if (slice.SequenceEqual(magic)) {
-                Image = Image.FromStream(stream.MemoryStream);
+                if (OperatingSystem.IsWindows() && OperatingSystem.IsWindowsVersionAtLeast(6, 1)) {
+                    image = Image.FromStream(stream.MemoryStream);
+                }
                 ImageType = magic == MAGIC1 ? "PNG" : "JPEG";
                 return;
             }

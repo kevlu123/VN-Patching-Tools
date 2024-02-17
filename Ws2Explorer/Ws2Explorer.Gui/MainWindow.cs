@@ -952,6 +952,10 @@ public partial class MainWindow : Form {
     }
 
     private async void MenuEditDeleteClicked(object sender, EventArgs e) {
+        if (!fileListView.Focused) {
+            return;
+        }
+
         var selectedFilenames = GetSelectedFilenames();
         if (selectedFilenames.Length == 0 || currentFolder == null) {
             ShowStatus("Select files to delete");

@@ -41,12 +41,6 @@ public class Program {
         OnOutput(this, s);
     }
 
-    private bool ShowConfirmationPrompt(string message) {
-        WriteOutput(message);
-        WriteOutput("(y/N)?");
-        return Console.ReadLine() == "y";
-    }
-
     public async Task Run(string[] args, CancellationToken ct) {
         if (args.Length == 0) {
             PrintHelp();
@@ -64,10 +58,11 @@ public class Program {
                 case "rm": await DeleteFile(args, ct); break;
                 case "swap": await SwapFiles(args, ct); break;
                 case "rename": await RenameFile(args, ct); break;
-                case "decompile": await DecompileFile(args, ct); break;
-                case "compile": await CompileFile(args, ct); break;
+                case "version": await PrintWs2Version(args, ct); break;
                 case "extract_text": await ExtractText(args, ct); break;
                 case "insert_text": await InsertText(args, ct); break;
+                case "decompile": await DecompileFile(args, ct); break;
+                case "compile": await CompileFile(args, ct); break;
                 default: throw new ArgumentException($"Unknown command {op}.");
             }
         } catch (Exception ex) {
@@ -86,7 +81,6 @@ public class Program {
         WriteOutput("  rm <path>                             Delete files.");
         WriteOutput("  swap <folder> <file1> <file2>         Swap the contents of two files in the same folder.");
         WriteOutput("  rename <path> <new_filename>          Rename files.");
-        WriteOutput("  edit <path> [program]                 Open an external program to edit a file in-place.");
         WriteOutput("");
         WriteOutput("  version <ws2_file>                    Print the version of a ws2 file.");
         WriteOutput("  extract_text <ws2> <output_path>      Extract text from ws2 files.");
@@ -155,13 +149,23 @@ public class Program {
         var folder = await Folder.GetFolder(folderName, ct, progress);
         await folder.RenameChild(name, newName, ct, progress);
     }
-    
+
     private async Task DecompileFile(string[] args, CancellationToken ct) {
         var src = args[1];
         var dst = args[2];
         var (dstFolderName, dstName) = ParseFolderAndFilename(dst);
         var dstFolder = await Folder.GetFolder(dstFolderName, ct, progress);
         await dstFolder.CopyFiles(new[] { Path.Combine(src, "opcodes.json") }, new[] { dstName }, _ => true, ct, progress);
+    }
+
+    private async Task PrintWs2Version(string[] args, CancellationToken ct) {
+        var src = args[1];
+        var file = await Folder.GetFile(src, ct, progress);
+        if (file is not Ws2File ws2) {
+            throw new InvalidDataException($"File {src} is not a ws2 file.");
+        }
+
+        WriteOutput(ws2.Ws2Version.ToString());
     }
 
     private async Task CompileFile(string[] args, CancellationToken ct) {
@@ -184,7 +188,7 @@ public class Program {
         var json = srcFile.GetText(Encoding.UTF8);
         var opcodes = Ws2Compiler.DeserializeFromJson(json, version);
         var compiled = Ws2Compiler.Compile(opcodes, version, encrypt);
-        
+
         var tempOutputPath = Path.GetTempFileName();
         await using (var tempOutput = File.Create(tempOutputPath)) {
             await compiled.CopyToAsync(tempOutput, ct);

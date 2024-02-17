@@ -21,6 +21,20 @@ public partial class MainWindow : Form {
         Hex,
     }
 
+    class ProtectedByteViewer : ByteViewer {
+        protected override void WndProc(ref Message m) {
+            try {
+                base.WndProc(ref m);
+            } catch (Exception) {
+                MessageBox.Show(
+                    "The hex viewer control has crashed. Reset the control by disabling and re-enabling the hex viewer.",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+    }
+
     class Terminal {
         private readonly TextBox inputControl;
         private readonly Scintilla outputControl;
@@ -167,7 +181,7 @@ public partial class MainWindow : Form {
     private IFolder? currentFolder;
     private BinaryFile? currentBinaryFile;
     private CancellationTokenSource cts = new();
-    private readonly ByteViewer hexPreviewBox;
+    private ProtectedByteViewer hexPreviewBox;
     private readonly TabPage hexPreviewTab;
     private Size restoredWindowSize;
     private int currentProgressTask;
@@ -232,11 +246,13 @@ public partial class MainWindow : Form {
             clearStatusTextTimer.Stop();
         };
 
-        hexPreviewBox = new ByteViewer() {
-            Dock = DockStyle.Fill,
-        };
+
+        //hexPreviewBox = new() {
+        //    Dock = DockStyle.Fill,
+        //};
         hexPreviewTab = new TabPage("Hex");
-        hexPreviewTab.Controls.Add(hexPreviewBox);
+        //hexPreviewTab.Controls.Add(hexPreviewBox);
+        //previewerTabControl.TabPages.Add(hexPreviewTab);
 
         encodingDropDown.Items.AddRange(PrettyNameEncoding.Encodings);
         encodingDropDown.SelectedIndex = 0;
@@ -1125,9 +1141,14 @@ public partial class MainWindow : Form {
     private async void MenuViewShowHexChecked(object sender, EventArgs e) {
         config.ShowHexViewer = showHexMenuItem.Checked;
         if (showHexMenuItem.Checked) {
+            hexPreviewBox = new() {
+                Dock = DockStyle.Fill,
+            };
+            hexPreviewTab.Controls.Add(hexPreviewBox);
             previewerTabControl.TabPages.Add(hexPreviewTab);
         } else {
             previewerTabControl.TabPages.Remove(hexPreviewTab);
+            hexPreviewTab.Controls.Remove(hexPreviewBox);
         }
         await ReopenFolder();
     }

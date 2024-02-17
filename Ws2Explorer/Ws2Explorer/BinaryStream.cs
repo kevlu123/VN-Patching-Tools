@@ -13,6 +13,8 @@ public class BinaryStream {
     public int Length { get; }
     public (byte[] data, int start, int len) RawBuffer => (data, start, Length);
 
+    public BinaryStream(byte[] data) : this(data, 0, data.Length) { }
+
     public BinaryStream(byte[] data, int start, int len) {
         this.data = data;
         this.start = start;
@@ -49,6 +51,14 @@ public class BinaryStream {
 
     public byte[] ReadBytes(int len) {
         return reader.ReadBytes(len);
+    }
+
+    public void WriteByte(byte value) {
+        writer.Write(value);
+    }
+
+    public byte ReadByte() {
+        return reader.ReadByte();
     }
 
     public void WriteInt32(int value) {
@@ -98,6 +108,7 @@ public class BinaryStream {
         return await Task.Run(() => {
             try { return new PnaFile(parent, name, this); } catch { Reset(); }
             try { return new ArcFile(parent, name, this); } catch { Reset(); }
+            try { return new PtfFile(parent, name, this); } catch { Reset(); }
             try { return new Ws2File(parent, name, this); } catch { Reset(); }
             try { return new ImageFile(parent, name, this); } catch { Reset(); }
             try { return new ZipFile(parent, name, this); } catch { Reset(); }

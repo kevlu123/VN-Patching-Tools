@@ -181,7 +181,7 @@ public partial class MainWindow : Form {
     private IFolder? currentFolder;
     private BinaryFile? currentBinaryFile;
     private CancellationTokenSource cts = new();
-    private ProtectedByteViewer hexPreviewBox;
+    private ProtectedByteViewer? hexPreviewBox;
     private readonly TabPage hexPreviewTab;
     private Size restoredWindowSize;
     private int currentProgressTask;
@@ -246,13 +246,7 @@ public partial class MainWindow : Form {
             clearStatusTextTimer.Stop();
         };
 
-
-        //hexPreviewBox = new() {
-        //    Dock = DockStyle.Fill,
-        //};
         hexPreviewTab = new TabPage("Hex");
-        //hexPreviewTab.Controls.Add(hexPreviewBox);
-        //previewerTabControl.TabPages.Add(hexPreviewTab);
 
         encodingDropDown.Items.AddRange(PrettyNameEncoding.Encodings);
         encodingDropDown.SelectedIndex = 0;
@@ -653,7 +647,7 @@ public partial class MainWindow : Form {
 
         if (showHexMenuItem.Checked) {
             await Task.Yield();
-            hexPreviewBox.SetBytes(currentBinaryFile.Stream.MemoryStream.ToArray());
+            hexPreviewBox?.SetBytes(currentBinaryFile.Stream.MemoryStream.ToArray());
         }
 
         fileListView.Focus();
@@ -873,8 +867,7 @@ public partial class MainWindow : Form {
                 targetFilename = currentBinaryFileFullPath;
             } else {
                 try {
-                    var ext = Path.GetExtension(currentBinaryFileFullPath);
-                    targetFilename = $"{Path.GetTempFileName()}.{currentBinaryFile.Name}{ext}";
+                    targetFilename = $"{Path.GetTempFileName()}.{currentBinaryFile.Name}";
                     await using var tempFileStream = File.Create(targetFilename);
                     await currentBinaryFile.Stream.CopyToAsync(tempFileStream, cts.Token);
                 } catch (Exception ex) {

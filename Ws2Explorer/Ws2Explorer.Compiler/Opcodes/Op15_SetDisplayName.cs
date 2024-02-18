@@ -7,13 +7,21 @@ public class Op15_SetDisplayName : IOpcode {
     public byte Arg1 { get; set; }
 
     public string CharacterName {
-        get => FullCharacterName[Prefix.Length..];
+        get => FullCharacterName[GetPrefixLength()..];
         set => FullCharacterName = Prefix + value;
     }
-    
+
     public string Prefix {
-        get => (FullCharacterName.StartsWith("%LC") || FullCharacterName.StartsWith("%LF")) ? FullCharacterName[..3] : "";
+        get => FullCharacterName[..GetPrefixLength()];
         set => FullCharacterName = value + CharacterName;
+    }
+
+    private int GetPrefixLength() {
+        int i = 0;
+        while (i + 3 < FullCharacterName.Length && FullCharacterName[i] == '%') {
+            i += 3;
+        }
+        return i;
     }
 
     public int GetArgumentsLength(Ws2Version version) {

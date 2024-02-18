@@ -9,13 +9,21 @@ public class Op14_DisplayMessage : IOpcode {
     public byte Type { get; set; }
 
     public string Message {
-        get => FullMessage[..^Suffix.Length];
+        get => FullMessage[..^GetSuffixLength()];
         set => FullMessage = value + Suffix;
     }
 
     public string Suffix {
-        get => FullMessage.EndsWith("%K%P") ? "%K%P" : "";
+        get => FullMessage[^GetSuffixLength()..];
         set => FullMessage = Message + value;
+    }
+
+    private int GetSuffixLength() {
+        int i = FullMessage.Length;
+        while (i - 2 > 0 && FullMessage[i - 2] == '%') {
+            i -= 2;
+        }
+        return FullMessage.Length - i;
     }
 
     public int GetArgumentsLength(Ws2Version version) {

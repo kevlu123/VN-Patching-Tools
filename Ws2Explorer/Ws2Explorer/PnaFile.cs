@@ -92,8 +92,7 @@ public class PnaImageMetaFile : BinaryFile {
         public int Width { get; set; }
         public int Height { get; set; }
         public int Unknown1 { get; set; }
-        public int Unknown2 { get; set; }
-        public float Unknown3 { get; set; }
+        public double Transparency { get; set; }
         public int DataLen { get; set; }
 
         public static Fields FromJson(BinaryStream stream) {
@@ -110,8 +109,7 @@ public class PnaImageMetaFile : BinaryFile {
                 Width = stream.ReadInt32(),
                 Height = stream.ReadInt32(),
                 Unknown1 = stream.ReadInt32(),
-                Unknown2 = stream.ReadInt32(),
-                Unknown3 = stream.ReadSingle(),
+                Transparency = stream.ReadDouble(),
                 DataLen = stream.ReadInt32(),
             };
         }
@@ -126,8 +124,7 @@ public class PnaImageMetaFile : BinaryFile {
             stream.WriteInt32(Width);
             stream.WriteInt32(Height);
             stream.WriteInt32(Unknown1);
-            stream.WriteInt32(Unknown2);
-            stream.WriteSingle(Unknown3);
+            stream.WriteDouble(Transparency);
             stream.WriteInt32(DataLen);
             return bytes;
         }
@@ -152,8 +149,7 @@ public class PnaImageMetaFile : BinaryFile {
             Width = Width,
             Height = Height,
             Unknown1 = Unknown1,
-            Unknown2 = Unknown2,
-            Unknown3 = Unknown3,
+            Transparency = Transparency,
             DataLen = DataLen,
         };
     }
@@ -175,8 +171,7 @@ public class PnaImageMetaFile : BinaryFile {
     public int Width => fields.Width;
     public int Height => fields.Height;
     public int Unknown1 => fields.Unknown1;
-    public int Unknown2 => fields.Unknown2;
-    public float Unknown3 => fields.Unknown3;
+    public double Transparency => fields.Transparency;
     public int DataLen => fields.DataLen;
 }
 
@@ -325,8 +320,7 @@ public class PnaFile : BinaryFile, IFolder {
             fields.OffsetX = src.OffsetX;
             fields.OffsetY = src.OffsetY;
             fields.Unknown1 = src.Unknown1;
-            fields.Unknown2 = src.Unknown2;
-            fields.Unknown3 = src.Unknown3;
+            fields.Transparency = src.Transparency;
             fields.FileId = src.FileId;
             imageMetas[dst].SetFields(fields);
         }

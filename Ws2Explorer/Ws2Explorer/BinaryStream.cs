@@ -77,6 +77,14 @@ public class BinaryStream {
         return reader.ReadSingle();
     }
 
+    public void WriteDouble(double value) {
+        writer.Write(value);
+    }
+
+    public double ReadDouble() {
+        return reader.ReadDouble();
+    }
+
     public void WriteStringUTF16(string value) {
         writer.Write(Encoding.Unicode.GetBytes(value));
         writer.Write((short)0);

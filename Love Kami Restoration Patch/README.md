@@ -3,7 +3,7 @@
 This patch restores the H-scenes removed from the English release of the Love Kami games.
 There are also patches for converting the Japanese versions which already have the H-scenes to English.
 
-The H-scenes are machine translated and the gallery for the English releases have not been patched.
+The H-scenes are machine translated and the gallery for the English releases has not been patched.
 
 ## Downloads
 

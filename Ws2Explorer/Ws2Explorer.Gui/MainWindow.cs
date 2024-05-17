@@ -1253,6 +1253,7 @@ public partial class MainWindow : Form {
 
             try {
                 await using (var tempFile = File.Create(tempFilename)) {
+                    currentBinaryFile.Stream.Reset();
                     await currentBinaryFile.Stream.MemoryStream.CopyToAsync(tempFile, cts.Token);
                 }
                 await currentFolder.CopyFiles(new[] { tempFilename }, new[] { newFilename }, ShowConfirmationPrompt, cts.Token, progress);

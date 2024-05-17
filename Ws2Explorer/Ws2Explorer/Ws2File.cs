@@ -141,7 +141,8 @@ public class Ws2File : BinaryFile, IFolder {
         }
 
         if (to[0] != DECOMPILATION_FILENAME &&
-            to[0] != TEXT_FILENAME)
+            to[0] != TEXT_FILENAME &&
+            to[0] != NAMES_FILENAME)
         {
             throw new InvalidOperationException("Copy destination is invalid");
         }
@@ -157,6 +158,9 @@ public class Ws2File : BinaryFile, IFolder {
                 break;
             case TEXT_FILENAME:
                 await UpdateText(binaryFile.Stream, ct, progress);
+                break;
+            case NAMES_FILENAME:
+                await UpdateNames(binaryFile.Stream, ct, progress);
                 break;
             default:
                 throw new InvalidOperationException();
@@ -176,6 +180,18 @@ public class Ws2File : BinaryFile, IFolder {
         var text = textFile.GetText(textFile.SuggestedEncoding!)
             .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         await ReplaceText(text, ct, progress);
+    }
+
+    private async Task UpdateNames(BinaryStream newData, CancellationToken ct, ITaskProgress? progress) {
+        var namesFile = AsText(null, "", newData);
+        var names = namesFile.GetText(namesFile.SuggestedEncoding!)
+            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var currentNames = CharacterNames.Where(name => name.Length > 0).ToArray();
+        if (names.Length != currentNames.Length) {
+            throw new InvalidDataException($"Number of lines does not match number of character names. Expected {currentNames.Length}, got {names.Length}");
+        }
+        var replacements = currentNames.Zip(names).ToDictionary(pair => pair.First, pair => pair.Second);
+        await ReplaceCharacterNames(replacements, ct, progress);
     }
 
     private async Task RebuildStream(List<IOpcode> opcodes, CancellationToken ct, ITaskProgress? progress) {

@@ -88,8 +88,6 @@ public class Program {
         WriteOutput("  decompile <ws2_file> <output_path>    Decompile a ws2 file.");
         WriteOutput("  compile <code_file> <output_path> <v1|v2|v3|v4> [-e]");
         WriteOutput("                                        Compile a ws2 file using the given ws2 version (optionally with encryption).");
-        WriteOutput("");
-        WriteOutput("To edit names and choices, decompilation along with find and replace using an external text editor is recommended.");
     }
 
     private void PrintWorkingDirectory() {

@@ -57,6 +57,7 @@ CHANGES = {
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: python patch_font.py <original.exe> <output.exe>")
+        exit()
     
     original_exe = sys.argv[1]
     output_exe = sys.argv[2]

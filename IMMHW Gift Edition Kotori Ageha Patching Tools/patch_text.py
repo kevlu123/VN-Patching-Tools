@@ -33,7 +33,7 @@ def patch_file(data: bytearray, patch: dict, names: dict):
     candidates = []
     for n, section in enumerate(sections):
         end = sections[n + 1] if n + 1 < len(sections) else len(data)
-        if data.find(patch[1]["jp"].encode("utf-8"), section, end) != -1:
+        if data.find(patch[5]["jp"].encode("utf-8"), section, end) != -1:
             candidates.append(section)
 
     if len(candidates) != 1:

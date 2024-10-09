@@ -1,0 +1,522 @@
+[
+    {
+        "offset": 1349,
+        "size": 51,
+        "name_offset": 1317,
+        "name": "【碧】",
+        "jp": "「……帰ってきたって感じがするな」",
+        "text": "\"It really feels like I'm back\"."
+    },
+    {
+        "offset": 1558,
+        "size": 57,
+        "name_offset": 0,
+        "name": "",
+        "jp": "１年ぶりに立つ、トビウオ荘のキッチン。",
+        "text": "It has been one year since I stood in the kitchen of the Flying Fish Manor."
+    },
+    {
+        "offset": 1773,
+        "size": 39,
+        "name_offset": 0,
+        "name": "",
+        "jp": "懐かしさがこみ上げてくる。",
+        "text": "Nostalgia welled up inside of me."
+    },
+    {
+        "offset": 1970,
+        "size": 180,
+        "name_offset": 0,
+        "name": "",
+        "jp": "ここで毎日、寮生の食事を作っていた。女子寮という、男にとってアウェイな環境で、ここだけは寮母である俺のテリトリーだった。",
+        "text": "I made the dorm students' meals every day here. As a man in the alien environment of a female dormitory, this was my only territory."
+    },
+    {
+        "offset": 2351,
+        "size": 45,
+        "name_offset": 2319,
+        "name": "【碧】",
+        "jp": "「感慨に浸ってる時間はないぞ」",
+        "text": "\"I don't have time to get all emotional.\""
+    },
+    {
+        "offset": 2554,
+        "size": 39,
+        "name_offset": 0,
+        "name": "",
+        "jp": "さっそく仕事に取りかかる。",
+        "text": "I immediately began work."
+    },
+    {
+        "offset": 2751,
+        "size": 108,
+        "name_offset": 0,
+        "name": "",
+        "jp": "今日のバカンスのため、みんなの弁当をここで作らせてもらう事になっていた。",
+        "text": "For today's break, everyone let me make their bentos for them."
+    },
+    {
+        "offset": 3017,
+        "size": 147,
+        "name_offset": 0,
+        "name": "",
+        "jp": "もちろん、許可はもらっている。ほとんどの寮生は帰省しているので、男の俺が入っても問題はないそうだ。",
+        "text": "Of course, I got permission to do it here. Most of the dorm students are gone so there shouldn't be any problem with a man being here."
+    },
+    {
+        "offset": 3541,
+        "size": 42,
+        "name_offset": 0,
+        "name": "",
+        "jp": "てきぱきと調理を進めていく。",
+        "text": "I quickly continued cooking."
+    },
+    {
+        "offset": 4021,
+        "size": 18,
+        "name_offset": 3983,
+        "name": "【ハット】",
+        "jp": "「ガァガァ」",
+        "text": "\"Quack, quack!\""
+    },
+    {
+        "offset": 4240,
+        "size": 91,
+        "name_offset": 4208,
+        "name": "【碧】",
+        "jp": "「なんだ腹が減ってるのか？しょうがないな、少しだけだぞ」",
+        "text": "What is it? Are you hungry? Oh well, just a little bit then."
+    },
+    {
+        "offset": 4521,
+        "size": 48,
+        "name_offset": 0,
+        "name": "",
+        "jp": "材料のキュウリを切り分けてやる。",
+        "text": "I cut up a piece of cucumber."
+    },
+    {
+        "offset": 4837,
+        "size": 18,
+        "name_offset": 4799,
+        "name": "【ハット】",
+        "jp": "「ガフガフ」",
+        "text": "\"Quack, quack!\""
+    },
+    {
+        "offset": 5123,
+        "size": 21,
+        "name_offset": 5085,
+        "name": "【ハット】",
+        "jp": "「……グワ？」",
+        "text": "\"...Quack?\""
+    },
+    {
+        "offset": 5302,
+        "size": 69,
+        "name_offset": 0,
+        "name": "",
+        "jp": "美味そうに食べていたハットが、急に首を上げた。",
+        "text": "Hat, enjoying his food, suddenly raised his neck."
+    },
+    {
+        "offset": 5572,
+        "size": 27,
+        "name_offset": 5540,
+        "name": "【碧】",
+        "jp": "「どうしたんだ？」",
+        "text": "\"What's up?\""
+    },
+    {
+        "offset": 6009,
+        "size": 18,
+        "name_offset": 5971,
+        "name": "【ハット】",
+        "jp": "「ガァガァ」",
+        "text": "\"Quack, quack!\""
+    },
+    {
+        "offset": 6349,
+        "size": 36,
+        "name_offset": 6317,
+        "name": "【碧】",
+        "jp": "「おい、どこいくんだっ」",
+        "text": "\"Hey, where are you going?\""
+    },
+    {
+        "offset": 6965,
+        "size": 111,
+        "name_offset": 0,
+        "name": "",
+        "jp": "ハットが居なくなってすぐ、聞き覚えのあるエンジン音が、外から聞こえてきた。",
+        "text": "As soon as Hat disappeared, I heard the sound of a familiar engine coming from outside."
+    },
+    {
+        "offset": 7813,
+        "size": 21,
+        "name_offset": 7775,
+        "name": "【ハット】",
+        "jp": "「ガァガァ！」",
+        "text": "\"Quack, quack!\""
+    },
+    {
+        "offset": 8495,
+        "size": 24,
+        "name_offset": 8448,
+        "name": "【麗しの美少女】",
+        "jp": "「あら、ハット」",
+        "text": "\"Huh, Hat!\""
+    },
+    {
+        "offset": 8796,
+        "size": 79,
+        "name_offset": 8749,
+        "name": "【麗しの美少女】",
+        "jp": "「どうしたのあんた。お出迎えしに来てくれたの？」",
+        "text": "\"What are you doing? Did you come to meet me?\""
+    },
+    {
+        "offset": 9082,
+        "size": 30,
+        "name_offset": 9044,
+        "name": "【ハット】",
+        "jp": "「クワァ～～～～♪」",
+        "text": "\"Quaa~~~~\""
+    },
+    {
+        "offset": 9389,
+        "size": 55,
+        "name_offset": 9342,
+        "name": "【麗しの美少女】",
+        "jp": "「ふふふ、よしよし。えらいわね」",
+        "text": "\"Fufufu, there, there. Good boy.\""
+    },
+    {
+        "offset": 9645,
+        "size": 12,
+        "name_offset": 9613,
+        "name": "【碧】",
+        "jp": "「小鳥」",
+        "text": "\"Kotori.\""
+    },
+    {
+        "offset": 9934,
+        "size": 9,
+        "name_offset": 9887,
+        "name": "【麗しの美少女】",
+        "jp": "「？」",
+        "text": "\"?\""
+    },
+    {
+        "offset": 10101,
+        "size": 66,
+        "name_offset": 0,
+        "name": "",
+        "jp": "アヒルと戯れていた麗しの美少女が顔をあげた。",
+        "text": "The girl who was playing with the duck raised her head."
+    },
+    {
+        "offset": 10968,
+        "size": 9,
+        "name_offset": 10933,
+        "name": "【小鳥】",
+        "jp": "「碧」",
+        "text": "\"Aoi.\""
+    },
+    {
+        "offset": 11395,
+        "size": 78,
+        "name_offset": 0,
+        "name": "",
+        "jp": "美少女はアヒルを放り捨てて、俺の方へ駆け寄ってきた。",
+        "text": "The girl left the duck and headed towards my direction."
+    },
+    {
+        "offset": 11786,
+        "size": 15,
+        "name_offset": 11751,
+        "name": "【小鳥】",
+        "jp": "「っとと」",
+        "text": "\"Wooah.\""
+    },
+    {
+        "offset": 12334,
+        "size": 15,
+        "name_offset": 12302,
+        "name": "【碧】",
+        "jp": "「おっと」",
+        "text": "\"Whoops.\""
+    },
+    {
+        "offset": 12507,
+        "size": 93,
+        "name_offset": 0,
+        "name": "",
+        "jp": "杖をつきながら走ったせいで、転びそうになった小鳥を抱き留めた。",
+        "text": "I caught Kotori who nearly fell because she tried to run while holding onto her cane."
+    },
+    {
+        "offset": 12865,
+        "size": 27,
+        "name_offset": 12830,
+        "name": "【小鳥】",
+        "jp": "「ナイスキャッチ」",
+        "text": "\"Nice catch.\""
+    },
+    {
+        "offset": 13050,
+        "size": 69,
+        "name_offset": 0,
+        "name": "",
+        "jp": "小鳥はそのまま俺に体重を預けて抱きついてきた。",
+        "text": "Kotori shifted her weight onto me and clung onto me."
+    },
+    {
+        "offset": 13384,
+        "size": 33,
+        "name_offset": 13349,
+        "name": "【小鳥】",
+        "jp": "「ぬふふ～～すりすり」",
+        "text": "Nufufu~~, rub, rub."
+    },
+    {
+        "offset": 13911,
+        "size": 60,
+        "name_offset": 0,
+        "name": "",
+        "jp": "停まっていた車がクラクションを鳴らした。",
+        "text": "The stopped car beeped its horn."
+    },
+    {
+        "offset": 14355,
+        "size": 45,
+        "name_offset": 0,
+        "name": "",
+        "jp": "運転席の女性が窓から顔を出す。",
+        "text": "The girl in the driver seat stuck her head out of the window."
+    },
+    {
+        "offset": 14735,
+        "size": 76,
+        "name_offset": 14697,
+        "name": "【ひばり】",
+        "jp": "「じゃあね小鳥ちゃん。バカンス楽しんで来てね」",
+        "text": "\"Bye Kotori chan. Enjoy your break.\""
+    },
+    {
+        "offset": 15015,
+        "size": 45,
+        "name_offset": 14980,
+        "name": "【小鳥】",
+        "jp": "「うん、ありがとうお姉ちゃん」",
+        "text": "Yeah, thanks Hibari chan."
+    },
+    {
+        "offset": 15474,
+        "size": 132,
+        "name_offset": 0,
+        "name": "",
+        "jp": "小鳥を抱き留めたまま会釈すると、ひばりさんも会釈を返して、手を振ってから車を発進させた。",
+        "text": "I bowed slightly while holding onto Kotori. After bowing back and waving, Hibari san started the car."
+    },
+    {
+        "offset": 16131,
+        "size": 69,
+        "name_offset": 16099,
+        "name": "【碧】",
+        "jp": "「ひばりさんも、少し休んでいけばよかったのに」",
+        "text": "\"It would have been nice if Hibari san had some rest too.\""
+    },
+    {
+        "offset": 16465,
+        "size": 66,
+        "name_offset": 16430,
+        "name": "【小鳥】",
+        "jp": "「みんなの水入らずを邪魔したくないんだって」",
+        "text": "\"She said she didn't want to disturb everyone.\""
+    },
+    {
+        "offset": 16689,
+        "size": 57,
+        "name_offset": 0,
+        "name": "",
+        "jp": "相変わらず甲斐甲斐しいお姉さんだった。",
+        "text": "She was a devoted sister as usual."
+    },
+    {
+        "offset": 17739,
+        "size": 33,
+        "name_offset": 17704,
+        "name": "【小鳥】",
+        "jp": "「みんなはまだなの？」",
+        "text": "\"Is everyone here yet?\""
+    },
+    {
+        "offset": 17973,
+        "size": 109,
+        "name_offset": 17941,
+        "name": "【碧】",
+        "jp": "「俺が一番乗りで、次が小鳥かな。あげはは近所だし、そのうち来るだろ」",
+        "text": "\"I was the first to arrive, then you were next. Ageha lives nearby so she should be here soon.\""
+    },
+    {
+        "offset": 18347,
+        "size": 66,
+        "name_offset": 18312,
+        "name": "【小鳥】",
+        "jp": "「天音ちゃんからは結局、返事がなかったわね」",
+        "text": "I didn't get a reply from Amane chan in the end."
+    },
+    {
+        "offset": 18614,
+        "size": 185,
+        "name_offset": 18582,
+        "name": "【碧】",
+        "jp": "「まあ、あの人は忙しいから。今もアメリカにいるのか日本にいるのか、はたまた地球の裏側にいるのかも分からんからなぁ」",
+        "text": "Well, she's a busy person. She could be in America or Japan, or even the other side of the world at this moment."
+    },
+    {
+        "offset": 19094,
+        "size": 85,
+        "name_offset": 19059,
+        "name": "【小鳥】",
+        "jp": "「くんくん……いい匂いがする。これはタマゴ焼きね！」",
+        "text": "\"Kun, kun... it smells good. Tamagoyaki?\""
+    },
+    {
+        "offset": 19380,
+        "size": 57,
+        "name_offset": 19348,
+        "name": "【碧】",
+        "jp": "「ご明察。みんなの弁当を作ってたんだ」",
+        "text": "\"You're very sharp. I was making everyone's bentos.\""
+    },
+    {
+        "offset": 19732,
+        "size": 130,
+        "name_offset": 19697,
+        "name": "【小鳥】",
+        "jp": "「わーい、碧のタマゴ焼きはふわっふわで、ちょっぴりダシが効いてて美味しいのよね～」",
+        "text": "\"Yay~, your tamagoyaki is so fluffy and the bit of dashi is really effective.\""
+    },
+    {
+        "offset": 20458,
+        "size": 158,
+        "name_offset": 20423,
+        "name": "【天音】",
+        "jp": "「はぐはぐ、もぐもぐ……うむ、そうか、ダシが効いてるから美味しいのか。なるほどなぁ……もぐもぐ」",
+        "text": "\"Haguhagu, mogumogu... um, so it's the dashi that makes it taste so good. I see... mogumogu.\""
+    },
+    {
+        "offset": 21195,
+        "size": 18,
+        "name_offset": 21160,
+        "name": "【小鳥】",
+        "jp": "「…………」",
+        "text": "\"...\""
+    },
+    {
+        "offset": 21802,
+        "size": 51,
+        "name_offset": 21767,
+        "name": "【小鳥】",
+        "jp": "「……って、天音ちゃんっっ！！？」",
+        "text": "\"...Amane chan!!?\""
+    },
+    {
+        "offset": 22478,
+        "size": 88,
+        "name_offset": 22443,
+        "name": "【天音】",
+        "jp": "「やぁ、小鳥、碧くん。先にいただいてるよ……もぐもぐ」",
+        "text": "\"Kotori, Aoi kun. I'll be eating first... mogumogu.\""
+    },
+    {
+        "offset": 23013,
+        "size": 124,
+        "name_offset": 22978,
+        "name": "【小鳥】",
+        "jp": "「って、コラー！　それはみんなのお昼ご飯でしょうがっ！今食べちゃダメなヤツ！」",
+        "text": "\"Hey! That's everyone's lunch! You can't eat that now.\""
+    },
+    {
+        "offset": 23432,
+        "size": 24,
+        "name_offset": 23397,
+        "name": "【天音】",
+        "jp": "「そうなのか？」",
+        "text": "\"Oh is it?\""
+    },
+    {
+        "offset": 23751,
+        "size": 103,
+        "name_offset": 23716,
+        "name": "【天音】",
+        "jp": "「いい匂いだったからつい。朝ご飯じゃなかったんだな……もぐもぐ」",
+        "text": "\"It just smelled too good. I didn't have breakfast... mogumogu.\""
+    },
+    {
+        "offset": 24301,
+        "size": 39,
+        "name_offset": 24266,
+        "name": "【小鳥】",
+        "jp": "「そう言いながら食うなっ」",
+        "text": "\"Don't keep eating while you say that.\""
+    },
+    {
+        "offset": 25009,
+        "size": 36,
+        "name_offset": 24971,
+        "name": "【イスカ】",
+        "jp": "「なになにどうしたの？」",
+        "text": "\"What's going on?\""
+    },
+    {
+        "offset": 25246,
+        "size": 48,
+        "name_offset": 25214,
+        "name": "【碧】",
+        "jp": "「あ、イスカさん、いらっしゃい」",
+        "text": "\"Ah, Isuka san, hello.\""
+    },
+    {
+        "offset": 26037,
+        "size": 109,
+        "name_offset": 25999,
+        "name": "【イスカ】",
+        "jp": "「天音、あんたまた盗み食いしたの？朝ご飯、来る前に食べたでしょうが」",
+        "text": "\"Amane, are you stealing food again? You had breakfast before you came didn't you?\""
+    },
+    {
+        "offset": 26441,
+        "size": 45,
+        "name_offset": 26406,
+        "name": "【天音】",
+        "jp": "「……いい匂いだったからつい」",
+        "text": "\"It just smelled too good.\""
+    },
+    {
+        "offset": 26687,
+        "size": 103,
+        "name_offset": 26655,
+        "name": "【碧】",
+        "jp": "「タマゴ焼きなら、材料も余ってるし、すぐ作れるんで大丈夫ですよ」",
+        "text": "\"If it's tamagoyaki, I've got leftover ingredients. I can quickly make some more so it's fine.\""
+    },
+    {
+        "offset": 27085,
+        "size": 39,
+        "name_offset": 27050,
+        "name": "【小鳥】",
+        "jp": "「やれやれだわ、ほんとに」",
+        "text": "\"Awful.\""
+    },
+    {
+        "offset": 27282,
+        "size": 120,
+        "name_offset": 0,
+        "name": "",
+        "jp": "小鳥もプンプン怒った顔はしつつも、天音先輩が来てくれた事を喜んでるみたいだった。",
+        "text": "Despite making an angry face, Kotori seemed happy that Amane senpai was able to make it."
+    }
+]

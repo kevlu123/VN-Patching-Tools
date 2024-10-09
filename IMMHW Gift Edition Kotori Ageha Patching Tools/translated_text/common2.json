@@ -1,0 +1,306 @@
+[
+    {
+        "offset": 1246,
+        "size": 42,
+        "name_offset": 1208,
+        "name": "【あげは】",
+        "jp": "「小鳥～～～～～～～！！！」",
+        "text": "\"Kotori~~~~~~~!!!\""
+    },
+    {
+        "offset": 1954,
+        "size": 42,
+        "name_offset": 1919,
+        "name": "【小鳥】",
+        "jp": "「あげはーーーーーー！！！」",
+        "text": "\"Ageha------!!!\""
+    },
+    {
+        "offset": 2620,
+        "size": 81,
+        "name_offset": 0,
+        "name": "",
+        "jp": "再会した親友同士が、キッチンの真ん中でひしと抱き合う。",
+        "text": "The reunited best friends hugged each other tightly in the middle of the kitchen."
+    },
+    {
+        "offset": 3180,
+        "size": 51,
+        "name_offset": 3142,
+        "name": "【あげは】",
+        "jp": "「ひさしぶりだねぇ、元気だった？」",
+        "text": "\"I haven't seen you in such a long time. How have you been?\""
+    },
+    {
+        "offset": 3526,
+        "size": 30,
+        "name_offset": 3491,
+        "name": "【小鳥】",
+        "jp": "「うん、元気元気！」",
+        "text": "\"I've been great!\""
+    },
+    {
+        "offset": 4403,
+        "size": 69,
+        "name_offset": 4368,
+        "name": "【亜紗】",
+        "jp": "「わぁ～、せんぱいたちがトビウオ荘にいるよぉ」",
+        "text": "\"Woah, everyone's in the Flying Fish Manor.\""
+    },
+    {
+        "offset": 4737,
+        "size": 78,
+        "name_offset": 4702,
+        "name": "【依瑠】",
+        "jp": "「夏休みで静かだったのが、一気に騒がしくなったわね」",
+        "text": "\"The summer break was quiet but it's become so lively all of a sudden.\""
+    },
+    {
+        "offset": 5019,
+        "size": 91,
+        "name_offset": 4984,
+        "name": "【小鳥】",
+        "jp": "「ごきげんよう、ふたごシスターズ。相変わらずそっくりね」",
+        "text": "\"Hello twin sisters. Always together.\""
+    },
+    {
+        "offset": 6043,
+        "size": 121,
+        "name_offset": 6005,
+        "name": "【あげは】",
+        "jp": "「天音先輩、お久しぶりです。ご活躍はかねがね、テレビとかで拝見しております」",
+        "text": "\"Amane senpai, long time no see. I see you've been up to things for a while. I've been watching you on TV.\""
+    },
+    {
+        "offset": 6459,
+        "size": 109,
+        "name_offset": 6424,
+        "name": "【天音】",
+        "jp": "「もぐもぐ……うん、久しぶりだなぁ。元気そうでなにより……もぐもぐ」",
+        "text": "\"Mogumogu... yeah it's been a while. Most importantly, you seem like you've been doing well... mogumogu.\""
+    },
+    {
+        "offset": 6836,
+        "size": 48,
+        "name_offset": 6798,
+        "name": "【イスカ】",
+        "jp": "「あんた、いつまで食べてるのよ」",
+        "text": "\"How long are you going to be eating for?\""
+    },
+    {
+        "offset": 7675,
+        "size": 39,
+        "name_offset": 7643,
+        "name": "【碧】",
+        "jp": "「霧乃さんはどうしたの？」",
+        "text": "\"How is Kirino san?\""
+    },
+    {
+        "offset": 7979,
+        "size": 48,
+        "name_offset": 7944,
+        "name": "【亜紗】",
+        "jp": "「夏休みなので、家に帰ってます」",
+        "text": "\"It's the summer break so she's gone back home.\""
+    },
+    {
+        "offset": 8322,
+        "size": 57,
+        "name_offset": 8287,
+        "name": "【依瑠】",
+        "jp": "「寮に残ってるのは、わたしらだけです」",
+        "text": "\"It's just us left in the dormitory.\""
+    },
+    {
+        "offset": 8537,
+        "size": 168,
+        "name_offset": 0,
+        "name": "",
+        "jp": "そうか。霧乃さんや晴海にも会いたかったが。まあ、休暇は今日だけじゃないから、予定が合えば顔くらい見られるだろう。",
+        "text": "I wanted to see Kirino san and Harumi but oh well. The break isn't just today so if my schedule allows I should still be able to see their faces."
+    },
+    {
+        "offset": 9552,
+        "size": 54,
+        "name_offset": 9517,
+        "name": "【小鳥】",
+        "jp": "「ねえねえあげは、水着どうしたの？」",
+        "text": "\"Hey Ageha, how's your swimsuit?\""
+    },
+    {
+        "offset": 9904,
+        "size": 76,
+        "name_offset": 9866,
+        "name": "【あげは】",
+        "jp": "「去年のがキツくなってたから、新しいの買った」",
+        "text": "\"The one from last year got a bit tight so I bought a new one.\""
+    },
+    {
+        "offset": 10755,
+        "size": 63,
+        "name_offset": 10720,
+        "name": "【小鳥】",
+        "jp": "「むむ……確かに、また少し成長してるわね」",
+        "text": "\"Mumu... surely, it's still growing.\""
+    },
+    {
+        "offset": 10976,
+        "size": 99,
+        "name_offset": 0,
+        "name": "",
+        "jp": "小鳥があげはの胸元をじとっと見つめながら言う。心なしか羨ましげだ。",
+        "text": "Kotori says while staring at Ageha's chest. She seemed jealous for some reason."
+    },
+    {
+        "offset": 11915,
+        "size": 30,
+        "name_offset": 11877,
+        "name": "【あげは】",
+        "jp": "「そういう小鳥は？」",
+        "text": "\"What about you?\""
+    },
+    {
+        "offset": 12278,
+        "size": 39,
+        "name_offset": 12243,
+        "name": "【小鳥】",
+        "jp": "「わ、私はね……まだ秘密」",
+        "text": "\"I... it's still a secret.\""
+    },
+    {
+        "offset": 12615,
+        "size": 36,
+        "name_offset": 12577,
+        "name": "【あげは】",
+        "jp": "「えー、教えなさいよー」",
+        "text": "\"Eh, tell me.\""
+    },
+    {
+        "offset": 12984,
+        "size": 60,
+        "name_offset": 12949,
+        "name": "【小鳥】",
+        "jp": "「うー、じゃあこっそり見せっこしよっか」",
+        "text": "\"Fine, let's show each other in secret.\""
+    },
+    {
+        "offset": 13342,
+        "size": 39,
+        "name_offset": 13304,
+        "name": "【あげは】",
+        "jp": "「碧ー、脱衣所借りるねー」",
+        "text": "\"Aoi, we're borrowing the bathroom.\""
+    },
+    {
+        "offset": 14042,
+        "size": 51,
+        "name_offset": 14010,
+        "name": "【碧】",
+        "jp": "「いや、俺に言われても困るんだが」",
+        "text": "\"You don't need to tell me.\""
+    },
+    {
+        "offset": 14251,
+        "size": 30,
+        "name_offset": 0,
+        "name": "",
+        "jp": "もう寮母じゃないし。",
+        "text": "I'm not the dorm mother anymore."
+    },
+    {
+        "offset": 15076,
+        "size": 24,
+        "name_offset": 15038,
+        "name": "【イスカ】",
+        "jp": "「なになにー？」",
+        "text": "\"What's going on?\""
+    },
+    {
+        "offset": 15395,
+        "size": 42,
+        "name_offset": 15360,
+        "name": "【亜紗】",
+        "jp": "「水着の見せっこするみたい」",
+        "text": "\"It looks like they're showing each other their swimsuits.\""
+    },
+    {
+        "offset": 16047,
+        "size": 45,
+        "name_offset": 16012,
+        "name": "【依瑠】",
+        "jp": "「先輩はのぞいちゃダメですよ」",
+        "text": "\"No peeking, senpai.\""
+    },
+    {
+        "offset": 16492,
+        "size": 24,
+        "name_offset": 16460,
+        "name": "【碧】",
+        "jp": "「やれやれ……」",
+        "text": "\"Oh well...\""
+    },
+    {
+        "offset": 16674,
+        "size": 57,
+        "name_offset": 0,
+        "name": "",
+        "jp": "この女所帯に囲まれてる感じも懐かしい。",
+        "text": "Being in this female household felt nostalgic."
+    },
+    {
+        "offset": 17498,
+        "size": 48,
+        "name_offset": 17463,
+        "name": "【天音】",
+        "jp": "「？　みんなどこ行ったんだー？」",
+        "text": "\"Huh? Where did everyone go?\""
+    },
+    {
+        "offset": 17747,
+        "size": 179,
+        "name_offset": 17715,
+        "name": "【碧】",
+        "jp": "「ここに色気より食い気の人が。どうぞ先輩は、朝食の続きを堪能してください。今、コーヒーのおかわり入れますから」",
+        "text": "\"Here we have someone who cares more about food than looks. Go ahead senpai, please have some more. I'll pour you some coffee.\""
+    },
+    {
+        "offset": 18191,
+        "size": 18,
+        "name_offset": 18156,
+        "name": "【天音】",
+        "jp": "「わーい♪」",
+        "text": "\"Yay~\""
+    },
+    {
+        "offset": 19067,
+        "size": 108,
+        "name_offset": 0,
+        "name": "",
+        "jp": "今日はバカンス。元ソアリング部のメンバーと、夏を満喫するために集まった。",
+        "text": "\"For today's break, I gathered with the ex-soaring club members to enjoy the summer.\""
+    },
+    {
+        "offset": 19333,
+        "size": 36,
+        "name_offset": 0,
+        "name": "",
+        "jp": "となれば、やる事は一つ。",
+        "text": "For one thing."
+    },
+    {
+        "offset": 20010,
+        "size": 84,
+        "name_offset": 0,
+        "name": "",
+        "jp": "湖の片隅。崖に囲まれて周囲からは見えない、秘密のビーチ。",
+        "text": "The corner of the lake, enclosed by the cliff and hidden from view, our secret beach."
+    },
+    {
+        "offset": 20252,
+        "size": 102,
+        "name_offset": 0,
+        "name": "",
+        "jp": "恵風学園にいた頃から、夏休みになるとここへ泳ぎに来るのが定番だった。",
+        "text": "Since our time at Keifuu academy, we would come here to swim every summer break."
+    }
+]

@@ -1,0 +1,378 @@
+[
+    {
+        "offset": 1010,
+        "size": 87,
+        "name_offset": 0,
+        "name": "",
+        "jp": "トビウオ荘の玄関のドアのガタつきを、ゆらしてみて確かめる。",
+        "text": "I shook the front door of the Flying Fish Manor."
+    },
+    {
+        "offset": 1298,
+        "size": 112,
+        "name_offset": 1266,
+        "name": "【碧】",
+        "jp": "「うーん……こいつは修理が必要だな。しかしこれ、どういう構造なんだ？」",
+        "text": "\"Yeah... this needs repairing. But how was this door constructed?\""
+    },
+    {
+        "offset": 1968,
+        "size": 100,
+        "name_offset": 1933,
+        "name": "【亜紗】",
+        "jp": "「すいません、到着して早々、こんな用事を押しつけちゃって……」",
+        "text": "\"Sorry that we made you do this as soon as you arrived.\""
+    },
+    {
+        "offset": 2365,
+        "size": 115,
+        "name_offset": 2330,
+        "name": "【依瑠】",
+        "jp": "「もう寿命なんでしょうけど、造りが古いせいでおいそれと修理も頼めなくて」",
+        "text": "\"It's already at the end of its life. It's so old, it's probably not easy to fix.\""
+    },
+    {
+        "offset": 2638,
+        "size": 180,
+        "name_offset": 0,
+        "name": "",
+        "jp": "トビウオ荘は、元は資産家が暮らしていた古い洋館だった。ゆえにオーダーメイドの部分が多く、修理にも特殊な技術が必要だった。",
+        "text": "Flying Fish Manor was originally an old Western house where wealthy people lived so there were lots of made-to-order parts. Repairs would require special skills."
+    },
+    {
+        "offset": 2976,
+        "size": 54,
+        "name_offset": 0,
+        "name": "",
+        "jp": "寮母をやっていた頃、それで苦労した。",
+        "text": "That was one of the pains when I was the dorm mother."
+    },
+    {
+        "offset": 3826,
+        "size": 30,
+        "name_offset": 3782,
+        "name": "【忍び寄る影】",
+        "jp": "「そろりそろり……」",
+        "text": "\"Sneaky... sneaky...\""
+    },
+    {
+        "offset": 4214,
+        "size": 9,
+        "name_offset": 4179,
+        "name": "【亜紗】",
+        "jp": "「あ」",
+        "text": "\"Ah.\""
+    },
+    {
+        "offset": 4817,
+        "size": 27,
+        "name_offset": 4773,
+        "name": "【忍び寄る影】",
+        "jp": "「おりゃーーーー」",
+        "text": "\"Hiiyaa----\""
+    },
+    {
+        "offset": 5448,
+        "size": 27,
+        "name_offset": 5416,
+        "name": "【碧】",
+        "jp": "「どわあっ！！？」",
+        "text": "\"Waaa!!?\""
+    },
+    {
+        "offset": 5633,
+        "size": 63,
+        "name_offset": 0,
+        "name": "",
+        "jp": "いきなり後ろから、誰かがのしかかってきた。",
+        "text": "Suddenly, someone clung onto me from behind."
+    },
+    {
+        "offset": 5854,
+        "size": 66,
+        "name_offset": 0,
+        "name": "",
+        "jp": "ぽよんと背中に押しつけられる、柔らかな感触。",
+        "text": "A soft sensation pressed my back."
+    },
+    {
+        "offset": 6414,
+        "size": 27,
+        "name_offset": 6376,
+        "name": "【あげは】",
+        "jp": "「おっす、碧～～」",
+        "text": "\"Hey Aoi~~\""
+    },
+    {
+        "offset": 6642,
+        "size": 18,
+        "name_offset": 6610,
+        "name": "【碧】",
+        "jp": "「あげはっ」",
+        "text": "\"Ageha!\""
+    },
+    {
+        "offset": 6958,
+        "size": 39,
+        "name_offset": 6920,
+        "name": "【あげは】",
+        "jp": "「ナマ碧だ～～、わーーい」",
+        "text": "\"Aoi~~, waai.\""
+    },
+    {
+        "offset": 7295,
+        "size": 48,
+        "name_offset": 7257,
+        "name": "【あげは】",
+        "jp": "「クンクン……おわっ、汗くさっ」",
+        "text": "\"Sniff... sniff... it smells like sweat.\""
+    },
+    {
+        "offset": 7544,
+        "size": 91,
+        "name_offset": 7512,
+        "name": "【碧】",
+        "jp": "「しょうがないだろ、ここまで自転車で帰ってきたんだから」",
+        "text": "\"It's because I rode my bike all the way here.\""
+    },
+    {
+        "offset": 7793,
+        "size": 66,
+        "name_offset": 0,
+        "name": "",
+        "jp": "汗を拭く前に、玄関の補修を頼まれてしまった。",
+        "text": "I was asked to repair the front door before I had a chance to wipe away my sweat."
+    },
+    {
+        "offset": 8157,
+        "size": 39,
+        "name_offset": 8119,
+        "name": "【あげは】",
+        "jp": "「ええーー、東京から！？」",
+        "text": "\"Huh, all the way from Tokyo!?\""
+    },
+    {
+        "offset": 8397,
+        "size": 85,
+        "name_offset": 8365,
+        "name": "【碧】",
+        "jp": "「驚くほどの距離じゃないぞ。まあ、時間はかかったが」",
+        "text": "\"It's not a distance to be surprised about. Well, it did take some time though.\""
+    },
+    {
+        "offset": 8640,
+        "size": 57,
+        "name_offset": 0,
+        "name": "",
+        "jp": "そのせいで早起きしなきゃいけなかった。",
+        "text": "Because of that, I had to get up early."
+    },
+    {
+        "offset": 8995,
+        "size": 88,
+        "name_offset": 8957,
+        "name": "【あげは】",
+        "jp": "「ふーん……くんくん……にひひ、でも男の子の匂いだ♪」",
+        "text": "\"Kun, kun..., but it's the smell of a boy.\""
+    },
+    {
+        "offset": 9284,
+        "size": 79,
+        "name_offset": 9252,
+        "name": "【碧】",
+        "jp": "「いつまでくっついてるんだ？汗の匂いがうつるぞ」",
+        "text": "\"How long are you going to be holding onto me? The smell of sweat will stick to you.\""
+    },
+    {
+        "offset": 9661,
+        "size": 66,
+        "name_offset": 9623,
+        "name": "【あげは】",
+        "jp": "「だってー、久しぶりなんだもん、直接会うの」",
+        "text": "\"But it's been so long since we've met in person.\""
+    },
+    {
+        "offset": 10530,
+        "size": 91,
+        "name_offset": 10495,
+        "name": "【亜紗】",
+        "jp": "「先週、どこかへ遊びに出かけたって言ってませんでした？」",
+        "text": "\"Didn't you say you were going to hang out somewhere last week.\""
+    },
+    {
+        "offset": 10889,
+        "size": 52,
+        "name_offset": 10851,
+        "name": "【あげは】",
+        "jp": "「そう、先週。もう一週間も前」",
+        "text": "\"Yeah, it's been a whole week.\""
+    },
+    {
+        "offset": 11239,
+        "size": 54,
+        "name_offset": 11201,
+        "name": "【あげは】",
+        "jp": "「学生の頃はさ、毎日会ってたのにね」",
+        "text": "\"When we were students, we met every day.\""
+    },
+    {
+        "offset": 11512,
+        "size": 129,
+        "name_offset": 0,
+        "name": "",
+        "jp": "それぞれ就職し、住んでる場所も違う。とはいえ、無理すれば自転車でこられる程度の距離だ。",
+        "text": "Everyone had jobs, and we lived in different places. Though it was a distance I could travel on my bike if I really tried."
+    },
+    {
+        "offset": 11988,
+        "size": 63,
+        "name_offset": 11950,
+        "name": "【あげは】",
+        "jp": "「ところで、こんなところでなにしてんの？」",
+        "text": "\"By the way, what are you doing?\""
+    },
+    {
+        "offset": 12346,
+        "size": 82,
+        "name_offset": 12311,
+        "name": "【依瑠】",
+        "jp": "「玄関の立て付けが悪いので、見てもらってたんです」",
+        "text": "\"The door fittings were damaged so Aoi's having a look at it.\""
+    },
+    {
+        "offset": 12723,
+        "size": 63,
+        "name_offset": 12688,
+        "name": "【亜紗】",
+        "jp": "「ガタガタするし、重くて開け閉めが大変で」",
+        "text": "\"It was rattling, and opening and closing it was difficult.\""
+    },
+    {
+        "offset": 13310,
+        "size": 66,
+        "name_offset": 13278,
+        "name": "【碧】",
+        "jp": "「でもこれ、普通のドアと違うみたいでな……」",
+        "text": "\"But this looks different to a normal door...\""
+    },
+    {
+        "offset": 13737,
+        "size": 85,
+        "name_offset": 13699,
+        "name": "【あげは】",
+        "jp": "「どれどれ……あー、確かに。この建物、古いもんねー」",
+        "text": "\"Yeah, this building is quite old.\""
+    },
+    {
+        "offset": 14120,
+        "size": 39,
+        "name_offset": 14082,
+        "name": "【あげは】",
+        "jp": "「依瑠ちゃん、工具貸して」",
+        "text": "\"Yoru chan, can I borrow some tools?\""
+    },
+    {
+        "offset": 14517,
+        "size": 24,
+        "name_offset": 14482,
+        "name": "【依瑠】",
+        "jp": "「はい、どうぞ」",
+        "text": "\"Here you go.\""
+    },
+    {
+        "offset": 14910,
+        "size": 33,
+        "name_offset": 14872,
+        "name": "【あげは】",
+        "jp": "「碧、そっち持ってて」",
+        "text": "\"Aoi, hold onto there.\""
+    },
+    {
+        "offset": 15144,
+        "size": 12,
+        "name_offset": 15112,
+        "name": "【碧】",
+        "jp": "「おう」",
+        "text": "\"Okay.\""
+    },
+    {
+        "offset": 15314,
+        "size": 81,
+        "name_offset": 0,
+        "name": "",
+        "jp": "あげはが修理してくれるようなので、俺はサポートに回る。",
+        "text": "Ageha seemed like she was going repair the door so I switched to support her."
+    },
+    {
+        "offset": 16242,
+        "size": 112,
+        "name_offset": 16207,
+        "name": "【亜紗】",
+        "jp": "「先輩たちに寮の修理をしてもらってると、なんだか昔に戻ったみたいだね」",
+        "text": "\"Seeing my senpais repairing the dorm really brings me back.\""
+    },
+    {
+        "offset": 16619,
+        "size": 69,
+        "name_offset": 16584,
+        "name": "【依瑠】",
+        "jp": "「そういや、あの頃は毎日こんな感じだったわね」",
+        "text": "\"That's right, back then it was like this every day.\""
+    },
+    {
+        "offset": 17601,
+        "size": 79,
+        "name_offset": 17563,
+        "name": "【あげは】",
+        "jp": "「こんな感じでどうかな。亜紗ちゃん、試してみて」",
+        "text": "\"How's this? Asa, try it out.\""
+    },
+    {
+        "offset": 17975,
+        "size": 33,
+        "name_offset": 17940,
+        "name": "【亜紗】",
+        "jp": "「はいはい、ただいま」",
+        "text": "\"Okay, I'm back.\""
+    },
+    {
+        "offset": 18419,
+        "size": 48,
+        "name_offset": 18384,
+        "name": "【亜紗】",
+        "jp": "「とってもスムーズに開きます！」",
+        "text": "\"It opens really smoothly!\""
+    },
+    {
+        "offset": 18889,
+        "size": 94,
+        "name_offset": 18851,
+        "name": "【あげは】",
+        "jp": "「歪んでた金具を取り替えたから、しばらくは大丈夫なはずよ」",
+        "text": "\"I replaced the crooked metal fittings so it should be fine for a while.\""
+    },
+    {
+        "offset": 19278,
+        "size": 27,
+        "name_offset": 19243,
+        "name": "【依瑠】",
+        "jp": "「さすがです先輩」",
+        "text": "\"Just what I expect from you senpai.\""
+    },
+    {
+        "offset": 19600,
+        "size": 39,
+        "name_offset": 19565,
+        "name": "【亜紗】",
+        "jp": "「やっぱり頼りになるなぁ」",
+        "text": "\"I knew we could rely on you.\""
+    },
+    {
+        "offset": 19888,
+        "size": 81,
+        "name_offset": 0,
+        "name": "",
+        "jp": "卒業してもまだ後輩に頼られるのは、悪い気はしなかった。",
+        "text": "Even though we had graduated, it wasn't bad being relied on by our kouhai."
+    }
+]

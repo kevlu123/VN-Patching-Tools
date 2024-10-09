@@ -4,8 +4,8 @@
 
 | Version | Download |
 |---------|----------|
-| Kotori  | <http://example.com> |
-| Ageha   | <http://example.com> |
+| Kotori  | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/IMHHWGiftEdition/IMHHW.Gift.Edition.Kotori.zip> |
+| Ageha   | <https://github.com/kevlu123/VN-Patching-Tools/releases/download/IMHHWGiftEdition/IMHHW.Gift.Edition.Ageha.zip>  |
 
 Download and unzip the patch for your version and replace the original `script.arc` file with the new one. Place `OozoraGE_fontfixed.exe` in the same folder and use this executable to run the game.
 

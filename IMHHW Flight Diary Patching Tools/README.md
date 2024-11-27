@@ -17,27 +17,22 @@ Apply [DarthFly's patch](https://www.reddit.com/r/IMHHW/comments/10ul2nc/if_my_h
 
 See the `patch` folder for the patch files and use [Ws2Explorer](../Ws2Explorer) or any other tool to edit the .arc files.
 
-- Replace `menu_base.lua` in `Script.arc`.
+- Replace each lua file in `Script.arc`.
 - Replace `SYS_Story.pna` in `SysGraphic.arc`.
 
 ## Lua Hacking
 
-- The compiled Lua files can be decompiled with <https://luadec.metaworm.site/>. Some files will not decompile correctly (see <https://github.com/metaworm/luac-parser-rs/issues/36>) so you can't edit them directly but they are still useful to look through. Those files are
+The compiled Lua files can be decompiled with <https://luadec.metaworm.site/>. Some files will not decompile correctly (see <https://github.com/metaworm/luac-parser-rs/issues/36>) so you can't edit them directly but they are still useful to look through.
 
-| File | Error |
-|------|-------|
-| LegacyGame.lua   | LegacyGame.lua:731: no visible label 'label_83' for <goto> at line 500  |
-| menu_config.lua  | menu_config.lua:40: no visible label 'label_9' for <goto> at line 35    |
-| menu_gallery.lua | menu_gallery.lua:111: no visible label 'label_43' for <goto> at line 65 |
-| ui_scrollbar.lua | ui_scrollbar.lua:99: no visible label 'label_18' for <goto> at line 23  |
+Since the Lua interpreter interprets both source and bytecode indiscriminately, we don't have to recompile any code before inserting it back into `Script.arc`. **We can insert the Lua source file as is in text form**. If you do want to recompile for whatever reason, you will need a 32-bit version of luac 5.3.
 
-- Since the Lua interpreter interprets both source and bytecode indiscriminately, we don't have to recompile any code before inserting it back into `Script.arc`. **We can insert the Lua source file as is in text form**. If you do want to recompile for whatever reason, you will need a 32-bit version of luac 5.3.
+On start, the game checks for the existence of each file in `LegacyGame.inc` but does not immediately load all the scripts into the interpreter. To get around the complexities of load order and time, we can bundle all the scripts together into the first Lua file that gets loaded (`GameInfo.lua`). To do this, we can store the compiled Lua files as byte arrays and call `load(MyByteArray)()` on each byte array to execute them. From here, we can append any custom code with full guarantee that our code will run last so we don't have to worry about our code being overridden later.
 
-- On start, the game checks for the existence of each file in `LegacyGame.inc` but does not immediately load all the scripts into the interpreter. If you want some code to run, then make sure to put that code in a script that does run immediately or early enough. e.g. I haven't seen `VersionInfo.lua` run at all so there's no point in adding code there. To test when a script loads, insert an infinite loop in the script and watch the program hang.
+I have decided to put custom code in `ArcFileName.lua` so that it is easier to make and view changes. This Lua file gets loaded immediately after `GameInfo.lua` so it works just as well. You can add customisations to `custom.lua` and run `python3 aggregate.py` to generate the new Lua files to be inserted.
 
 ### Restoring the Ageha/Hotaru Button
 
-The code for managing the story screen is in `openStory` in `LegacyGame.lua`. This isn't a file we can modify since it doesn't decompile correctly but we can add code to `menu_base.lua` instead to override the `openStory` function since this file gets loaded after `LegacyGame.lua`.
+The code for managing the story screen is in the `openStory` function. We can override a few index ranges to add the new button in.
 
 Inside `SysGraphic.arc/SYS_Story.pna`, there are some empty slots where we can insert new images for the new button. At this time, [Ws2Explorer](../Ws2Explorer) doesn't support adding new images to slots that didn't exist before. It half works but the metadata for that image isn't fully updated so I used a hex editor to fix the metadata manually.
 

@@ -1,3 +1,404 @@
+-----------------------------------------
+--                                     --
+--         Restore CG Gallery          --
+--                                     --
+-----------------------------------------
+
+oldGalleryCgMenu = GalleryCgMenu
+GalleryCgMenu = function(r0_21)
+  oldGalleryCgMenu(r0_21)
+  
+  r0_21.CgMenu.PageMax = 9 -- NOTE: Changed from 7 to 9
+
+  -- NOTE: Reimplemented GetCgFlag
+  function r0_21.GetCgFlag(self, page, index)
+    local NEW = 62
+    local jp_thumbnail_to_en_thumbnail = {
+      -- AFT/BEF
+      [0] = 0,
+      [1] = 3,
+      [2] = 4,
+      [3] = 1,
+      [4] = 5,
+      [5] = 6,
+      [6] = 8,
+      [7] = 9,
+      [8] = 10,
+      [9] = NEW + 0,
+      [10] = NEW + 1,
+      [11] = NEW + 2,
+      [12] = NEW + 3,
+      [13] = NEW + 4,
+      [14] = 11,
+      [15] = 12,
+      [16] = 14,
+      [17] = 16,
+      [18] = 17,
+      [19] = NEW + 5,
+      [20] = NEW + 6,
+      [21] = NEW + 7,
+      [22] = NEW + 8,
+
+      -- HOT
+      [23] = 18,
+      [24] = 20,
+      [25] = 19,
+      [26] = 21,
+      [27] = 23,
+      [28] = 24,
+      [29] = 22,
+      [30] = NEW + 9,
+      [31] = NEW + 10,
+      [32] = NEW + 11,
+
+      -- KAN
+      [33] = 25,
+      [34] = 26,
+      [35] = 27,
+      [36] = 33,
+      [37] = 34,
+      [38] = NEW + 12,
+      [39] = NEW + 13,
+      [40] = NEW + 14,
+      [41] = NEW + 15,
+
+      -- HUS
+      [42] = 36,
+      [43] = NEW + 16,
+      [44] = NEW + 17,
+
+      -- AGS
+      [45] = NEW + 18,
+      [46] = NEW + 19,
+      [47] = NEW + 20,
+
+      -- NOV
+      [48] = 37,
+      [49] = 38,
+      [50] = 39,
+      [51] = 40,
+      [52] = 41,
+      [53] = 42,
+      [54] = 43,
+
+      -- Misc?
+      [55] = NEW + 21,
+      [56] = 44,
+      [57] = 45,
+      [58] = 46,
+
+      -- SD
+      [59] = 47,
+      [60] = 48,
+      [61] = 49,
+      [62] = 50,
+      [63] = 51,
+      [64] = 52,
+      [65] = 53,
+      [66] = 54,
+      [67] = 55,
+      [68] = 56,
+      [69] = 57,
+      [70] = 58,
+      [71] = 59,
+      [72] = 61,
+      [73] = 60,
+    }
+
+    local en_flags = {
+      AFT_01 = 1080,
+      AFT_02 = 1081,
+      AFT_03 = 1082,
+      AFT_07 = 1083,
+      AFT_08 = 1084,
+      AFT_11 = 1085,
+      AFT_12 = 1086,
+      AFT_13 = 1087,
+      AFT_14 = 1088,
+      BEF_01 = 1089,
+      BEF_02 = 1090,
+      BEF_03 = 1091,
+      BEF_05 = 1092,
+      BEF_08 = 1093,
+      BEF_09 = 1094,
+      HOT_01 = 1095,
+      HOT_02 = 1096,
+      HOT_03 = 1097,
+      HOT_04 = 1098,
+      HOT_06 = 1099,
+      HOT_09 = 1100,
+      HOT_10 = 1101,
+      KAN_01 = 1102,
+      KAN_02 = 1103,
+      KAN_03 = 1104,
+      KAN_04 = 1105,
+      KAN_09 = 1106,
+      HUS_03 = 1107,
+      NOV_01 = 1108,
+      NOV_02 = 1109,
+      COM_01 = 1110,
+      KOT_00 = 1111,
+      KOT_01 = 1112,
+      KOT_11 = 1113,
+      KOT_21 = 1114,
+      AMA_01 = 1115,
+      AMA_08 = 1116,
+      HUT_22 = 1117,
+      CSEV_14 = 1118,
+      CSEV_15 = 1119,
+      CSEV_16 = 1120,
+      CSEV_17 = 1121,
+      CSEV_18 = 1122,
+      CSEV_19 = 1123,
+      CSEV_20 = 1124,
+      CSEV_21 = 1125,
+      CSEV_29 = 1126,
+      FDSDEV01 = 1127,
+      FDSDEV02 = 1128,
+      FDSDEV03 = 1129,
+      FDSDEV04 = 1130,
+      FDSDEV05 = 1131,
+      FDSDEV06 = 1132,
+      FDSDEV07 = 1133,
+      FDSDEV08 = 1134,
+      FDSDEV09 = 1135,
+      FDSDEV10 = 1136,
+      FDSDEV11 = 1137,
+      FDSDEV12 = 1138,
+      FDSDEV13 = 1139,
+      FDSDEV14 = 1140,
+      FDSDEV15 = 1141,
+    }
+    local en_thumbnail_to_en_flag = {
+      [0] = en_flags.AFT_01,
+      [1] = en_flags.AFT_03,
+      [2] = en_flags.CSEV_14,
+      [3] = en_flags.AFT_13,
+      [4] = en_flags.AFT_02,
+      [5] = en_flags.AFT_07,
+      [6] = en_flags.AFT_08,
+      [7] = en_flags.CSEV_15,
+      [8] = en_flags.AFT_11,
+      [9] = en_flags.AFT_12,
+      [10] = en_flags.AFT_14,
+      [11] = en_flags.BEF_01,
+      [12] = en_flags.BEF_02,
+      [13] = en_flags.BEF_03,
+      [14] = en_flags.BEF_05,
+      [15] = en_flags.CSEV_16,
+      [16] = en_flags.BEF_08,
+      [17] = en_flags.BEF_09,
+      [18] = en_flags.HOT_01,
+      [19] = en_flags.HOT_10,
+      [20] = en_flags.HOT_02,
+      [21] = en_flags.HOT_03,
+      [22] = en_flags.HOT_04,
+      [23] = en_flags.HOT_06,
+      [24] = en_flags.HOT_09,
+      [25] = en_flags.KAN_01,
+      [26] = en_flags.KAN_02,
+      [27] = en_flags.KAN_04,
+      [28] = en_flags.CSEV_17,
+      [29] = en_flags.CSEV_18,
+      [30] = en_flags.CSEV_19,
+      [31] = en_flags.CSEV_20,
+      [32] = en_flags.CSEV_21,
+      [33] = en_flags.KAN_03,
+      [34] = en_flags.KAN_09,
+      [35] = en_flags.CSEV_29,
+      [36] = en_flags.HUS_03,
+      [37] = en_flags.NOV_01,
+      [38] = en_flags.NOV_02,
+      [39] = en_flags.COM_01,
+      [40] = en_flags.KOT_00,
+      [41] = en_flags.KOT_01,
+      [42] = en_flags.KOT_11,
+      [43] = en_flags.KOT_21,
+      [44] = en_flags.AMA_01,
+      [45] = en_flags.AMA_08,
+      [46] = en_flags.HUT_22,
+      [47] = en_flags.FDSDEV01,
+      [48] = en_flags.FDSDEV02,
+      [49] = en_flags.FDSDEV03,
+      [50] = en_flags.FDSDEV04,
+      [51] = en_flags.FDSDEV05,
+      [52] = en_flags.FDSDEV06,
+      [53] = en_flags.FDSDEV07,
+      [54] = en_flags.FDSDEV08,
+      [55] = en_flags.FDSDEV09,
+      [56] = en_flags.FDSDEV10,
+      [57] = en_flags.FDSDEV11,
+      [58] = en_flags.FDSDEV12,
+      [59] = en_flags.FDSDEV13,
+      [60] = en_flags.FDSDEV15,
+      [61] = en_flags.FDSDEV14,
+    }
+
+    jp_thumbnail = (page - 1) * self.CgMenu.ThAllMax + index - 1
+    if jp_thumbnail == 74 then
+      return 1 -- Show EN-only CG unconditionaly
+    elseif jp_thumbnail > 74 then
+      return -1 -- Out of range
+    end
+
+    en_thumbnail = jp_thumbnail_to_en_thumbnail[jp_thumbnail]
+    flag = en_thumbnail_to_en_flag[en_thumbnail] or (en_thumbnail + 1080)
+
+    if cfunc.LegacyGame__lua_GetFlag(flag) then
+      return 1 -- Unlocked
+    else
+      return 0 -- Locked
+    end
+  end
+  --function r0_21.GetCgFlag(r0_33, r1_33, r2_33)
+  --  -- line: [1429, 1556] id: 33
+  --  local r3_33 = {
+  --    AFT_01 = 1080,
+  --    AFT_02 = 1081,
+  --    AFT_03 = 1082,
+  --    AFT_07 = 1083,
+  --    AFT_08 = 1084,
+  --    AFT_11 = 1085,
+  --    AFT_12 = 1086,
+  --    AFT_13 = 1087,
+  --    AFT_14 = 1088,
+  --    BEF_01 = 1089,
+  --    BEF_02 = 1090,
+  --    BEF_03 = 1091,
+  --    BEF_05 = 1092,
+  --    BEF_08 = 1093,
+  --    BEF_09 = 1094,
+  --    HOT_01 = 1095,
+  --    HOT_02 = 1096,
+  --    HOT_03 = 1097,
+  --    HOT_04 = 1098,
+  --    HOT_06 = 1099,
+  --    HOT_09 = 1100,
+  --    HOT_10 = 1101,
+  --    KAN_01 = 1102,
+  --    KAN_02 = 1103,
+  --    KAN_03 = 1104,
+  --    KAN_04 = 1105,
+  --    KAN_09 = 1106,
+  --    HUS_03 = 1107,
+  --    NOV_01 = 1108,
+  --    NOV_02 = 1109,
+  --    COM_01 = 1110,
+  --    KOT_00 = 1111,
+  --    KOT_01 = 1112,
+  --    KOT_11 = 1113,
+  --    KOT_21 = 1114,
+  --    AMA_01 = 1115,
+  --    AMA_08 = 1116,
+  --    HUT_22 = 1117,
+  --    CSEV_14 = 1118,
+  --    CSEV_15 = 1119,
+  --    CSEV_16 = 1120,
+  --    CSEV_17 = 1121,
+  --    CSEV_18 = 1122,
+  --    CSEV_19 = 1123,
+  --    CSEV_20 = 1124,
+  --    CSEV_21 = 1125,
+  --    CSEV_29 = 1126,
+  --    FDSDEV01 = 1127,
+  --    FDSDEV02 = 1128,
+  --    FDSDEV03 = 1129,
+  --    FDSDEV04 = 1130,
+  --    FDSDEV05 = 1131,
+  --    FDSDEV06 = 1132,
+  --    FDSDEV07 = 1133,
+  --    FDSDEV08 = 1134,
+  --    FDSDEV09 = 1135,
+  --    FDSDEV10 = 1136,
+  --    FDSDEV11 = 1137,
+  --    FDSDEV12 = 1138,
+  --    FDSDEV13 = 1139,
+  --    FDSDEV14 = 1140,
+  --    FDSDEV15 = 1141,
+  --  }
+  --  local r6_33 = ({
+  --    r3_33.AFT_01,
+  --    r3_33.AFT_03,
+  --    r3_33.CSEV_14,
+  --    r3_33.AFT_13,
+  --    r3_33.AFT_02,
+  --    r3_33.AFT_07,
+  --    r3_33.AFT_08,
+  --    r3_33.CSEV_15,
+  --    r3_33.AFT_11,
+  --    r3_33.AFT_12,
+  --    r3_33.AFT_14,
+  --    r3_33.BEF_01,
+  --    r3_33.BEF_02,
+  --    r3_33.BEF_03,
+  --    r3_33.BEF_05,
+  --    r3_33.CSEV_16,
+  --    r3_33.BEF_08,
+  --    r3_33.BEF_09,
+  --    r3_33.HOT_01,
+  --    r3_33.HOT_10,
+  --    r3_33.HOT_02,
+  --    r3_33.HOT_03,
+  --    r3_33.HOT_04,
+  --    r3_33.HOT_06,
+  --    r3_33.HOT_09,
+  --    r3_33.KAN_01,
+  --    r3_33.KAN_02,
+  --    r3_33.KAN_04,
+  --    r3_33.CSEV_17,
+  --    r3_33.CSEV_18,
+  --    r3_33.CSEV_19,
+  --    r3_33.CSEV_20,
+  --    r3_33.CSEV_21,
+  --    r3_33.KAN_03,
+  --    r3_33.KAN_09,
+  --    r3_33.CSEV_29,
+  --    r3_33.HUS_03,
+  --    r3_33.NOV_01,
+  --    r3_33.NOV_02,
+  --    r3_33.COM_01,
+  --    r3_33.KOT_00,
+  --    r3_33.KOT_01,
+  --    r3_33.KOT_11,
+  --    r3_33.KOT_21,
+  --    r3_33.AMA_01,
+  --    r3_33.AMA_08,
+  --    r3_33.HUT_22,
+  --    r3_33.FDSDEV01,
+  --    r3_33.FDSDEV02,
+  --    r3_33.FDSDEV03,
+  --    r3_33.FDSDEV04,
+  --    r3_33.FDSDEV05,
+  --    r3_33.FDSDEV06,
+  --    r3_33.FDSDEV07,
+  --    r3_33.FDSDEV08,
+  --    r3_33.FDSDEV09,
+  --    r3_33.FDSDEV10,
+  --    r3_33.FDSDEV11,
+  --    r3_33.FDSDEV12,
+  --    r3_33.FDSDEV13,
+  --    r3_33.FDSDEV15,
+  --    r3_33.FDSDEV14,
+  --    nil,
+  --    nil
+  --  })[(r1_33 - 1) * r0_33.CgMenu.ThAllMax + r2_33]
+  --  if r6_33 == nil then
+  --    return -1
+  --  end
+  --  if cfunc.LegacyGame__lua_GetFlag(r6_33) then
+  --    return 1
+  --  else
+  --    return 0
+  --  end
+  --end
+end
+
+-----------------------------------------
+--                                     --
+--       Add extra route button        --
+--                                     --
+-----------------------------------------
+
 openStory = function(r0_262, r1_262)
   -- line: [8580, 8931] id: 262
   g_Menu.StoryMenu.ptr = Menu.new("StoryMenu")
@@ -202,7 +603,7 @@ openStory = function(r0_262, r1_262)
     r3_272:initSubLayer("StoryMenu", "StoryBace", 40, 1)
     local r4_272 = {
       101,
-      102, -- Added 102
+      102, -- NOTE: Added 102
       103,
       104,
       105,
@@ -210,7 +611,7 @@ openStory = function(r0_262, r1_262)
       107
     }
     for r8_272 = 1, 7, 1 do -- NOTE: Changed 6 to 7
-      local r10_272 = 4 + (r8_272 - 1) * 2 -- Changed 6 to 4
+      local r10_272 = 4 + (r8_272 - 1) * 2 -- NOTE: Changed 6 to 4
       r0_272:MenuButtonSet(r0_272.MenuButtonData, "SC" .. tostring(r8_272), 0, "StoryBace", r10_272, r10_272, 3 + (r8_272 - 1) * 2, -1, -1, r4_272[r8_272], 0, 0)
     end
     r0_272:MenuButtonSet(r0_272.MenuButtonData, "Return", 0, "StoryBace", 2, 2, 1, -1, -1, 99, 0, 0)
@@ -227,7 +628,7 @@ openStory = function(r0_262, r1_262)
       -- if r2_273 >= 103 then
       --   r2_273 = r2_273 - 1
       -- end
-      r5_273:setSubLayerVisible("StoryMenu", "StoryBace", 19 + r2_273 - 100 - 1, 1) -- Changed 20 to 19
+      r5_273:setSubLayerVisible("StoryMenu", "StoryBace", 19 + r2_273 - 100 - 1, 1) -- NOTE: Changed 20 to 19
       for r9_273 = 28, 36, 1 do
         r5_273:setSubLayerVisible("StoryMenu", "StoryBace", r9_273, 0)
       end
@@ -252,12 +653,4 @@ openStory = function(r0_262, r1_262)
   cfunc.LegacyGame__lua_NeedProcess(LUA_PROCESS_GAME_PAUSED, 0)
   g_menuExecute = true
   return true
-end
-
-oldGalleryCgMenu = GalleryCgMenu
-GalleryCgMenu = function(r0_21)
-  oldGalleryCgMenu(r0_21)
-  function r0_21.GetCgFlag(r0_33, r1_33, r2_33)
-    return 1080
-  end
 end

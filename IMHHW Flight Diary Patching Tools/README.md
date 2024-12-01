@@ -10,11 +10,19 @@
 
 ## Applying the Patch
 
-This patch is intended for other patch developers to build off from.
+This patch is based on [DarthFly's Patch](https://www.reddit.com/r/IMHHW/comments/10ul2nc/if_my_heart_had_wings_flight_diary_restoration/) and fixes the points stated above.
 
-Apply [DarthFly's patch](https://www.reddit.com/r/IMHHW/comments/10ul2nc/if_my_heart_had_wings_flight_diary_restoration/) to the [Steam version](https://vndb.org/r58996).
+- Start with a copy of the [Steam version](https://vndb.org/r58996).
+- Download and unzip the two zip files from <> and <> and replace the game files.
 
-Use [Ws2Explorer](../Ws2Explorer) to edit the .arc and .ws2 files and replace the corresponding content in the `patch` folder.
+## Developers
+
+Everything below is intended for developers.
+
+To derive the patch:
+- Start with a copy of the [Steam version](https://vndb.org/r58996).
+- Apply [DarthFly's patch](https://www.reddit.com/r/IMHHW/comments/10ul2nc/if_my_heart_had_wings_flight_diary_restoration/).
+- Use [Ws2Explorer](../Ws2Explorer) to edit the .arc and .ws2 files and replace the corresponding content in the `patch` folder.
 
 ## Lua Hacking
 
@@ -59,7 +67,7 @@ The first thing to do is to modify the Lua code to map the JP thumbnail index to
 
 There are about 1000 occurrences to replace so the script `python3 gallery_thumbnail/convert_thumbnail_flags.py` does the work. Some manual work was required to isolate the JP parts.
 
-## Fix Broken Choice
+## Fixing Broken Choices
 
 It seems like the choice buttons aren't registered to receive any mouse events so you can't interact with them except for the first frame that they appear. Luckily, the choice functionality still exists in the code so we just need to invoke the right functions at the right time.
 
@@ -71,9 +79,9 @@ cfunc.LegacyGame__lua_SelectItem(hovering_choice_button_index)
 g_MenuMsgWin:closeSelect(hovering_choice_button_index)
 ```
 
-## Fix Crash
+## Fixing Crash
 
-The game sometimes crashes when skipping through the entire Asa/Yoru route. The crash happens near the end but not in a consistent place.
+The game sometimes crashes when skipping through the entire Asa/Yoru route. The crash happens near the end but not in a consistent place. This has not been resolved but is unlikely to be encountered during a normal playthrough.
 
 Notes:
 - Using a debugger, I can see that the process exits cleanly i.e. it is not a null dereference etc.

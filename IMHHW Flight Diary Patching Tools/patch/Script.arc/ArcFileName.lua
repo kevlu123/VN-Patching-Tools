@@ -853,3 +853,7 @@ openStory = function(r0_262, r1_262)
   g_menuExecute = true
   return true
 end
+
+g_exampleText0 = "Patched with\n"
+  .. "https://github.com/kevlu123/VN-Patching-Tools\n"
+  .. "Based on DarthFly's patch."

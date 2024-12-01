@@ -31,6 +31,7 @@ function Menu.new(a)
     end
   end
   
+  
   function r.MenuLButtonUp(r0_23, r1_23, r2_23, r3_23, r4_23, r5_23, r6_23)
     -- NOTE: Trigger choice if clicked and was hovering
     if hovering_choice_button_index then
@@ -852,3 +853,7 @@ openStory = function(r0_262, r1_262)
   g_menuExecute = true
   return true
 end
+
+g_exampleText0 = "Patched with\n"
+  .. "https://github.com/kevlu123/VN-Patching-Tools\n"
+  .. "Based on DarthFly's patch."

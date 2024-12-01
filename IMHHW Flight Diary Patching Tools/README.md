@@ -1,5 +1,9 @@
 # If My Heart Had Wings Flight Diary Patching Tools
 
+This patch is based on [DarthFly's Patch](https://www.reddit.com/r/IMHHW/comments/10ul2nc/if_my_heart_had_wings_flight_diary_restoration/) which restores the JP content to the EN Steam version but fixes several features as listed under [Goals](#goals).
+
+**The new text is not translated**, but game is in a presentable state and the translation is the only thing that needs to be done.
+
 ## Goals
 
 - [x] Restore the Ageha/Hotaru button on the story select screen.
@@ -10,10 +14,12 @@
 
 ## Applying the Patch
 
-This patch is based on [DarthFly's Patch](https://www.reddit.com/r/IMHHW/comments/10ul2nc/if_my_heart_had_wings_flight_diary_restoration/) and fixes the points stated above.
-
 - Start with a copy of the [Steam version](https://vndb.org/r58996).
-- Download and unzip the two zip files from <> and <> and replace the game files.
+- Download and unzip the two zip files and replace the game files.
+  - <https://github.com/kevlu123/VN-Patching-Tools/releases/download/IMHHW-Flight-Diary/IMHHW-Flight-Diary-Part1.zip>
+  - <https://github.com/kevlu123/VN-Patching-Tools/releases/download/IMHHW-Flight-Diary/IMHHW-Flight-Diary-Part2.zip>
+
+Note that this patch hasn't been well tested. Please let me know of any issues.
 
 ## Developers
 

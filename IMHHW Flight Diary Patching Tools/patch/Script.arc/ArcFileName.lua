@@ -1,6 +1,205 @@
 -----------------------------------------
 --                                     --
---         Restore CG Gallery          --
+--          Fix choice buttons         --
+--                                     --
+-----------------------------------------
+
+-- NOTE: Define some new global variables
+choice_buttons = {}
+hovering_choice_button_index = nil
+
+oldMenuNew = Menu.new
+function Menu.new(a)
+  local r = oldMenuNew(a)
+  
+  function r.MenuMouseMove(r0_21, r1_21, r2_21, r3_21, r4_21, r5_21, r6_21)
+    -- NOTE: Drive choice button events
+    local cursor = cclass.lua_AutoCursor:new()
+    local x, y = cursor:GetCursorPos(0, 0)
+    cursor:delete()
+    hovering_choice_button_index = nil
+    for i, choice_button in ipairs(choice_buttons) do
+      choice_button:bt_change(nil, 9999, x, y, i - 1)
+    end
+    
+    -- line: [226, 235] id: 21
+    if r6_21 == true then
+      return 
+    end
+    if r0_21:GetMenuMouseEnable() then
+      r0_21.MenuButton:mouseMove(r2_21, r3_21, r4_21, r5_21)
+    end
+  end
+  
+  
+  function r.MenuLButtonUp(r0_23, r1_23, r2_23, r3_23, r4_23, r5_23, r6_23)
+    -- NOTE: Trigger choice if clicked and was hovering
+    if hovering_choice_button_index then
+      cfunc.LegacyGame__lua_SelectItem(hovering_choice_button_index)
+      g_MenuMsgWin:closeSelect(hovering_choice_button_index)
+      hovering_choice_button_index = nil
+    end
+    
+    -- line: [256, 269] id: 23
+    local r7_23 = 0
+    r0_23:MenuButtonJobPosRepeat(r7_23, "LU", r1_23, r2_23, r3_23, r4_23, r5_23)
+    if r6_23 == true then
+      return r7_23
+    end
+    if r0_23:GetMenuMouseEnable() then
+      r7_23 = r0_23.MenuButton:mouseLup(r2_23, r3_23, r4_23, r5_23, r6_23)
+    end
+    r0_23:MenuButtonJobFocus(r7_23, "LU", r1_23, r2_23, r3_23, r4_23, r5_23)
+    return r7_23
+  end
+  
+  return r
+end
+
+oldButtonNew = Button.new
+function Button.new(r0_1)
+    local r = oldButtonNew(r0_1)
+    function r.ButtonCreate(r0_2, r1_2, r2_2, r3_2, r4_2, r5_2, r6_2, r7_2, r8_2, r9_2, r10_2, r11_2, r12_2, r13_2)
+      -- line: [26, 28] id: 2
+      local b = r0_2:_ButtonCreate(-1, r1_2, r2_2, r3_2, r4_2, r5_2, r6_2, r7_2, r8_2, r9_2, r10_2, r11_2, r12_2, r13_2)
+      function b.bt_change(r0_16, r1_16, r2_16, r3_16, r4_16, choice_button_index) -- NOTE: Add parameter choice_button_index
+        -- line: [334, 429] id: 16
+        local r5_16 = cclass.lua_Layers:create()
+        local r6_16 = 0
+        local r7_16 = r0_16.priority
+        if r0_16.active == 0 or r0_16.active == 4 then
+          local r8_16 = {
+            def = false,
+            on = false,
+          }
+          if r0_16.EVENT_TYPE == 0 then
+            if r0_16.SubLayer.hit.no ~= -1 and r0_16.SubLayer.hit.no == r2_16 then
+              
+              r6_16 = 1
+              if r0_16.focusflag == false then
+                r0_16:bt_PlayAnim()
+              end
+              r0_16.focusflag = true
+              
+            else
+              r0_16.focusflag = false
+              r0_16:bt_StopAnim()
+            end
+          elseif r0_16.DRAW_POS.x <= r3_16 and r0_16.DRAW_POS.y <= r4_16 and r3_16 < r0_16.DRAW_POS.x + r0_16.EVENT_RECT.w and r4_16 < r0_16.DRAW_POS.y + r0_16.EVENT_RECT.h then
+            r6_16 = 1
+            if r0_16.focusflag == false then
+              r0_16:bt_PlayAnim()
+            end
+            r0_16.focusflag = true
+          else
+            r0_16.focusflag = false
+            r0_16:bt_StopAnim()
+          end
+          if r0_16.active == 0 then
+            if r0_16.focusflag == true then
+              if r0_16.SubLayer.def.no ~= -1 then
+                r8_16.def = false
+              end
+              if r0_16.SubLayer.on.no ~= -1 then
+                r8_16.on = true
+              else
+                r8_16.def = true
+              end
+              r0_16:bt_OnCursorEvent(r1_16, r2_16, r3_16, r4_16)
+              
+              -- NOTE: Save hovered button
+              hovering_choice_button_index = choice_button_index
+              
+            else
+              if r0_16.SubLayer.def.no ~= -1 then
+                r8_16.def = true
+              end
+              if r0_16.SubLayer.on.no ~= -1 then
+                r8_16.on = false
+              else
+                r8_16.def = true
+              end
+              r0_16:bt_OffCursorEvent(r1_16, r2_16, r3_16, r4_16)
+            end
+            if r8_16.def == true then
+              r0_16:bt_SetEnableSubLayer(r0_16.SubLayer.on, r8_16.on)
+              r0_16:bt_SetEnableSubLayer(r0_16.SubLayer.def, r8_16.def)
+            else
+              r0_16:bt_SetEnableSubLayer(r0_16.SubLayer.def, r8_16.def)
+              r0_16:bt_SetEnableSubLayer(r0_16.SubLayer.on, r8_16.on)
+            end
+          end
+        end
+        return r6_16, r7_16
+      end
+      return b
+    end
+    return r
+end
+
+function initSelect(r0_155)
+  -- line: [5120, 5133] id: 155
+  function g_MenuMsgWin.MakeSelectBut(r0_51)
+    -- line: [2046, 2099] id: 51
+    r0_51.ActiveSelect = {}
+    if r0_51.SelectType == true then
+      local r1_51 = getLocalSelectKey(0)
+      for r5_51 = 1, 6, 1 do
+        local r6_51 = 1 + r5_51 - 1
+        local r8_51 = getLocalSelectKey(r5_51)
+        r0_51:MenuButtonSet(r0_51.SelectButtonData, r8_51, 1, r1_51, r6_51, r6_51, 9 + r5_51 - 1, -1, -1, r5_51 + 100, 0, 0)
+        r0_51.ActiveSelect[r8_51] = 0
+      end
+    else
+      -- NOTE: Reset choice button list
+      choice_buttons = {}
+      
+      for r4_51 = 1, r0_51.SelectCount, 1 do
+        local r5_51 = getLocalSelectKey(r4_51)
+        r0_51:MenuButtonSet(r0_51.SelectButtonData, r5_51, 1, r5_51, 1, 1, 0, -1, 2, r4_51 + 100, 0, 0)
+
+        -- Note: Save choice buttons in a global variable
+        choice_buttons[#choice_buttons + 1] = r0_51.SelectButtonData[r5_51]
+
+        r0_51.ActiveSelect[r5_51] = 0
+        local r6_51 = cclass.lua_Layers:create()
+      end
+    end
+    r0_51.MenuButton:InitList()
+    r0_51.MenuButton:SetList("SelectButtonData", r0_51.SelectButtonData)
+    r0_51.MenuButton:InitButton()
+    if r0_51.SelectType == true then
+      r0_51:MapActive(0)
+    end
+    if r0_51.MenuButtonData ~= nil then
+      r0_51.MenuButton:SetList("MenuButtonData", r0_51.MenuButtonData)
+    end
+    if r0_51.TipsButton ~= nil then
+      r0_51.MenuButton:SetList("TipsButton", r0_51.TipsButton)
+    end
+  end
+  g_MenuMsgWin.SelectCount = r0_155
+  g_MenuMsgWin:MenuMakeSelectLayer()
+  g_MenuMsgWin:MakeSelectBut()
+  g_MenuMsgWin:SetSelectButPos()
+  g_MenuMsgWin:startSelectMenu()
+end
+
+-- NOTE: Reset choice button list when choice menu closed
+oldInitSystemScreen = initSystemScreen
+function initSystemScreen()
+  local r = oldInitSystemScreen()
+  local oldCloseSelect = g_MenuMsgWin.closeSelect
+  function g_MenuMsgWin.closeSelect(r0_53, r1_53)
+    choice_buttons = {}
+    oldCloseSelect(r0_53, r1_53)
+  end
+  return r
+end
+
+-----------------------------------------
+--                                     --
+--           Expand gallery            --
 --                                     --
 -----------------------------------------
 

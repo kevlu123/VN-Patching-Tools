@@ -4,9 +4,8 @@
 
 - [x] Restore the Ageha/Hotaru button on the story select screen.
 - [x] Restore the CG gallery.
-- [ ] Fix broken choice.
+- [x] Fix broken choice.
 - [ ] Fix crash.
-- Add Akari route if someone has a copy.
 - Any other suggestions.
 
 ## Applying the Patch
@@ -35,11 +34,11 @@ Currently, [Ws2Explorer](../Ws2Explorer) doesn't support adding new images to PN
 
 ## Restoring the Ageha/Hotaru Button
 
-The code for managing the story screen is in the `openStory` function of `LegacyGame.lua`. We can override a few index ranges to add the new button in. After adding the button, the stories got magically linked to the correct button without any extra effort.
+The code for managing the story screen is in the `openStory()` function of `LegacyGame.lua`. We can override a few index ranges to add the new button in. After adding the button, the stories got magically linked to the correct button without any extra effort.
 
 ## Restoring the CG gallery
 
-The code for the gallery is in the `GalleryCgMenu` function of `menu_gallery.lua` and the code for viewing the actual CG is in `Rio.arc/CG_PAGEXX.ws2`. The process to change the CG gallery to look and behave like the JP version is quite complex. The order of the CGs displayed and when they unlock need to be changed.
+The code for the gallery is in the `GalleryCgMenu()` function of `menu_gallery.lua` and the code for viewing the actual CG is in `Rio.arc/CG_PAGEXX.ws2`. The process to change the CG gallery to look and behave like the JP version is quite complex. The order of the CGs displayed and when they unlock need to be changed.
 
 There are a set of CGs only present in the EN version which were made to replaced the H-scenes. I have added an extra entry to the end of the gallery to view these CGs. Since they aren't normally encountered, I have made them viewable without needing to unlock them.
 
@@ -60,6 +59,18 @@ The first thing to do is to modify the Lua code to map the JP thumbnail index to
 
 There are about 1000 occurrences to replace so the script `python3 gallery_thumbnail/convert_thumbnail_flags.py` does the work. Some manual work was required to isolate the JP parts.
 
+## Fix Broken Choice
+
+It seems like the choice buttons aren't registered to receive any mouse events so you can't interact with them except for the first frame that they appear. Luckily, the choice functionality still exists in the code so we just need to invoke the right functions at the right time.
+
+We need to detect when the cursor hovers over the choice buttons and when a click occurs. To do this, we can intercept the `MenuMouseMove()` and `MenuLButtonUp()` functions in `menu_base.lua`. To identify the choice buttons we can intercept the choice button creation and cleanup functions `g_MenuMsgWin.MakeSelectBut()` and `g_MenuMsgWin.closeSelect()` in `LegacyGame.lua` to keep track of the buttons that currently exist. To find out which button is currently hovered, we can intercept the buttons' `bt_change()` method in `ui_button.lua` which contains the hit testing.
+
+Once a choice button is hovered over and clicked, we can call
+```lua
+cfunc.LegacyGame__lua_SelectItem(hovering_choice_button_index)
+g_MenuMsgWin:closeSelect(hovering_choice_button_index)
+```
+
 ## Fix Crash
 
 The game sometimes crashes when skipping through the entire Asa/Yoru route. The crash happens near the end but not in a consistent place.
@@ -68,3 +79,5 @@ Notes:
 - Using a debugger, I can see that the process exits cleanly i.e. it is not a null dereference etc.
 - Replacing `lua5.3.dll` with newly built one from <https://github.com/lua/lua/tree/v5.3.6> does not fix it.
 - Splitting the route into two .ws2 files instead of one does not fix it.
+- If I only patch `HUS_001_E.ws2`, the crash still occurs although I haven't been able to reproduce the crash after the first time.
+- If I loop the original `HUS_001_E.ws2`, the crash does not occur or I got lucky.

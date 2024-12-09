@@ -8,6 +8,7 @@ This patch is based on [DarthFly's Patch](https://www.reddit.com/r/IMHHW/comment
 
 - [x] Restore the Ageha/Hotaru button on the story select screen.
 - [x] Restore the CG gallery.
+- [ ] Restore the scene-replay gallery. 
 - [x] Fix broken choice.
 - [ ] Fix crash.
 - Any other suggestions.

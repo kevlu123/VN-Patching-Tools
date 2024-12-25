@@ -1,5 +1,9 @@
 [
 {"op":"Label","args":[0]},
+{"op":"Op01_ConditionalJump","args":[2,127,1,0,37]},
+{"op":"Op01_ConditionalJump","args":[130,110,5,0,37]},
+{"op":"Op06_Jump2","args":[176951]},
+{"op":"Label","args":[37]},
 {"op":"Op16","args":[0,0]},
 {"op":"Op64","args":[0]},
 {"op":"Op33_SetBackground","args":["bg01","BG00_02S.PNG",1,1]},
@@ -10768,6 +10772,7 @@
 {"op":"Op15_SetDisplayName","args":["","",0]},
 {"op":"Op14_DisplayMessage","args":[1125,"char","唇と唇が、重なった。","%K%P",0]},
 {"op":"Op15_SetDisplayName","args":["","",0]},
+{"op":"Label","args":[176951]},
 {"op":"Op16","args":[0,0]},
 {"op":"Op64","args":[0]},
 {"op":"Op33_SetBackground","args":["bg01","BG00_02S.PNG",1,1]},

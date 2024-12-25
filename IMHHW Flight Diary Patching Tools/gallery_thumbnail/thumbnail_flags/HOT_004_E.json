@@ -1,5 +1,9 @@
 [
 {"op":"Label","args":[0]},
+{"op":"Op01_ConditionalJump","args":[2,127,1,0,37]},
+{"op":"Op01_ConditionalJump","args":[130,110,6,0,37]},
+{"op":"Op06_Jump2","args":[141010]},
+{"op":"Label","args":[37]},
 {"op":"Op16","args":[0,0]},
 {"op":"Op64","args":[0]},
 {"op":"Op33_SetBackground","args":["bg01","BG00_02S.PNG",1,1]},
@@ -8731,6 +8735,7 @@
 {"op":"Op65","args":[100,0,1,0,2,""]},
 {"op":"Op11_SetTimer","args":["timer01",0,1]},
 {"op":"Op12_StartTimer","args":["timer01",1,""]},
+{"op":"Label","args":[141010]},
 {"op":"Op16","args":[0,0]},
 {"op":"Op64","args":[0]},
 {"op":"Op33_SetBackground","args":["ev","HOT_07_001S.PNG",1,1]},

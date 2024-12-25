@@ -8,7 +8,7 @@ This patch is based on [DarthFly's Patch](https://www.reddit.com/r/IMHHW/comment
 
 - [x] Restore the Ageha/Hotaru button on the story select screen.
 - [x] Restore the CG gallery.
-- [ ] Restore the scene-replay gallery. 
+- [x] Restore the scene-replay gallery. 
 - [x] Fix broken choice.
 - [ ] Fix crash.
 - Any other suggestions.
@@ -68,7 +68,7 @@ To generate the `CG_PAGEXX.ws2` opcode files with the corrected flag check, run 
 
 ### Thumbnail Flags
 
-Each CG thumbnail in the gallery also has their own flag to store whether the thumbnail is shown and clickable. Unfortunately, these do conflict between versions so unlocking a thumbnail may also unlock unrelated thumbnails. To fix this, we need to assign a new set of flags to the JP only thumbnails. I used flags in the range [1042, 1063].
+Each CG thumbnail in the gallery also has their own flag to store whether the thumbnail is shown and clickable. Unfortunately, these do conflict between versions so unlocking a thumbnail may also unlock unrelated thumbnails. To fix this, we need to assign a new set of flags to the JP only thumbnails. I used flags in the range [1142, 1163].
 
 The first thing to do is to modify the Lua code to map the JP thumbnail index to the correct EN thumbnail flag when it performs the unlock check since almost all the .ws2 scripts assume EN thumbnail flags. The mapping needs to be done by hand. Some thumbnail indices do not have a corresponding EN thumbnail flag since they were removed from the EN version. For these, we need to map the thumbnail index to the new set of flags we created.
 

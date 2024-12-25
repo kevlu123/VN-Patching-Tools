@@ -1,5 +1,9 @@
 [
 {"op":"Label","args":[0]},
+{"op":"Op01_ConditionalJump","args":[2,127,1,0,37]},
+{"op":"Op01_ConditionalJump","args":[130,110,1,0,37]},
+{"op":"Op06_Jump2","args":[60154]},
+{"op":"Label","args":[37]},
 {"op":"Op16","args":[0,0]},
 {"op":"Op64","args":[0]},
 {"op":"Op33_SetBackground","args":["bg01","BG00_02S.PNG",1,1]},
@@ -3741,6 +3745,7 @@
 {"op":"Op15_SetDisplayName","args":["","",0]},
 {"op":"Op1F_StopMusic","args":["bgm01",2]},
 {"op":"Op16","args":[0,0]},
+{"op":"Label","args":[60154]},
 {"op":"Op28_PlaySound","args":["se01","SE43A.OGG",0,0,0,10,0,0,0,1,0]},
 {"op":"Op64","args":[0]},
 {"op":"Op37_ClearLayer","args":["*"]},

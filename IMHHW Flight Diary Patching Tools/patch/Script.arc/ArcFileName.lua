@@ -1,5 +1,297 @@
 -----------------------------------------
 --                                     --
+--           Add scene replay          --
+--                                     --
+-----------------------------------------
+
+-- NOTE: Set scene numbers to 10
+g_GalleryInfo.SceneThMax = 10
+
+oldMenuNew1 = Menu.new
+function Menu.new(a)
+  local r = oldMenuNew1(a)
+  if a == "Gallery" then
+    function newindex(self, field, value)
+      if field == "InitGallery" then
+
+        local InitGallery = function(r0_20, r1_20)
+          -- line: [960, 1037] id: 20
+          local r2_20 = getUItype()
+          local r3_20 = cclass.lua_Layers:create()
+          local r4_20 = "SYS_GalleryBase.pna"
+          if r2_20 == 1 then
+            r4_20 = "SYS_c_GalleryBase.pna"
+          end
+          g_Menu.GalleryMenu.ptr:MenuLoadLayer("GalleryBace", r4_20)
+          r0_20:MenuLoadLayer("GalleryDefaultBack", "bg00_02s.png")
+          r3_20:setVisible("Gallery", "GalleryDefaultBack", 1)
+          r3_20:forwardLayerOrder("Gallery", "GalleryBace", "GalleryDefaultBack")
+          -- NOTE: Removed separator bars
+          --r3_20:initSubLayer("Gallery", "GalleryBace", 2, 1)
+          --r3_20:initSubLayer("Gallery", "GalleryBace", 3, 1)
+          r3_20:initSubLayer("Gallery", "GalleryBace", 25, 1)
+          r3_20:initSubLayer("Gallery", "GalleryBace", 43, 1)
+          r3_20:initSubLayer("Gallery", "GalleryBace", 44, 1)
+          r3_20:initSubLayer("Gallery", "GalleryBace", 45, 1)
+          r3_20:setSubLayerVisible("Gallery", "GalleryBace", 43, 0)
+          r3_20:setSubLayerVisible("Gallery", "GalleryBace", 45, 0)
+          r0_20.BT_DataBace = {}
+          r0_20:MenuButtonSet(r0_20.BT_DataBace, "CG", 1, "GalleryBace", 6, 6, 7, -1, 9, 1, 0, 0)
+          r0_20:MenuButtonSet(r0_20.BT_DataBace, "Scene", 1, "GalleryBace", 36, 36, 37, -1, 42, 2, 0, 0) -- NOTE: Added scene button
+          r0_20:MenuButtonSet(r0_20.BT_DataBace, "BGM", 1, "GalleryBace", 12, 12, 13, -1, 15, 3, 0, 0)
+          r0_20:MenuButtonSet(r0_20.BT_DataBace, "Chara", 1, "GalleryBace", 18, 18, 19, -1, 21, 6, 0, 0)
+          r0_20:MenuButtonSet(r0_20.BT_DataBace, "stop", 1, "GalleryBace", 27, 27, 28, -1, 30, 10, 0, 0)
+          r0_20:MenuButtonSet(r0_20.BT_DataBace, "title", 1, "GalleryBace", 33, 33, 34, -1, -1, 11, 0, 0)
+          r0_20:MenuButtonSet(r0_20.BT_DataBace, "quit", 1, "GalleryBace", 38, 38, 39, -1, -1, 12, 0, 0)
+          r0_20.MenuButton:SetList("BT_DataBace", r0_20.BT_DataBace)
+          r0_20:MenuButtonInit()
+          local r5_20 = cfunc.LegacyGame__lua_GetVariable(103)
+          if r1_20 ~= 0 or cfunc.LegacyGame__lua_GetFlag(124) then
+            r0_20:GalleryBgmPlay(30)
+          end
+          cfunc.LegacyGame__lua_SetFlag(124, false)
+          r0_20:initPageGallery(r5_20, true)
+        end
+
+        rawset(self, "InitGallery", InitGallery)
+      elseif field == "UpButtonMove" then
+      
+          local UpButtonMove = function(r0_19, r1_19, r2_19)
+            -- line: [865, 935] id: 19
+            local r3_19 = cclass.lua_Layers:create()
+            local r4_19 = getEffectRate()
+            local r5_19 = {
+              1,
+              2, -- NOTE: Added 2
+              3,
+              6
+            }
+            local r6_19 = {
+              8,
+              41, -- NOTE: Added 41
+              14,
+              20
+            }
+            for r11_19, r12_19 in pairs({
+              "CG",
+              "Scene", -- NOTE: Added "Scene"
+              "BGM",
+              "Chara"
+            }) do
+              local r13_19 = r6_19[r11_19]
+              if r1_19 == r5_19[r11_19] then
+                r3_19:initSubLayer("Gallery", "GalleryBace", r13_19, 1)
+                r3_19:setSubLayerVisible("Gallery", "GalleryBace", r13_19, 1)
+                if r2_19 > 0 then
+                  r3_19:setSubLayerEffect("Gallery", "GalleryBace", "GalleryPageEff", r13_19, LUA_EFFECT_SCALE, 0.2, 0.2, 0, 0, 0, 150 * r4_19, 0, 0)
+                  r3_19:setSubLayerEffect("Gallery", "GalleryBace", "GalleryPageEff", r13_19, LUA_EFFECT_SCALE, -0.2, -0.2, 0, 0, 0, 80 * r4_19, 0, 0)
+                  r3_19:startSubLayerEffect("Gallery", "GalleryBace", "GalleryPageEff", r13_19, 0)
+                end
+              else
+                r3_19:setSubLayerVisible("Gallery", "GalleryBace", r13_19, 0)
+              end
+            end
+            local r8_19 = {
+              "Scene", -- NOTE: Added "Scene"
+              "BGM",
+              "Chara"
+            }
+            local r9_19 = r1_19
+            
+            -- NOTE: Changed
+            r9_19 = ({
+              [1] = 1,
+              [2] = 2,
+              [3] = 3,
+              [6] = 4,
+            })[r9_19]
+            --if r9_19 == 3 then
+            --  r9_19 = 2
+            --end
+            --if r9_19 == 6 then
+            --  r9_19 = 3
+            --end
+            
+            local r10_19 = getUItype()
+            local r11_19 = r0_19.TopButtonPos
+            if r10_19 == 1 then
+              r11_19 = r0_19.C_TopButtonPos
+            end
+            for r15_19, r16_19 in pairs(r8_19) do
+              if r2_19 > 0 then
+                local r17_19 = r0_19.BT_DataBace[r16_19].initpos.x
+                local r18_19 = r0_19.BT_DataBace[r16_19].initpos.y
+                if r11_19[r9_19][r16_19] ~= nil then
+                  r17_19 = r11_19[r9_19][r16_19].x
+                  r18_19 = r11_19[r9_19][r16_19].y
+                end
+                local r19_19 = r17_19 - r0_19.BT_DataBace[r16_19].DRAW_POS.x
+                local r20_19 = r18_19 - r0_19.BT_DataBace[r16_19].DRAW_POS.y
+                for r25_19, r26_19 in pairs({
+                  "on",
+                  "def",
+                  "dis"
+                }) do
+                  local r27_19 = r0_19.BT_DataBace[r16_19].SubLayer[r26_19].no
+                  r3_19:setSubLayerEffect("Gallery", "GalleryBace", "GalleryPageEff", r27_19, LUA_EFFECT_POS, r19_19, r20_19, 0, 0, 0, r2_19 * r4_19, 0, 0)
+                  r3_19:startSubLayerEffect("Gallery", "GalleryBace", "GalleryPageEff", r27_19, 0)
+                end
+              elseif r11_19[r9_19][r16_19] ~= nil then
+                r0_19.BT_DataBace[r16_19]:bt_SetPos(r11_19[r9_19][r16_19].x, r11_19[r9_19][r16_19].y)
+              else
+                r0_19.BT_DataBace[r16_19]:bt_SetDefPos()
+              end
+            end
+          end
+          
+          rawset(self, "UpButtonMove", UpButtonMove)
+        
+      elseif field == "TopButtonPos" then
+      
+        -- NOTE: Changed button positions
+        local TopButtonPos = {
+          -- When CG is selected
+          {
+            Cg = nil,
+            Scene = { x = 176, y = 56 },
+            BGM =   { x = 298, y = 48 },
+            Chara = { x = 395, y = 48 },
+          },
+          -- When Scene is selected
+          {
+            Cg = nil,
+            Scene = nil,
+            BGM =   { x = 355, y = 48 },
+            Chara = { x = 452, y = 48 },
+          },
+          -- When BGM is selected
+          {
+            Cg = nil,
+            Scene = nil,
+            BGM = nil,
+            Chara = { x = 428, y = 48 },
+          },
+          -- When Chara is selected
+          {
+            Cg = nil,
+            Scene = nil,
+            BGM = nil,
+            Chara = nil,
+          }
+
+          --{
+          --  BGM = {
+          --    x = 177,
+          --    y = 48,
+          --  },
+          --  Chara = {
+          --    x = 273,
+          --    y = 48,
+          --  },
+          --},
+          --{
+          --  BGM = nil,
+          --  Chara = {
+          --    x = 307,
+          --    y = 48,
+          --  },
+          --},
+          --{
+          --  BGM = nil,
+          --  Chara = nil,
+          --}
+        }
+
+        rawset(self, "TopButtonPos", TopButtonPos)
+      
+      elseif field == "DashboardMove" then
+
+        -- NOTE: Removed separator bar moving effect
+        rawset(self, "DashboardMove", function() end)
+
+      else
+        rawset(self, field, value)
+      end
+    end
+    setmetatable(r, { __newindex = newindex })
+  end
+  return r
+end
+
+oldGallerySceneMenu = GallerySceneMenu
+GallerySceneMenu = function(arg)
+  oldGallerySceneMenu(arg)
+
+  -- NOTE: Reimplemented GetSceneFlag
+  function arg.GetSceneFlag(self, page, index)
+    local cg = (page - 1) * 9 + index - 1
+    if cg >= self.SceneMenu.AllSceneMax then
+      return -1 -- Out of bounds
+    end
+    if cfunc.LegacyGame__lua_GetFlag(1060 + cg) then
+      return 1 -- Unlocked
+    else
+      return 0 -- Locked
+    end
+
+    -- line: [1941, 1997] id: 47
+    --local r3_47 = {
+    --  REPLAY_001 = 1050,
+    --  REPLAY_002 = 1051,
+    --  REPLAY_003 = 1052,
+    --  REPLAY_004 = 1053,
+    --  REPLAY_005 = 1054,
+    --  REPLAY_006 = 1055,
+    --  REPLAY_007 = 1056,
+    --  REPLAY_008 = 1057,
+    --  REPLAY_009 = 1058,
+    --  REPLAY_010 = 1059,
+    --  REPLAY_011 = 1060,
+    --  REPLAY_012 = 1061,
+    --  REPLAY_013 = 1062,
+    --  REPLAY_014 = 1063,
+    --  REPLAY_015 = 1064,
+    --  REPLAY_016 = 1065,
+    --  REPLAY_017 = 1066,
+    --}
+    --local r4_47 = {
+    --  r3_47.REPLAY_001,
+    --  r3_47.REPLAY_002,
+    --  r3_47.REPLAY_003,
+    --  r3_47.REPLAY_004,
+    --  r3_47.REPLAY_005,
+    --  r3_47.REPLAY_006,
+    --  r3_47.REPLAY_007,
+    --  r3_47.REPLAY_008,
+    --  r3_47.REPLAY_009,
+    --  r3_47.REPLAY_010,
+    --  r3_47.REPLAY_011,
+    --  r3_47.REPLAY_012,
+    --  r3_47.REPLAY_013,
+    --  r3_47.REPLAY_014,
+    --  r3_47.REPLAY_015,
+    --  r3_47.REPLAY_016,
+    --  r3_47.REPLAY_017
+    --}
+    --local r5_47 = (r1_47 - 1) * r0_47.SceneMenu.ThAllMax + r2_47
+    --if r0_47.SceneMenu.AllSceneMax < r5_47 then
+    --  return -1
+    --end
+    --local r7_47 = r4_47[r5_47]
+    --if r7_47 == nil then
+    --  return -1
+    --end
+    --local r8_47 = cfunc.LegacyGame__lua_GetFlag(r7_47)
+    --if true then
+    --  return 1
+    --else
+    --  return 0
+    --end
+  end
+end
+
+-----------------------------------------
+--                                     --
 --          Fix choice buttons         --
 --                                     --
 -----------------------------------------
@@ -854,6 +1146,6 @@ openStory = function(r0_262, r1_262)
   return true
 end
 
-g_exampleText0 = "Patched with\n"
+g_exampleText0 = "(v1.1) Patched with\n"
   .. "https://github.com/kevlu123/VN-Patching-Tools\n"
   .. "Based on DarthFly's patch."

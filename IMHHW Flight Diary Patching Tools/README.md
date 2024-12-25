@@ -17,8 +17,8 @@ This patch is based on [DarthFly's Patch](https://www.reddit.com/r/IMHHW/comment
 
 - Start with a copy of the [Steam version](https://vndb.org/r58996).
 - Download and unzip the two zip files and replace the game files.
-  - <https://github.com/kevlu123/VN-Patching-Tools/releases/download/IMHHW-Flight-Diary/IMHHW-Flight-Diary-Part1.zip>
-  - <https://github.com/kevlu123/VN-Patching-Tools/releases/download/IMHHW-Flight-Diary/IMHHW-Flight-Diary-Part2.zip>
+  - <https://github.com/kevlu123/VN-Patching-Tools/releases/download/IMHHW-Flight-Diary-v1.1/IMHHW-Flight-Diary-v1.1-Part1.zip>
+  - <https://github.com/kevlu123/VN-Patching-Tools/releases/download/IMHHW-Flight-Diary-v1.1/IMHHW-Flight-Diary-v1.1-Part2.zip>
 
 Note that this patch hasn't been well tested. Please let me know of any issues.
 

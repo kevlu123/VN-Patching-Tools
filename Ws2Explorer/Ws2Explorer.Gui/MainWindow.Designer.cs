@@ -669,7 +669,7 @@ partial class MainWindow {
         Controls.Add(menuStrip);
         MainMenuStrip = menuStrip;
         Name = "MainWindow";
-        Text = "WS2 Explorer";
+        Text = "Ws2Explorer v1.5";
         FormClosing += OnFormClosing;
         ResizeEnd += OnFormResized;
         menuStrip.ResumeLayout(false);

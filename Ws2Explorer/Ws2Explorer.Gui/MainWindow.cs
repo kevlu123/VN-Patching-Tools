@@ -1221,8 +1221,10 @@ public partial class MainWindow : Form {
         config.WordWrap = wordWrapMenuItem.Checked;
         config.FilePanelWidth = filePreviewerSplitContainer.SplitterDistance;
         config.PreviewerPanelHeight = terminalPreviewerSplitContainer.SplitterDistance;
-        config.WindowX = Location.X;
-        config.WindowY = Location.Y;
+        if (Location.X >= 0 && Location.Y >= 0) {
+            config.WindowX = Location.X;
+            config.WindowY = Location.Y;
+        }
         config.WindowWidth = restoredWindowSize.Width;
         config.WindowHeight = restoredWindowSize.Height;
         config.WindowMaximized = WindowState == FormWindowState.Maximized;

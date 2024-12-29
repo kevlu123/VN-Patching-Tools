@@ -1270,6 +1270,23 @@ public partial class MainWindow : Form {
 
         await ReopenFolder();
     }
+
+    private async void PnaAddEntryButtonClicked(object sender, EventArgs e) {
+        using (var guard = new TaskGuard()) {
+            if (!guard.Acquired) {
+                return;
+            }
+
+            if (currentFolder is PnaFile pnaFile) {
+                await pnaFile.AddEntry(cts.Token, progress);
+            } else {
+                ShowStatus("Current folder is not a PNA file.");
+                return;
+            }
+        }
+
+        await ReopenFolder();
+    }
 }
 
 static class Extensions {

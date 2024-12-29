@@ -46,6 +46,8 @@ partial class MainWindow {
         deleteToolStripMenuItem = new ToolStripMenuItem();
         swapFilesToolStripMenuItem = new ToolStripMenuItem();
         toolStripMenuItem2 = new ToolStripMenuItem();
+        toolStripSeparator9 = new ToolStripSeparator();
+        pNAAddEntryToolStripMenuItem = new ToolStripMenuItem();
         toolStripSeparator3 = new ToolStripSeparator();
         copyToolStripMenuItem = new ToolStripMenuItem();
         pasteToolStripMenuItem = new ToolStripMenuItem();
@@ -187,7 +189,7 @@ partial class MainWindow {
         // 
         // editToolStripMenuItem
         // 
-        editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { editInApplicationToolStripMenuItem, editHexToolStripMenuItem, toolStripSeparator4, copyFullPathToolStripMenuItem, toolStripSeparator10, renameToolStripMenuItem, deleteToolStripMenuItem, swapFilesToolStripMenuItem, toolStripMenuItem2, toolStripSeparator3, copyToolStripMenuItem, pasteToolStripMenuItem });
+        editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { editInApplicationToolStripMenuItem, editHexToolStripMenuItem, toolStripSeparator4, copyFullPathToolStripMenuItem, toolStripSeparator10, renameToolStripMenuItem, deleteToolStripMenuItem, swapFilesToolStripMenuItem, toolStripMenuItem2, toolStripSeparator9, pNAAddEntryToolStripMenuItem, toolStripSeparator3, copyToolStripMenuItem, pasteToolStripMenuItem });
         editToolStripMenuItem.Name = "editToolStripMenuItem";
         editToolStripMenuItem.Size = new Size(39, 20);
         editToolStripMenuItem.Text = "Edit";
@@ -196,7 +198,7 @@ partial class MainWindow {
         // 
         editInApplicationToolStripMenuItem.Name = "editInApplicationToolStripMenuItem";
         editInApplicationToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.E;
-        editInApplicationToolStripMenuItem.Size = new Size(225, 22);
+        editInApplicationToolStripMenuItem.Size = new Size(236, 22);
         editInApplicationToolStripMenuItem.Text = "Edit In Application...";
         editInApplicationToolStripMenuItem.Click += MenuEditOpenInAppClicked;
         // 
@@ -204,33 +206,33 @@ partial class MainWindow {
         // 
         editHexToolStripMenuItem.Name = "editHexToolStripMenuItem";
         editHexToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.E;
-        editHexToolStripMenuItem.Size = new Size(225, 22);
+        editHexToolStripMenuItem.Size = new Size(236, 22);
         editHexToolStripMenuItem.Text = "Edit Hex...";
         editHexToolStripMenuItem.Click += MenuEditOpenAsHexClicked;
         // 
         // toolStripSeparator4
         // 
         toolStripSeparator4.Name = "toolStripSeparator4";
-        toolStripSeparator4.Size = new Size(222, 6);
+        toolStripSeparator4.Size = new Size(233, 6);
         // 
         // copyFullPathToolStripMenuItem
         // 
         copyFullPathToolStripMenuItem.Name = "copyFullPathToolStripMenuItem";
         copyFullPathToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.C;
-        copyFullPathToolStripMenuItem.Size = new Size(225, 22);
+        copyFullPathToolStripMenuItem.Size = new Size(236, 22);
         copyFullPathToolStripMenuItem.Text = "Copy Full Path";
         copyFullPathToolStripMenuItem.Click += MenuEditCopyPathClicked;
         // 
         // toolStripSeparator10
         // 
         toolStripSeparator10.Name = "toolStripSeparator10";
-        toolStripSeparator10.Size = new Size(222, 6);
+        toolStripSeparator10.Size = new Size(233, 6);
         // 
         // renameToolStripMenuItem
         // 
         renameToolStripMenuItem.Name = "renameToolStripMenuItem";
         renameToolStripMenuItem.ShortcutKeys = Keys.F2;
-        renameToolStripMenuItem.Size = new Size(225, 22);
+        renameToolStripMenuItem.Size = new Size(236, 22);
         renameToolStripMenuItem.Text = "Rename...";
         renameToolStripMenuItem.Click += MenuEditRenameClicked;
         // 
@@ -238,7 +240,7 @@ partial class MainWindow {
         // 
         deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
         deleteToolStripMenuItem.ShortcutKeys = Keys.Delete;
-        deleteToolStripMenuItem.Size = new Size(225, 22);
+        deleteToolStripMenuItem.Size = new Size(236, 22);
         deleteToolStripMenuItem.Text = "Delete";
         deleteToolStripMenuItem.Click += MenuEditDeleteClicked;
         // 
@@ -246,7 +248,7 @@ partial class MainWindow {
         // 
         swapFilesToolStripMenuItem.Name = "swapFilesToolStripMenuItem";
         swapFilesToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.G;
-        swapFilesToolStripMenuItem.Size = new Size(225, 22);
+        swapFilesToolStripMenuItem.Size = new Size(236, 22);
         swapFilesToolStripMenuItem.Text = "Swap";
         swapFilesToolStripMenuItem.Click += MenuEditSwapFileClicked;
         // 
@@ -254,20 +256,33 @@ partial class MainWindow {
         // 
         toolStripMenuItem2.Name = "toolStripMenuItem2";
         toolStripMenuItem2.ShortcutKeys = Keys.Control | Keys.D;
-        toolStripMenuItem2.Size = new Size(225, 22);
+        toolStripMenuItem2.Size = new Size(236, 22);
         toolStripMenuItem2.Text = "Duplicate";
         toolStripMenuItem2.Click += MenuEditDuplicateButtonClicked;
+        // 
+        // toolStripSeparator9
+        // 
+        toolStripSeparator9.Name = "toolStripSeparator9";
+        toolStripSeparator9.Size = new Size(233, 6);
+        // 
+        // pNAAddEntryToolStripMenuItem
+        // 
+        pNAAddEntryToolStripMenuItem.Name = "pNAAddEntryToolStripMenuItem";
+        pNAAddEntryToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.N;
+        pNAAddEntryToolStripMenuItem.Size = new Size(236, 22);
+        pNAAddEntryToolStripMenuItem.Text = "PNA - Add Entry";
+        pNAAddEntryToolStripMenuItem.Click += PnaAddEntryButtonClicked;
         // 
         // toolStripSeparator3
         // 
         toolStripSeparator3.Name = "toolStripSeparator3";
-        toolStripSeparator3.Size = new Size(222, 6);
+        toolStripSeparator3.Size = new Size(233, 6);
         // 
         // copyToolStripMenuItem
         // 
         copyToolStripMenuItem.Name = "copyToolStripMenuItem";
         copyToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+C";
-        copyToolStripMenuItem.Size = new Size(225, 22);
+        copyToolStripMenuItem.Size = new Size(236, 22);
         copyToolStripMenuItem.Text = "Copy";
         copyToolStripMenuItem.Click += MenuEditCopyClicked;
         // 
@@ -275,7 +290,7 @@ partial class MainWindow {
         // 
         pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
         pasteToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+V";
-        pasteToolStripMenuItem.Size = new Size(225, 22);
+        pasteToolStripMenuItem.Size = new Size(236, 22);
         pasteToolStripMenuItem.Text = "Paste";
         pasteToolStripMenuItem.Click += MenuEditPasteClicked;
         // 
@@ -762,4 +777,6 @@ partial class MainWindow {
     private ToolStripMenuItem showTerminalMenuItem;
     private ToolStripStatusLabel fileInfoLabel;
     private ToolStripMenuItem toolStripMenuItem2;
+    private ToolStripSeparator toolStripSeparator9;
+    private ToolStripMenuItem pNAAddEntryToolStripMenuItem;
 }

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Runtime.Versioning;
 
 namespace Ws2Explorer;

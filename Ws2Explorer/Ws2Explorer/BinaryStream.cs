@@ -132,6 +132,7 @@ public class BinaryStream {
         }
 
         try { return new PanFile(parent, name, this); } catch { Reset(); }
+        try { return new LuacFile(parent, name, this); } catch { Reset(); }
 
         // Potentially long-running
         return await Task.Run(() => {

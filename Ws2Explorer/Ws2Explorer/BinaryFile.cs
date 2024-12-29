@@ -3,7 +3,7 @@
 namespace Ws2Explorer;
 
 public class BinaryFile : IFile {
-    public const int MAX_TEXT_SIZE = 128 * 1024;
+    public const int MAX_TEXT_SIZE = 1024 * 1024;
 
     public IFolder? Parent { get; }
     public string Name { get; }

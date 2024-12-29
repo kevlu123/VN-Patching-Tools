@@ -6,8 +6,11 @@ partial class ExternalEditorPathWindow : Form {
     private readonly CommonOpenFileDialog browseDialog;
 
     public string TextEditorPath { get; private set; } = "";
+    public string TextEditorArgs { get; private set; } = "";
     public string ImageEditorPath { get; private set; } = "";
+    public string ImageEditorArgs { get; private set; } = "";
     public string HexEditorPath { get; private set; } = "";
+    public string HexEditorArgs { get; private set; } = "";
 
     public ExternalEditorPathWindow(Config config) {
         InitializeComponent();
@@ -23,8 +26,11 @@ partial class ExternalEditorPathWindow : Form {
         };
 
         textEditorPathTextBox.Text = config.TextEditorPath;
+        textEditorArgsTextBox.Text = config.TextEditorArgs;
         imageEditorPathTextBox.Text = config.ImageEditorPath;
+        imageEditorArgsTextBox.Text = config.ImageEditorArgs;
         hexEditorPathTextBox.Text = config.HexEditorPath;
+        hexEditorArgsTextBox.Text = config.HexEditorArgs;
     }
 
     private void BrowsePath(object sender, EventArgs e) {
@@ -46,8 +52,11 @@ partial class ExternalEditorPathWindow : Form {
 
     private void OkButtonClicked(object sender, EventArgs e) {
         TextEditorPath = textEditorPathTextBox.Text;
+        TextEditorArgs = textEditorArgsTextBox.Text;
         ImageEditorPath = imageEditorPathTextBox.Text;
+        ImageEditorArgs = imageEditorArgsTextBox.Text;
         HexEditorPath = hexEditorPathTextBox.Text;
+        HexEditorArgs = hexEditorArgsTextBox.Text;
         DialogResult = DialogResult.OK;
     }
 

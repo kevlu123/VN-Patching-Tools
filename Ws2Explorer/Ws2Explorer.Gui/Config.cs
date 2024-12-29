@@ -9,8 +9,11 @@ class Config {
 
     public string OpenFolder { get; set; } = "";
     public string TextEditorPath { get; set; } = "notepad.exe";
+    public string TextEditorArgs { get; set; } = "";
     public string ImageEditorPath { get; set; } = "mspaint.exe";
+    public string ImageEditorArgs { get; set; } = "";
     public string HexEditorPath { get; set; } = "";
+    public string HexEditorArgs { get; set; } = "";
     public bool ShowEmptyPnaFiles { get; set; } = false;
     public bool ShowHexViewer { get; set; } = false;
     public bool ShowTerminal { get; set; } = false;

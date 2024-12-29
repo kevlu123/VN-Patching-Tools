@@ -376,6 +376,8 @@ public partial class MainWindow : Form {
         }
 
         OpenFolder(folder, modifyHistory);
+
+        config.Save();
     }
 
     private void OpenFolder(IFolder folder, bool modifyHistory = true) {
@@ -828,7 +830,7 @@ public partial class MainWindow : Form {
     }
 
     private async void MenuEditOpenAsHexClicked(object sender, EventArgs e) {
-        await OpenExternalEditor("Hex", config.HexEditorPath);
+        await OpenExternalEditor("Hex", config.HexEditorPath, config.HexEditorArgs);
     }
 
     private async void MenuEditOpenInAppClicked(object sender, EventArgs e) {
@@ -838,15 +840,15 @@ public partial class MainWindow : Form {
         }
 
         if (currentBinaryFile is ImageFile) {
-            await OpenExternalEditor("Image", config.ImageEditorPath);
+            await OpenExternalEditor("Image", config.ImageEditorPath, config.ImageEditorArgs);
         } else if (currentBinaryFile.IsText) {
-            await OpenExternalEditor("Text", config.TextEditorPath);
+            await OpenExternalEditor("Text", config.TextEditorPath, config.TextEditorArgs);
         } else {
-            await OpenExternalEditor("Hex", config.HexEditorPath);
+            await OpenExternalEditor("Hex", config.HexEditorPath, config.HexEditorArgs);
         }
     }
 
-    private async Task OpenExternalEditor(string editorType, string editorPath) {
+    private async Task OpenExternalEditor(string editorType, string editorPath, string editorArgs) {
         var currentBinaryFile = this.currentBinaryFile;
         var currentFolder = currentBinaryFile?.Parent;
         if (currentFolder == null || currentBinaryFile == null) {
@@ -884,7 +886,7 @@ public partial class MainWindow : Form {
             bool complete = false;
             while (!complete) {
                 try {
-                    Process proc = Process.Start(editorPath, $"\"{targetFilename}\"");
+                    Process proc = Process.Start(editorPath, $"{editorArgs} \"{targetFilename}\"");
 
                     await proc.WaitForExitAsync(cts.Token);
 
@@ -1209,8 +1211,11 @@ public partial class MainWindow : Form {
         using var dialog = new ExternalEditorPathWindow(config);
         if (dialog.ShowDialog() == DialogResult.OK) {
             config.TextEditorPath = dialog.TextEditorPath;
+            config.TextEditorArgs = dialog.TextEditorArgs;
             config.ImageEditorPath = dialog.ImageEditorPath;
+            config.ImageEditorArgs = dialog.ImageEditorArgs;
             config.HexEditorPath = dialog.HexEditorPath;
+            config.HexEditorArgs = dialog.HexEditorArgs;
         }
     }
 

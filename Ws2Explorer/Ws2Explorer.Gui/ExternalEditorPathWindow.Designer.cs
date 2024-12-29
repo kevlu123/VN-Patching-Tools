@@ -178,6 +178,7 @@
             imageEditorPathBrowseButton.TabIndex = 8;
             imageEditorPathBrowseButton.Text = "...";
             imageEditorPathBrowseButton.UseVisualStyleBackColor = true;
+            imageEditorPathBrowseButton.Click += BrowsePath;
             // 
             // groupBox3
             // 
@@ -233,6 +234,7 @@
             hexEditorPathBrowseButton.TabIndex = 8;
             hexEditorPathBrowseButton.Text = "...";
             hexEditorPathBrowseButton.UseVisualStyleBackColor = true;
+            hexEditorPathBrowseButton.Click += BrowsePath;
             // 
             // ExternalEditorPathWindow
             // 

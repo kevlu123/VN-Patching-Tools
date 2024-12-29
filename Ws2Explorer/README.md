@@ -26,7 +26,7 @@ The same project can also be used as a C# library.
 | *.pna     | Image archive containing PNG files and corresponding metadata. |
 | *.ws2     | Compiled game scripts (contains code and text).                |
 | *.ptf     | Compressed/encrypted OTF or TTF font file.                     |
-| Pan.dat   | Unknown metadata.                                              |
+| Pan.dat   | Audio panning data?                                            |
 
 ## Tips
 

@@ -1,0 +1,32 @@
+on:
+  push:
+    tags:
+      - 'Ws2Explorer*'
+
+name: Create Ws2Explorer release
+
+jobs:
+  build:
+    name: Create Ws2Explorer Release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET 7
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7'
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cd Ws2Explorer/Ws2Explorer.Gui
+          dotnet publish -c Release
+          mv bin/Release/net7.0-windows/publish ${{ github.ref_name }}
+          Compress-Archive -Path ${{ github.ref_name }} -DestinationPath ${{ github.ref_name }}.zip
+        
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Ws2Explorer/Ws2Explorer.Gui/${{ github.ref_name }}.zip

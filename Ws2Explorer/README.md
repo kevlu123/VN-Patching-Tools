@@ -11,7 +11,7 @@ scripts can be recompiled into functioning ws2 files.
 
 ## Ws2Explorer GUI Download
 
-<https://github.com/kevlu123/VN-Patching-Tools/releases/download/Ws2Explorer-v1.5.0/Ws2Explorer-v1.5.0.zip>
+<https://github.com/kevlu123/VN-Patching-Tools/releases/download/Ws2Explorer-v1.6.1/Ws2Explorer-v1.6.1.zip>
 
 The GUI tool has a terminal built in but if you want a cross-platform
 command line only tool, run `dotnet build` in the

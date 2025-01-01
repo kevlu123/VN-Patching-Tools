@@ -5,7 +5,7 @@ namespace Ws2Explorer.Compiler;
 public interface IOpcode {
     IEnumerable<int>? Labels => null;
     string Name => GetType().Name;
-    byte OpcodeNumber => byte.Parse(GetType().Name[2..4], System.Globalization.NumberStyles.HexNumber);
+    byte OpcodeNumber => throw new InvalidOperationException();
 
     int GetArgumentsLength(Ws2Version version);
     void Decompile(Ws2Reader reader, Ws2Version version);
@@ -13,4 +13,5 @@ public interface IOpcode {
     JsonArray Serialize();
     void Deserialize(JsonArray args, Ws2Version version);
     void UpdateLabels(IDictionary<int, int> changes) { }
+    IOpcode Clone();
 }

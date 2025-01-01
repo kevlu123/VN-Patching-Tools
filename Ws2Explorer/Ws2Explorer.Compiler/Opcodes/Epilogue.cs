@@ -48,4 +48,15 @@ public class Epilogue : IOpcode {
         Arg7 = (byte)args[6]!;
         Arg8 = (byte)args[7]!;
     }
+
+    public IOpcode Clone() => new Epilogue {
+        Arg1 = Arg1,
+        Arg2 = Arg2,
+        Arg3 = Arg3,
+        Arg4 = Arg4,
+        Arg5 = Arg5,
+        Arg6 = Arg6,
+        Arg7 = Arg7,
+        Arg8 = Arg8
+    };
 }

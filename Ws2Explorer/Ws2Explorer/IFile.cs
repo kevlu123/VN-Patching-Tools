@@ -5,4 +5,5 @@ public interface IFile {
     string Name { get; }
     string FullPath => (Parent == null ? Name : Path.Combine(Parent.FullPath, Name))
         .Replace('\\', '/');
+    void DetachParent();
 }

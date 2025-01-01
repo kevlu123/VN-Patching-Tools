@@ -6,6 +6,8 @@ public class Op15_SetDisplayName : IOpcode {
     public string FullCharacterName { get; set; } = "";
     public byte Arg1 { get; set; }
 
+    public byte OpcodeNumber => 0x15;
+
     public string CharacterName {
         get => FullCharacterName[GetPrefixLength()..];
         set => FullCharacterName = Prefix + value;
@@ -48,5 +50,12 @@ public class Op15_SetDisplayName : IOpcode {
     public void Deserialize(JsonArray args, Ws2Version version) {
         FullCharacterName = (string)args[0]! + (string)args[1]!;
         Arg1 = (byte)args[2]!;
+    }
+
+    public IOpcode Clone() {
+        return new Op15_SetDisplayName {
+            FullCharacterName = FullCharacterName,
+            Arg1 = Arg1
+        };
     }
 }

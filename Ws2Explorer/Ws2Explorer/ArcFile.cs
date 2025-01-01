@@ -49,6 +49,14 @@ public class ArcFile : BinaryFile, IFolder {
         }
     }
 
+    public ArcFile(string name, IEnumerable<(string, BinaryStream)> children)
+        : base(null, name, null! /* Set on rebuild */) {
+        foreach (var (childName, childStream) in children) {
+            this.children.Add(childName, childStream);
+        }
+        RebuildStream(null, CancellationToken.None).Wait();
+    }
+
     public List<FileMetadata> ListChildren() {
         return children.
             Select(x => new FileMetadata(x.Key, x.Value.Length)).

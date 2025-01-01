@@ -3,9 +3,18 @@ using System.Text.Json.Nodes;
 namespace Ws2Explorer.Compiler.Opcodes;
 
 public abstract class Jump : IOpcode {
-    public int Pointer { get; set; }
+    private int pointer = 0;
+    public int Pointer {
+        get => pointer;
+        set {
+            pointer = value;
+            Labels = new[] { value };
+        }
+    }
 
-    public IEnumerable<int>? Labels { get; private set; }
+    public abstract byte OpcodeNumber { get; }
+
+    public IEnumerable<int>? Labels { get; protected set; }
     
     public int GetArgumentsLength(Ws2Version version) {
         return 4;
@@ -36,4 +45,6 @@ public abstract class Jump : IOpcode {
         }
         //Pointer = changes[Pointer];
     }
+
+    public abstract IOpcode Clone();
 }

@@ -8,6 +8,8 @@ public class Op14_DisplayMessage : IOpcode {
     public string FullMessage { get; set; } = "";
     public byte Type { get; set; }
 
+    public byte OpcodeNumber => 0x14;
+
     public string Message {
         get => FullMessage[..^GetSuffixLength()];
         set => FullMessage = value + Suffix;
@@ -58,5 +60,14 @@ public class Op14_DisplayMessage : IOpcode {
         Layer = (string)args[1]!;
         FullMessage = (string)args[2]! + (string)args[3]!;
         Type = (byte)args[4]!;
+    }
+
+    public IOpcode Clone() {
+        return new Op14_DisplayMessage {
+            MessageId = MessageId,
+            Layer = Layer,
+            FullMessage = FullMessage,
+            Type = Type
+        };
     }
 }

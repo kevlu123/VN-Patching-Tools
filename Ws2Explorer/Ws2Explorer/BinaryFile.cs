@@ -5,7 +5,7 @@ namespace Ws2Explorer;
 public class BinaryFile : IFile {
     public const int MAX_TEXT_SIZE = 1024 * 1024;
 
-    public IFolder? Parent { get; }
+    public IFolder? Parent { get; private set; }
     public string Name { get; }
     public BinaryStream Stream { get; protected set; }
     public Encoding? SuggestedEncoding => encoding.Value;
@@ -19,6 +19,10 @@ public class BinaryFile : IFile {
         Name = name;
         Stream = stream;
         this.encoding = new Lazy<PrettyNameEncoding?>(encoding == null ? GuessEncoding : () => encoding);
+    }
+
+    public void DetachParent() {
+        Parent = null;
     }
 
     public static BinaryFile AsText(IFolder? parent, string name, BinaryStream stream) {

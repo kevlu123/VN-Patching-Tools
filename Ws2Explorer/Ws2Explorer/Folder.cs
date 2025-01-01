@@ -26,7 +26,7 @@ public class Folder : IFolder {
             parent = new Folder(parentPath);
             return parent;
         }
-        set => parent = value;
+        private set => parent = value;
     }
 
     public Folder(string path, IFolder? parent = null) {
@@ -34,6 +34,10 @@ public class Folder : IFolder {
         this.path = path;
         Name = wasRoot ? path : Path.GetFileName(path);
         Parent = parent;
+    }
+
+    public void DetachParent() {
+        parent = null;
     }
 
     public List<FileMetadata> ListChildren() {

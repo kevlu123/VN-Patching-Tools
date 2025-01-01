@@ -7,12 +7,16 @@ class ZipFolder : IFolder {
     private readonly Dictionary<string, ZipArchiveEntry> files = new();
 
     public bool CanRenameChildren => false;
-    public IFolder? Parent { get; }
+    public IFolder? Parent { get; private set; }
     public string Name { get; }
 
     public ZipFolder(IFolder? parent, string name) {
         Parent = parent;
         Name = name;
+    }
+
+    public void DetachParent() {
+        Parent = null;
     }
 
     public ZipFolder CreateFolderIfNotExists(string name) {

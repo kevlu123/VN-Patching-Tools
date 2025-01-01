@@ -45,7 +45,7 @@ To generate the new Lua scripts to be inserted, run `python3 lua/aggregate_lua.p
 
 ## Adding New Images to PNA files
 
-Currently, [Ws2Explorer](../Ws2Explorer) doesn't support adding new images to PNA files. It only allows modifying existing images. Fortunately, the PNA format is very simple and can be edited with a hex editor. Some of the header fields are still unknown but it seems like AdvHD doesn't care too much about some of the fields being garbage.
+~~Currently, [Ws2Explorer](../Ws2Explorer) doesn't support adding new images to PNA files. It only allows modifying existing images.~~ Fortunately, the PNA format is very simple and can be edited with a hex editor. Some of the header fields are still unknown but it seems like AdvHD doesn't care too much about some of the fields being garbage.
 
 ## Restoring the Ageha/Hotaru Button
 

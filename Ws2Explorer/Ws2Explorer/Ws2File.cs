@@ -11,6 +11,13 @@ public class Ws2File : BinaryFile, IFolder {
     private const string CHOICES_FILENAME = "choices.txt";
 
     private List<IOpcode> opcodes;
+    public List<IOpcode> Opcodes => opcodes
+        .Select(op => op.Clone())
+        .ToList();
+    public async Task SetOpcodes(IEnumerable<IOpcode> newOpcodes, CancellationToken ct, ITaskProgress? progress) {
+        opcodes = newOpcodes.ToList();
+        await RebuildStream(opcodes, ct, progress);
+    }
 
     public Ws2Version Ws2Version { get; }
     public bool Encrypted { get; }

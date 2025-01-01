@@ -163,6 +163,13 @@ public class GenericOpcode : IOpcode {
         }
     }
 
+    public IOpcode Clone() {
+        var copy = new GenericOpcode(OpcodeNumber);
+        copy.Arguments.AddRange(Arguments);
+        copy.Labels = Labels?.ToArray();
+        return copy;
+    }
+
     public GenericOpcode(byte opcodeNumber) {
         OpcodeNumber = opcodeNumber;
     }

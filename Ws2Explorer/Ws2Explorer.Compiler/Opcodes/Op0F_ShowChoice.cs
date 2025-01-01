@@ -12,12 +12,27 @@ public class Op0F_ShowChoice : IOpcode {
         public byte JumpType { get; set; }
         public int JumpPointer { get; set; }
         public string JumpFile { get; set; } = "";
+
+        public Choice Clone() {
+            return new Choice {
+                ChoiceId = ChoiceId,
+                Text = Text,
+                Arg1 = Arg1,
+                Arg2 = Arg2,
+                Arg3 = Arg3,
+                JumpType = JumpType,
+                JumpPointer = JumpPointer,
+                JumpFile = JumpFile,
+            };
+        }
     }
 
     public byte ChoiceCount { get; set; }
     public Choice[] Choices { get; set; } = Array.Empty<Choice>();
 
     public IEnumerable<int>? Labels { get; private set; }
+
+    public byte OpcodeNumber => 0x0F;
     
     public int GetArgumentsLength(Ws2Version version) {
         return 1 + Choices.Sum(choice =>
@@ -119,5 +134,13 @@ public class Op0F_ShowChoice : IOpcode {
             JumpPointer = (int)choice[6]!,
             JumpFile = (string)choice[7]!,
         }).ToArray();
+    }
+
+    public IOpcode Clone() {
+        return new Op0F_ShowChoice {
+            ChoiceCount = ChoiceCount,
+            Choices = Choices.Select(choice => choice.Clone()).ToArray(),
+            Labels = Labels?.ToArray(),
+        };
     }
 }

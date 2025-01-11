@@ -23,7 +23,8 @@ partial class MainWindow {
     ///  Required method for Designer support - do not modify
     ///  the contents of this method with the code editor.
     /// </summary>
-    private void InitializeComponent() {
+    private void InitializeComponent()
+    {
         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
         menuStrip = new MenuStrip();
         fileToolStripMenuItem = new ToolStripMenuItem();

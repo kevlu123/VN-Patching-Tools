@@ -25,10 +25,10 @@ partial class RenameWindow : Form
             return;
         }
 
-        Filename = newName;
         DialogResult = Filename == newName
             ? DialogResult.Cancel
             : DialogResult.OK;
+        Filename = newName;
     }
 
     private void Cancel_ButtonClicked(object sender, EventArgs e)

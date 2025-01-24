@@ -98,10 +98,9 @@ class ApplicationState
         config.Save();
     }
 
-    // Staticness is implementation detail
-    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
     public void CancelTask()
     {
+        GC.KeepAlive(this); // Suppress warning about static method
         TaskLock.Cancel();
     }
 
@@ -263,6 +262,7 @@ class ApplicationState
             using var archive = T.Create(filenames.Zip(streams).ToDictionary());
             await using var dstStream = File.Create(dst);
             await archive.Stream.CopyTo(dstStream, dst, progress, ct);
+            OnStatus?.Invoke($"Created archive '{dst}'.");
         });
     }
 
@@ -340,6 +340,7 @@ class ApplicationState
                 progress,
                 ct);
             await RefreshFolderInternal(ct);
+            OnStatus?.Invoke($"Renamed file '{oldName}' -> '{newName}'.");
         });
     }
 
@@ -370,6 +371,14 @@ class ApplicationState
         {
             var paths = GetFullSelectedFilenames();
             Clipboard.SetFileDropList([.. paths]);
+            if (paths.Count == 1)
+            {
+                OnStatus?.Invoke($"Copied '{paths[0]}'.");
+            }
+            else
+            {
+                OnStatus?.Invoke($"Copied {paths.Count} files.");
+            }
         });
     }
 
@@ -436,6 +445,7 @@ class ApplicationState
                 progress,
                 ct);
             await RefreshFolderInternal(ct);
+            OnStatus?.Invoke($"Created file '{dupName}'.");
         });
     }
 
@@ -460,6 +470,7 @@ class ApplicationState
                 };
                 await FileHelper.PropagateModifications(folderStack, progress, ct);
                 await RefreshFolderInternal(ct);
+                OnStatus?.Invoke("Created new PNA entry.");
             }
             else
             {
@@ -490,6 +501,7 @@ class ApplicationState
                 };
                 await FileHelper.PropagateModifications(folderStack, progress, ct);
                 await RefreshFolderInternal(ct);
+                OnStatus?.Invoke($"Swapped PNA entries '{filename1}' <-> '{filename2}'.");
             }
             else
             {
@@ -595,6 +607,14 @@ class ApplicationState
                 await using var file = File.Create(dst);
                 await stream.CopyTo(file, dst, progress, ct);
             }
+            if (destinations.Length == 1)
+            {
+                OnStatus?.Invoke($"Exported '{filenames[0]}' -> '{destinations[0]}'.");
+            }
+            else
+            {
+                OnStatus?.Invoke($"Exported {destinations.Length} files.");
+            }
         });
     }
 
@@ -602,29 +622,32 @@ class ApplicationState
     {
         Protect(interruptable: false, async ct =>
         {
-            if (backHistory.Count >= 2) // Contains a current and previous entry
+            // Must contain a current and previous entry
+            if (backHistory.Count < 2)
             {
-                backHistory.Pop();
-                var newPath = backHistory.Peek();
-                var oldPath = GetCurrentFolderPath();
-
-                // Optimize going up a directory
-                try
-                {
-                    var oldDir = new DirectoryInfo(oldPath);
-                    if (oldDir.Parent?.FullName == newPath)
-                    {
-                        folderStack.Pop();
-                        await RefreshFolderInternal(ct);
-                        forwardHistory.Push(oldPath);
-                        return;
-                    }
-                }
-                catch { }
-
-                await OpenPathInternal(newPath, ct);
-                forwardHistory.Push(oldPath);
+                throw new SilentError("Cannot go back.");
             }
+
+            backHistory.Pop();
+            var newPath = backHistory.Peek();
+            var oldPath = GetCurrentFolderPath();
+
+            // Optimize going up a directory
+            try
+            {
+                var oldDir = new DirectoryInfo(oldPath);
+                if (oldDir.Parent?.FullName == newPath)
+                {
+                    folderStack.Pop();
+                    await RefreshFolderInternal(ct);
+                    forwardHistory.Push(oldPath);
+                    return;
+                }
+            }
+            catch { }
+
+            await OpenPathInternal(newPath, ct);
+            forwardHistory.Push(oldPath);
         });
     }
 
@@ -636,6 +659,10 @@ class ApplicationState
             {
                 await OpenPathInternal(path, ct);
                 backHistory.Push(GetCurrentFolderPath());
+            }
+            else
+            {
+                throw new SilentError("Cannot go forward.");
             }
         });
     }

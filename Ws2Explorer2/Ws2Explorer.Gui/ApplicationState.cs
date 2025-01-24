@@ -21,6 +21,8 @@ class ApplicationState
     private List<FileInfo> fileList = [];
     private List<int> selectedIndices = [];
     private bool showEmptyPnaFiles = true;
+    private readonly Stack<string> backHistory = [];
+    private readonly Stack<string> forwardHistory = [];
 
     public IProgress<TaskProgressInfo>? Progress { get; set; }
     public Action<Exception>? OnError { get; set; }
@@ -105,9 +107,11 @@ class ApplicationState
 
     public void OpenPath(string path)
     {
-        Protect(
-            interruptable: false,
-            async ct => await OpenPathInternal(path, ct));
+        Protect(interruptable: false, async ct =>
+        {
+            await OpenPathInternal(path, ct);
+            PushHistory();
+        });
     }
 
     private async Task OpenPathInternal(string path, CancellationToken ct)
@@ -214,6 +218,7 @@ class ApplicationState
                 throw new SilentError($"'{name}' is not a folder.");
             }
             UpdateFileListInternal();
+            PushHistory();
         });
     }
 
@@ -236,6 +241,7 @@ class ApplicationState
                 Name = selectedFileNonParent.Info.Filename,
             });
             UpdateFileListInternal();
+            PushHistory();
         });
     }
 
@@ -284,6 +290,7 @@ class ApplicationState
             }
             folderStack.Pop();
             UpdateFileListInternal();
+            PushHistory();
         });
     }
 
@@ -589,6 +596,54 @@ class ApplicationState
                 await stream.CopyTo(file, dst, progress, ct);
             }
         });
+    }
+
+    public void GoBack()
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            if (backHistory.Count >= 2) // Contains a current and previous entry
+            {
+                backHistory.Pop();
+                var newPath = backHistory.Peek();
+                var oldPath = GetCurrentFolderPath();
+
+                // Optimize going up a directory
+                try
+                {
+                    var oldDir = new DirectoryInfo(oldPath);
+                    if (oldDir.Parent?.FullName == newPath)
+                    {
+                        folderStack.Pop();
+                        await RefreshFolderInternal(ct);
+                        forwardHistory.Push(oldPath);
+                        return;
+                    }
+                }
+                catch { }
+
+                await OpenPathInternal(newPath, ct);
+                forwardHistory.Push(oldPath);
+            }
+        });
+    }
+
+    public void GoForward()
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            if (forwardHistory.TryPop(out var path))
+            {
+                await OpenPathInternal(path, ct);
+                backHistory.Push(GetCurrentFolderPath());
+            }
+        });
+    }
+
+    private void PushHistory()
+    {
+        backHistory.Push(GetCurrentFolderPath());
+        forwardHistory.Clear();
     }
 
     public void AutoCompletePath(string text)

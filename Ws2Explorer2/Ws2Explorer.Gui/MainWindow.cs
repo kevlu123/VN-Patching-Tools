@@ -517,12 +517,12 @@ partial class MainWindow : Form
 
     private void GoBack_MenuItemClicked(object sender, EventArgs e)
     {
-
+        state.GoBack();
     }
 
     private void GoForward_MenuItemClicked(object sender, EventArgs e)
     {
-
+        state.GoForward();
     }
 
     private void WordWrap_MenuItemCheckChanged(object sender, EventArgs e)

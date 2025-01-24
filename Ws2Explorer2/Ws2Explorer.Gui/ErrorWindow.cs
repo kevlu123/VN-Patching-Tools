@@ -21,6 +21,8 @@ partial class ErrorWindow : Form
         ok_Button.Location = new Point(
             message_TextBox.Right - ok_Button.Width,
             message_TextBox.Bottom + padding);
+
+        StartPosition = FormStartPosition.CenterParent;
     }
 
     private void OK_ButtonClicked(object sender, EventArgs e)

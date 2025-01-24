@@ -170,7 +170,7 @@ public sealed class BinaryStream : IDisposable
         var longLen = stream.Length;
         if (longLen > int.MaxValue)
         {
-            throw new ArgumentException(nameof(stream), "Stream too large.");
+            throw new ArgumentException("Stream too large.", nameof(stream));
         }
         var len = (int)longLen;
 

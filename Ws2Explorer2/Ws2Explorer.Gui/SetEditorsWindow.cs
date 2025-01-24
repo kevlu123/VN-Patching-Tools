@@ -31,6 +31,8 @@ partial class SetEditorsWindow : Form
         hexEditorArgs_TextBox.Text = settings.HexEditorArgs;
 
         EditorSettings = settings;
+
+        StartPosition = FormStartPosition.CenterParent;
     }
 
     private void TextEditorBrowse_ButtonClicked(object sender, EventArgs e)

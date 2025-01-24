@@ -109,6 +109,7 @@
             // 
             // files_ListView
             // 
+            files_ListView.AllowDrop = true;
             files_ListView.Columns.AddRange(new ColumnHeader[] { name_ColumnHeader, size_ColumnHeader });
             files_ListView.Dock = DockStyle.Fill;
             files_ListView.Location = new Point(0, 27);
@@ -118,6 +119,8 @@
             files_ListView.UseCompatibleStateImageBehavior = false;
             files_ListView.View = View.Details;
             files_ListView.SelectedIndexChanged += Files_ListViewSelectedIndexChanged;
+            files_ListView.DragDrop += Files_ListViewDragDropped;
+            files_ListView.DragOver += Files_ListViewDragOver;
             files_ListView.DoubleClick += Files_ListViewDoubleClicked;
             // 
             // name_ColumnHeader
@@ -133,11 +136,14 @@
             // 
             // path_TextBox
             // 
+            path_TextBox.AllowDrop = true;
             path_TextBox.Dock = DockStyle.Top;
             path_TextBox.Location = new Point(0, 0);
             path_TextBox.Name = "path_TextBox";
             path_TextBox.Size = new Size(263, 23);
             path_TextBox.TabIndex = 1;
+            path_TextBox.DragDrop += Path_TextBoxDragDropped;
+            path_TextBox.DragOver += Path_TextBoxDragOver;
             // 
             // panels_SplitContainer
             // 

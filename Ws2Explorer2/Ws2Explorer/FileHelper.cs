@@ -105,10 +105,11 @@ public static class FileHelper
             {
                 using var contents = (await parent.Value.GetContents(progress, ct))
                     .ToDisposingDictionary();
-                contents[child.Name] = childStream;
+                var newContents = contents.ToDictionary();
+                newContents[child.Name] = childStream;
                 hierarchy[i] = new Named<IFolder>
                 {
-                    Value = ((IArchive)parent.Value).Create(contents),
+                    Value = ((IArchive)parent.Value).Create(newContents),
                     Name = parent.Name,
                 };
             }
@@ -166,26 +167,27 @@ public static class FileHelper
             .ToDisposingList();
         using var contents = (await folders[^1].Value.GetContents(progress, ct))
             .ToDisposingDictionary();
-        var existing = contents.Keys;
+        var newContents = contents.ToDictionary();
+        var existing = newContents.Keys;
         switch (overwriteMode)
         {
             case OverwriteMode.Throw:
-                if (contents.ContainsKey(name))
+                if (newContents.ContainsKey(name))
                 {
                     throw new IOException($"File '{name}' already exists.");
                 }
-                contents[name] = stream;
+                newContents[name] = stream;
                 break;
             case OverwriteMode.Overwrite:
-                contents[name] = stream;
+                newContents[name] = stream;
                 break;
             case OverwriteMode.Rename:
-                contents[AlternativeName(name, existing)] = stream;
+                newContents[AlternativeName(name, existing)] = stream;
                 break;
             case OverwriteMode.Skip:
-                if (!contents.ContainsKey(parts[^1]))
+                if (!newContents.ContainsKey(parts[^1]))
                 {
-                    contents[name] = stream;
+                    newContents[name] = stream;
                 }
                 break;
             default:

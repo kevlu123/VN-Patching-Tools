@@ -5,6 +5,7 @@ namespace Ws2Explorer;
 
 public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
     where K : notnull
+    where V : class
 {
     private readonly Dictionary<K, V> dictionary = [];
     private bool disposedValue;
@@ -14,7 +15,7 @@ public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
         get => dictionary[key];
         set
         {
-            if (dictionary.TryGetValue(key, out var oldValue))
+            if (dictionary.TryGetValue(key, out var oldValue) && oldValue != value)
             {
                 DisposeItem(oldValue);
             }
@@ -123,6 +124,7 @@ public static class DisposingDictionaryExtensions
 {
     public static DisposingDictionary<K, V> ToDisposingDictionary<K, V>(this IDictionary<K, V> source)
         where K : notnull
+        where V : class
     {
         var dictionary = new DisposingDictionary<K, V>();
         try

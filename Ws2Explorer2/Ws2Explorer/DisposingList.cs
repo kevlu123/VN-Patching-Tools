@@ -3,6 +3,7 @@
 namespace Ws2Explorer;
 
 public sealed class DisposingList<T> : IList<T>, IDisposable
+    where T : class
 {
     private readonly List<T> list = [];
     private bool disposedValue;
@@ -16,8 +17,11 @@ public sealed class DisposingList<T> : IList<T>, IDisposable
         get => list[index];
         set
         {
-            DisposeItem(list[index]);
-            list[index] = value;
+            if (list[index] != value)
+            {
+                DisposeItem(list[index]);
+                list[index] = value;
+            }
         }
     }
 
@@ -117,6 +121,7 @@ public sealed class DisposingList<T> : IList<T>, IDisposable
 public static class DisposingListExtensions
 {
     public static DisposingList<T> ToDisposingList<T>(this IEnumerable<T> source)
+        where T : class
     {
         var list = new DisposingList<T>();
         try

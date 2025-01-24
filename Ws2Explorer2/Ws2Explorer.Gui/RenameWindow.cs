@@ -10,6 +10,8 @@ partial class RenameWindow : Form
         StartPosition = FormStartPosition.CenterParent;
         Filename = oldName;
         filename_TextBox.Text = oldName;
+
+        StartPosition = FormStartPosition.CenterParent;
     }
 
     private void Rename_ButtonClicked(object sender, EventArgs e)

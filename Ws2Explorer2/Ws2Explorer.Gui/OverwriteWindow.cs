@@ -19,6 +19,8 @@ public partial class OverwriteWindow : Form
             ClientSize.Width,
             cancel_Button.Bottom + 10);
         overwrite_Button.Select();
+
+        StartPosition = FormStartPosition.CenterParent;
     }
 
     private static void SetControlY(Control control, int y)

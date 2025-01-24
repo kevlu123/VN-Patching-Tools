@@ -156,7 +156,6 @@ partial class MainWindow : Form
     private void OnError(Exception ex)
     {
         using var dialog = new ErrorWindow(GetDetailedErrorMessage(ex));
-        dialog.StartPosition = FormStartPosition.CenterScreen;
         dialog.ShowDialog();
     }
 
@@ -677,6 +676,43 @@ partial class MainWindow : Form
             audioPlayer.Stop();
             audioPlay_Button.Text = "Play";
         }
+    }
+
+    private void Path_TextBoxDragDropped(object sender, DragEventArgs e)
+    {
+        var files = (string[]?)e.Data?.GetData(DataFormats.FileDrop);
+        if (files != null && files.Length != 0)
+        {
+            path_TextBox.Text = files[0];
+        }
+    }
+
+    private void Path_TextBoxDragOver(object sender, DragEventArgs e)
+    {
+        e.Effect = e.Data?.GetDataPresent(DataFormats.FileDrop) == true
+            ? DragDropEffects.Link
+            : DragDropEffects.None;
+    }
+
+    private void Files_ListViewDragDropped(object sender, DragEventArgs e)
+    {
+        var files = (string[]?)e.Data?.GetData(DataFormats.FileDrop);
+        if (files != null && files.Length != 0)
+        {
+            state.InsertFiles(files, existing =>
+            {
+                using var dialog = new OverwriteWindow(existing);
+                dialog.ShowDialog();
+                return dialog.OverwriteMode;
+            });
+        }
+    }
+
+    private void Files_ListViewDragOver(object sender, DragEventArgs e)
+    {
+        e.Effect = e.Data?.GetDataPresent(DataFormats.FileDrop) == true
+            ? DragDropEffects.Copy
+            : DragDropEffects.None;
     }
 
     private static string HexPreview(ReadOnlySpan<byte> data)

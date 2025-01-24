@@ -333,6 +333,10 @@ class ApplicationState
             }
             var oldName = selectedFilenames[0];
             var newName = renamePrompt(oldName);
+            if (newName == oldName)
+            {
+                throw new SilentError("Cancelled rename.");
+            }
             await FileHelper.Rename(
                 folderStack,
                 oldName,
@@ -391,30 +395,42 @@ class ApplicationState
             {
                 throw new SilentError("No files to paste.");
             }
-
-            using var srcs = (await FileHelper.ReadFiles([.. paths], progress, ct))
-                .ToDisposingDictionary();
-            var dst = folderStack[^1].Value;
-            var existing = dst.ListFiles()
-                .Select(f => f.Filename)
-                .Where(f => srcs.ContainsKey(f));
-
-            OverwriteMode? overwriteMode = existing.Any()
-                ? overwritePrompt(existing)
-                : OverwriteMode.Throw;
-            if (overwriteMode == null)
-            {
-                return;
-            }
-
-            await FileHelper.Insert(
-                folderStack,
-                srcs,
-                overwriteMode.Value,
-                progress,
-                ct);
-            await RefreshFolderInternal(ct);
+            await InsertFilesInternal([.. paths], overwritePrompt, ct);
         });
+    }
+
+    public void InsertFiles(string[] paths, Func<IEnumerable<string>, OverwriteMode?> overwritePrompt)
+    {
+        Protect(interruptable: false, async ct => await InsertFilesInternal(paths, overwritePrompt, ct));
+    }
+
+    private async Task InsertFilesInternal(
+        string[] paths,
+        Func<IEnumerable<string>, OverwriteMode?> overwritePrompt,
+        CancellationToken ct)
+    {
+        using var srcs = (await FileHelper.ReadFiles([.. paths], progress, ct))
+            .ToDisposingDictionary();
+        var dst = folderStack[^1].Value;
+        var existing = dst.ListFiles()
+            .Select(f => f.Filename)
+            .Where(f => srcs.ContainsKey(f));
+
+        OverwriteMode? overwriteMode = existing.Any()
+            ? overwritePrompt(existing)
+            : OverwriteMode.Throw;
+        if (overwriteMode == null)
+        {
+            return;
+        }
+
+        await FileHelper.Insert(
+            folderStack,
+            srcs,
+            overwriteMode.Value,
+            progress,
+            ct);
+        await RefreshFolderInternal(ct);
     }
 
     public void DuplicateSelectedFile(Func<IEnumerable<string>, OverwriteMode?> overwritePrompt)

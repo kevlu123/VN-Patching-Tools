@@ -1,4 +1,6 @@
 using Microsoft.WindowsAPICodePack.Dialogs;
+using NAudio.Vorbis;
+using NAudio.Wave;
 using ScintillaNET;
 using System.Drawing.Text;
 using System.Globalization;
@@ -11,12 +13,19 @@ partial class MainWindow : Form
 {
     private readonly ApplicationState state;
     private readonly CommonOpenFileDialog openFileDialog = new();
+    private readonly System.Windows.Forms.Timer statusClear_Timer = new();
+
     private readonly Scintilla textPreview_Scintilla;
+
     private readonly PictureBox imagePreview_PictureBox;
+
     private readonly Label fontPreview_Label;
     private PrivateFontCollection fontCollection = new();
     private GCHandle fontGCHandle = GCHandle.Alloc(Array.Empty<byte>(), GCHandleType.Pinned);
-    private readonly System.Windows.Forms.Timer statusClear_Timer = new();
+
+    private readonly WaveOutEvent audioPlayer;
+    private VorbisWaveReader? audioReader;
+    private readonly Button audioPlay_Button;
 
     public MainWindow(string? openPath)
     {
@@ -116,6 +125,15 @@ partial class MainWindow : Form
             Text = "The quick brown fox jumps over the lazy dog\n0123456789",
         };
 
+        audioPlayer = new WaveOutEvent();
+        audioPlay_Button = new Button
+        {
+            Text = "Play",
+            Dock = DockStyle.Bottom,
+            Height = 30,
+        };
+        audioPlay_Button.Click += AudioPlay_ButtonClicked;
+
         // Create state
         state = new ApplicationState(openPath)
         {
@@ -209,11 +227,15 @@ partial class MainWindow : Form
 
     public void OnPreviewBinary(BinaryStream stream)
     {
+        audioPlayer.Stop();
+
         OnPreviewText(HexPreview(stream.Span));
     }
 
     public void OnPreviewText(string text)
     {
+        audioPlayer.Stop();
+
         textPreview_Scintilla.Text = text;
         if (!panels_SplitContainer.Panel2.Controls.Contains(textPreview_Scintilla))
         {
@@ -224,6 +246,8 @@ partial class MainWindow : Form
 
     public void OnPreviewPng(BinaryStream stream)
     {
+        audioPlayer.Stop();
+
         var array = new byte[stream.Length];
         stream.Span.CopyTo(array);
         var memoryStream = new MemoryStream(array);
@@ -237,11 +261,26 @@ partial class MainWindow : Form
 
     public void OnPreviewOgg(BinaryStream stream)
     {
+        audioPlayer.Stop();
+        audioReader?.Dispose();
+        var array = new byte[stream.Length];
+        stream.Span.CopyTo(array);
+        var memoryStream = new MemoryStream(array);
+        audioReader = new VorbisWaveReader(memoryStream);
+        audioPlayer.Init(audioReader);
 
+        audioPlay_Button.Text = "Play";
+        if (!panels_SplitContainer.Panel2.Controls.Contains(audioPlay_Button))
+        {
+            panels_SplitContainer.Panel2.Controls.Clear();
+            panels_SplitContainer.Panel2.Controls.Add(audioPlay_Button);
+        }
     }
 
     public void OnPreviewFont(BinaryStream stream)
     {
+        audioPlayer.Stop();
+
         fontCollection.Dispose();
         fontCollection = new PrivateFontCollection();
 
@@ -624,6 +663,20 @@ partial class MainWindow : Form
             "About",
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
+    }
+
+    private void AudioPlay_ButtonClicked(object? sender, EventArgs e)
+    {
+        if (audioPlayer.PlaybackState == PlaybackState.Stopped)
+        {
+            audioPlayer.Play();
+            audioPlay_Button.Text = "Stop";
+        }
+        else
+        {
+            audioPlayer.Stop();
+            audioPlay_Button.Text = "Play";
+        }
     }
 
     private static string HexPreview(ReadOnlySpan<byte> data)

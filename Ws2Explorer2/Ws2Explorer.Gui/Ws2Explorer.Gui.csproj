@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
     <PackageReference Include="Scintilla5.NET" Version="5.3.3.12" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
     <ProjectReference Include="../Ws2Explorer/Ws2Explorer.csproj" />

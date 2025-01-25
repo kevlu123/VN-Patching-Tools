@@ -750,6 +750,26 @@ class ApplicationState(string? openPath)
         });
     }
 
+    public void SetEntryPoint(Func<string, string[], string> prompt)
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            if (folderStack[^1].Value is Directory dir)
+            {
+                await GameHelper.SetEntryPoint(
+                    dir,
+                    prompt,
+                    progress,
+                    ct);
+                await RefreshFolderInternal(ct);
+            }
+            else
+            {
+                throw new SilentError("Navigate to the game directory to change the entry point.");
+            }
+        });
+    }
+
     private string GetCurrentFolderPath()
     {
         return Path.Combine(

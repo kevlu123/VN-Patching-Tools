@@ -99,6 +99,8 @@
             viewPna_MenuItem = new ToolStripMenuItem();
             pnaShowEmpty_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
+            gameToolStripMenuItem = new ToolStripMenuItem();
+            setWS2EntryPointToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -228,7 +230,7 @@
             // menu_MenuStrip
             // 
             menu_MenuStrip.BackColor = SystemColors.Control;
-            menu_MenuStrip.Items.AddRange(new ToolStripItem[] { file_MenuItem, edit_MenuItem, view_MenuItem });
+            menu_MenuStrip.Items.AddRange(new ToolStripItem[] { file_MenuItem, edit_MenuItem, view_MenuItem, gameToolStripMenuItem });
             menu_MenuStrip.Location = new Point(4, 4);
             menu_MenuStrip.Name = "menu_MenuStrip";
             menu_MenuStrip.Size = new Size(792, 24);
@@ -632,6 +634,20 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
+            // gameToolStripMenuItem
+            // 
+            gameToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setWS2EntryPointToolStripMenuItem });
+            gameToolStripMenuItem.Name = "gameToolStripMenuItem";
+            gameToolStripMenuItem.Size = new Size(50, 20);
+            gameToolStripMenuItem.Text = "Game";
+            // 
+            // setWS2EntryPointToolStripMenuItem
+            // 
+            setWS2EntryPointToolStripMenuItem.Name = "setWS2EntryPointToolStripMenuItem";
+            setWS2EntryPointToolStripMenuItem.Size = new Size(186, 22);
+            setWS2EntryPointToolStripMenuItem.Text = "Set WS2 Entry Point...";
+            setWS2EntryPointToolStripMenuItem.Click += SetEntryPoint_MenuItemClicked;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -732,5 +748,7 @@
         private ToolStripMenuItem openAsWs2_MenuItem;
         private ToolStripMenuItem aboutToolStripMenuItem;
         private ToolStripMenuItem viewMetadata_MenuItem;
+        private ToolStripMenuItem gameToolStripMenuItem;
+        private ToolStripMenuItem setWS2EntryPointToolStripMenuItem;
     }
 }

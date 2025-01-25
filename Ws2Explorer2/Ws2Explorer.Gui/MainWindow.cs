@@ -981,4 +981,14 @@ partial class MainWindow : Form
 
     [LibraryImport("user32")]
     private static partial void ShowScrollBar(IntPtr hwnd, int wBar, int bShow);
+
+    private void SetEntryPoint_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.SetEntryPoint((current, options) =>
+        {
+            using var dialog = new Ws2EntryPointWindow(current, options);
+            dialog.ShowDialog();
+            return dialog.EntryPointName;
+        });
+    }
 }

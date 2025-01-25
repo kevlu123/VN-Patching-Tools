@@ -8,6 +8,8 @@ public class Directory : IFolder
 
     public string FullPath => directoryInfo.FullName;
 
+    public string DirectoryName => directoryInfo.Name;
+
     public Directory(string path)
     {
         if (!System.IO.Directory.Exists(path))

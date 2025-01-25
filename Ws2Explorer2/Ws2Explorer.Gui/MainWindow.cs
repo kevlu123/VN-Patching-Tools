@@ -15,6 +15,7 @@ partial class MainWindow : Form
     private readonly CommonOpenFileDialog openFileDialog = new();
     private readonly System.Windows.Forms.Timer statusClear_Timer = new();
     private bool filesListViewColumnWidthChanging;
+    private int splitterDistance;
 
     private readonly Scintilla textPreview_Scintilla;
 
@@ -758,6 +759,19 @@ partial class MainWindow : Form
             state.SortFileList = sort;
         }
         SetFileListColumnHeaderText(e.Column, invert);
+    }
+
+    private void Panels_SplitContainerSplitterMoving(object sender, SplitterCancelEventArgs e)
+    {
+        splitterDistance = e.SplitX;
+    }
+
+    private void Panels_SplitContainerClientSizeChanged(object sender, EventArgs e)
+    {
+        if (splitterDistance != 0)
+        {
+            panels_SplitContainer.SplitterDistance = splitterDistance;
+        }
     }
 
     private void SetFileListColumnHeaderText(int column, bool invert)

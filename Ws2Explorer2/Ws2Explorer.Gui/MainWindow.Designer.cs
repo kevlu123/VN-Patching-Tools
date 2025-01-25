@@ -162,6 +162,8 @@
             panels_SplitContainer.Size = new Size(792, 392);
             panels_SplitContainer.SplitterDistance = 263;
             panels_SplitContainer.TabIndex = 3;
+            panels_SplitContainer.SplitterMoving += Panels_SplitContainerSplitterMoving;
+            panels_SplitContainer.ClientSizeChanged += Panels_SplitContainerClientSizeChanged;
             // 
             // midSpacer_Panel
             // 

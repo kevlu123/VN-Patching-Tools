@@ -1,4 +1,4 @@
-using Microsoft.WindowsAPICodePack.Dialogs;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
 using NAudio.Vorbis;
 using NAudio.Wave;
 using ScintillaNET;
@@ -14,7 +14,6 @@ partial class MainWindow : Form
     private readonly ApplicationState state;
     private readonly CommonOpenFileDialog openFileDialog = new();
     private readonly System.Windows.Forms.Timer statusClear_Timer = new();
-    private int filesListViewFileSizeColumnWidth;
     private bool filesListViewColumnWidthChanging;
 
     private readonly Scintilla textPreview_Scintilla;
@@ -69,8 +68,11 @@ partial class MainWindow : Form
         progress_ProgressBar.Visible = false;
         cancel_Button.Visible = false;
 
-        filesListViewFileSizeColumnWidth = files_ListView.Columns[1].Width;
-        files_ListView.Columns[0].Width = files_ListView.ClientSize.Width - filesListViewFileSizeColumnWidth;
+        // Hide file list view horizontal scrollbar
+        ShowScrollBar(files_ListView.Handle, 0 /* SB_HORZ */, 0 /* Hide */);
+
+        // Set file list view column width
+        Files_ListViewColumnWidthChanged(this, new ColumnWidthChangedEventArgs(1));
 
         // Create preview controls
 #pragma warning disable CS0618 // Type or member is obsolete (Lexer)
@@ -143,6 +145,7 @@ partial class MainWindow : Form
         state = new ApplicationState(openPath)
         {
             Progress = new Progress<TaskProgressInfo>(OnProgress),
+            SortFileList = AlphabeticalFileSort,
             OnError = OnError,
             OnInfo = OnInfo,
             OnStatus = OnStatus,
@@ -156,6 +159,8 @@ partial class MainWindow : Form
             OnPreviewFont = OnPreviewFont,
         };
         state.Init();
+
+        SetFileListColumnHeaderText(0, false);
     }
 
     private void OnError(Exception ex)
@@ -582,8 +587,9 @@ partial class MainWindow : Form
             try
             {
                 files_ListView.Columns[1 - e.ColumnIndex].Width =
-                    files_ListView.ClientSize.Width - files_ListView.Columns[e.ColumnIndex].Width;
-                filesListViewFileSizeColumnWidth = files_ListView.Columns[1].Width;
+                    files_ListView.ClientSize.Width
+                    - files_ListView.Columns[e.ColumnIndex].Width;
+                ShowScrollBar(files_ListView.Handle, 0 /* SB_HORZ */, 0 /* Hide */);
             }
             finally
             {
@@ -738,6 +744,36 @@ partial class MainWindow : Form
             : DragDropEffects.None;
     }
 
+    private void Files_ListViewColumnClicked(object sender, ColumnClickEventArgs e)
+    {
+        Comparison<FileInfo> sort = e.Column == 0 ? AlphabeticalFileSort : FileSizeFileSort;
+        bool invert = state.SortFileList == sort;
+        if (invert)
+        {
+            // Invert sort if clicked again
+            state.SortFileList = (a, b) => -sort(a, b);
+        }
+        else
+        {
+            state.SortFileList = sort;
+        }
+        SetFileListColumnHeaderText(e.Column, invert);
+    }
+
+    private void SetFileListColumnHeaderText(int column, bool invert)
+    {
+        if (column == 0)
+        {
+            files_ListView.Columns[0].Text = "Name " + (invert ? "⌄" : "⌃");
+            files_ListView.Columns[1].Text = "Size";
+        }
+        else
+        {
+            files_ListView.Columns[0].Text = "Name";
+            files_ListView.Columns[1].Text = (invert ? "⌄" : "⌃") + " Size";
+        }
+    }
+
     private static string HexPreview(ReadOnlySpan<byte> data)
     {
         const int MAX_LENGTH = 0x10000;
@@ -809,4 +845,32 @@ partial class MainWindow : Form
         }
         return message.ToString();
     }
+
+    private static int AlphabeticalFileSort(FileInfo lhs, FileInfo rhs)
+    {
+        int r = rhs.IsDirectory.CompareTo(lhs.IsDirectory);
+        if (r != 0)
+        {
+            return r;
+        }
+        return string.Compare(lhs.Filename, rhs.Filename, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static int FileSizeFileSort(FileInfo lhs, FileInfo rhs)
+    {
+        int r = rhs.IsDirectory.CompareTo(lhs.IsDirectory);
+        if (r != 0)
+        {
+            return r;
+        }
+        r = (rhs.FileSize ?? -1).CompareTo(lhs.FileSize ?? -1);
+        if (r != 0)
+        {
+            return r;
+        }
+        return string.Compare(lhs.Filename, rhs.Filename, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [LibraryImport("user32")]
+    private static partial void ShowScrollBar(IntPtr hwnd, int wBar, int bShow);
 }

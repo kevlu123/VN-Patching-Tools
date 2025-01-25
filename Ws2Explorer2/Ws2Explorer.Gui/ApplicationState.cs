@@ -1,7 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using NamedFolder = Ws2Explorer.FileHelper.Named<Ws2Explorer.IFolder>;
 using OverwriteMode = Ws2Explorer.FileHelper.OverwriteMode;
 
@@ -36,6 +34,21 @@ class ApplicationState
     public Action<BinaryStream>? OnPreviewOgg { get; set; }
     public Action<BinaryStream>? OnPreviewFont { get; set; }
     public Action<string>? OnPreviewText { get; set; }
+
+    private Comparison<FileInfo>? sortFileList;
+    public Comparison<FileInfo>? SortFileList
+    {
+        get => sortFileList;
+        set
+        {
+            sortFileList = value;
+            // Don't update file list on init because it is too early
+            if (folderStack.Count > 0)
+            {
+                UpdateFileListInternal();
+            }
+        }
+    }
 
     public EditorSettings EditorSettings
     {
@@ -888,6 +901,13 @@ class ApplicationState
     private void UpdateFileListInternal()
     {
         fileList = folderStack[^1].Value.ListFiles();
+
+        if (SortFileList != null)
+        {
+            fileList.Sort(SortFileList);
+        }
+        fileList = [.. fileList.OrderBy(f => f.IsDirectory ? 0 : 1)];
+
         if (folderStack.Count > 1)
         {
             fileList.Insert(0, new FileInfo

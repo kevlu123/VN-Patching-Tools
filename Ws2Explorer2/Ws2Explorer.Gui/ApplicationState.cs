@@ -5,14 +5,12 @@ using OverwriteMode = Ws2Explorer.FileHelper.OverwriteMode;
 
 namespace Ws2Explorer.Gui;
 
-class ApplicationState
+class ApplicationState(string? openPath)
 {
-    private const string CONFIG_FILENAME = "config.json";
-
-    private readonly string? openPath;
+    private readonly string? openPath = openPath;
     private int currentTaskId;
-    private readonly Progress<TaskProgressInfo> progress;
-    private readonly Config config;
+    private bool initialised;
+    private Progress<TaskProgressInfo>? progress;
     private readonly DisposingList<NamedFolder> folderStack = [];
     private SelectedFile? selectedFile;
     private SelectedFile? selectedFileNonParent;
@@ -43,40 +41,44 @@ class ApplicationState
         {
             sortFileList = value;
             // Don't update file list on init because it is too early
-            if (folderStack.Count > 0)
+            if (initialised)
             {
                 UpdateFileListInternal();
             }
         }
     }
 
-    public EditorSettings EditorSettings
+    public static string? GetExeFolder()
     {
-        get
-        {
-            return new EditorSettings
-            {
-                TextEditorPath = config.TextEditorPath,
-                TextEditorArgs = config.TextEditorArgs,
-                ImageEditorPath = config.ImageEditorPath,
-                ImageEditorArgs = config.ImageEditorArgs,
-                HexEditorPath = config.HexEditorPath,
-                HexEditorArgs = config.HexEditorArgs,
-            };
-        }
-        set
-        {
-            config.TextEditorPath = value.TextEditorPath;
-            config.TextEditorArgs = value.TextEditorArgs;
-            config.ImageEditorPath = value.ImageEditorPath;
-            config.ImageEditorArgs = value.ImageEditorArgs;
-            config.HexEditorPath = value.HexEditorPath;
-            config.HexEditorArgs = value.HexEditorArgs;
-        }
+        var module = Process.GetCurrentProcess().MainModule;
+        return module == null ? null : Path.GetDirectoryName(module.FileName);
     }
 
-    public ApplicationState(string? openPath)
+    public async void Init()
     {
+        List<string?> paths = [
+            openPath,
+            GetExeFolder(),
+            "C:\\",
+        ];
+        foreach (var path in paths)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                continue;
+            }
+            await OpenPathInternal(path, CancellationToken.None);
+            if (folderStack.Count > 0)
+            {
+                goto success;
+            }
+        }
+        var ex = new IOException("Failed to open any path.");
+        OnError?.Invoke(ex);
+        throw ex;
+
+    success:
+        PushHistory();
         progress = new Progress<TaskProgressInfo>(info =>
         {
             if (info.Value <= 0)
@@ -89,26 +91,7 @@ class ApplicationState
             }
             Progress?.Report(info);
         });
-
-        var module = Process.GetCurrentProcess().MainModule;
-        var exeFolder = module == null ? null : Path.GetDirectoryName(module.FileName);
-        var configPath = Path.Combine(exeFolder ?? string.Empty, CONFIG_FILENAME);
-        config = Config.Load(configPath);
-
-        this.openPath = openPath ?? exeFolder;
-    }
-
-    public void Init()
-    {
-        if (openPath != null)
-        {
-            OpenPath(openPath);
-        }
-    }
-
-    public void Close()
-    {
-        config.Save();
+        initialised = true;
     }
 
     public void CancelTask()
@@ -480,11 +463,12 @@ class ApplicationState
 
     public void SetShowEmptyPnaFiles(bool showEmptyPnaFiles)
     {
-        ProtectSync(() =>
+        this.showEmptyPnaFiles = showEmptyPnaFiles;
+        // Don't update file list on init because it is too early
+        if (initialised)
         {
-            this.showEmptyPnaFiles = showEmptyPnaFiles;
-            UpdateFileListInternal();
-        });
+            ProtectSync(UpdateFileListInternal);
+        }
     }
 
     public void AddPnaEntry()
@@ -539,7 +523,7 @@ class ApplicationState
         });
     }
 
-    public void EditSelectedFileInApp(EditorType? editorType)
+    public void EditSelectedFileInApp(Func<EditorType, (string, string)> getEditor)
     {
         Protect(interruptable: false, async ct =>
         {
@@ -562,26 +546,12 @@ class ApplicationState
                     ct);
             }
 
-            editorType ??= selectedFileNonParent.File switch
+            var (editor, args) = getEditor(selectedFileNonParent.File switch
             {
                 PngFile => EditorType.Image,
                 TextFile => EditorType.Text,
                 _ => EditorType.Hex,
-            };
-            var editor = editorType switch
-            {
-                EditorType.Text => config.TextEditorPath,
-                EditorType.Image => config.ImageEditorPath,
-                EditorType.Hex => config.HexEditorPath,
-                _ => throw new UnreachableException(),
-            };
-            var args = editorType switch
-            {
-                EditorType.Text => config.TextEditorArgs,
-                EditorType.Image => config.ImageEditorArgs,
-                EditorType.Hex => config.HexEditorArgs,
-                _ => throw new UnreachableException(),
-            };
+            });
 
             using Process proc = Process.Start(editor, $"{args} \"{tempFilename}\"");
             await proc.WaitForExitAsync(ct);
@@ -944,6 +914,10 @@ class ApplicationState
 
     private async void Protect(bool interruptable, Func<CancellationToken, Task> fn)
     {
+        if (!initialised)
+        {
+            return;
+        }
         try
         {
             using var taskLock = new TaskLock(interruptable, out var ct);
@@ -982,16 +956,6 @@ class SelectedFile
     public IFile? File { get; init; }
     public required FileInfo Info { get; init; }
     public required int Index { get; init; }
-}
-
-class EditorSettings
-{
-    public required string TextEditorPath { get; init; }
-    public required string TextEditorArgs { get; init; }
-    public required string ImageEditorPath { get; init; }
-    public required string ImageEditorArgs { get; init; }
-    public required string HexEditorPath { get; init; }
-    public required string HexEditorArgs { get; init; }
 }
 
 enum EditorType

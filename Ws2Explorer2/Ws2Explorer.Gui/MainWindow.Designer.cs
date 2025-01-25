@@ -613,7 +613,9 @@
             // 
             // pnaShowEmpty_MenuItem
             // 
+            pnaShowEmpty_MenuItem.Checked = true;
             pnaShowEmpty_MenuItem.CheckOnClick = true;
+            pnaShowEmpty_MenuItem.CheckState = CheckState.Checked;
             pnaShowEmpty_MenuItem.Name = "pnaShowEmpty_MenuItem";
             pnaShowEmpty_MenuItem.ShortcutKeys = Keys.Control | Keys.P;
             pnaShowEmpty_MenuItem.Size = new Size(181, 22);
@@ -643,6 +645,8 @@
             Padding = new Padding(4);
             Text = "Ws2Explorer";
             FormClosing += MainForm_FormClosing;
+            LocationChanged += MainForm_LocationChanged;
+            SizeChanged += MainForm_SizeChanged;
             panels_SplitContainer.Panel1.ResumeLayout(false);
             panels_SplitContainer.Panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).EndInit();

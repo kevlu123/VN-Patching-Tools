@@ -78,3 +78,13 @@ partial class SetEditorsWindow : Form
         DialogResult = DialogResult.Cancel;
     }
 }
+
+class EditorSettings
+{
+    public required string TextEditorPath { get; init; }
+    public required string TextEditorArgs { get; init; }
+    public required string ImageEditorPath { get; init; }
+    public required string ImageEditorArgs { get; init; }
+    public required string HexEditorPath { get; init; }
+    public required string HexEditorArgs { get; init; }
+}

@@ -6,16 +6,20 @@ using System.Drawing.Text;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using FormTimer = System.Windows.Forms.Timer;
 
 namespace Ws2Explorer.Gui;
 
 partial class MainWindow : Form
 {
+    private const string CONFIG_FILENAME = "config.json";
+
+    private Config config;
     private readonly ApplicationState state;
     private readonly CommonOpenFileDialog openFileDialog = new();
-    private readonly System.Windows.Forms.Timer statusClear_Timer = new();
+    private readonly FormTimer statusClear_Timer;
+    private readonly FormTimer saveConfig_Timer;
     private bool filesListViewColumnWidthChanging;
-    private int splitterDistance;
 
     private readonly Scintilla textPreview_Scintilla;
 
@@ -45,13 +49,21 @@ partial class MainWindow : Form
 
         InitializeComponent();
 
+        config = Config.Load(GetConfigPath());
+
         // Create status clear timer
+        statusClear_Timer = new FormTimer();
         statusClear_Timer.Tick += (sender, e) =>
         {
             status_StatusLabel.Text = string.Empty;
             statusClear_Timer.Stop();
         };
         statusClear_Timer.Interval = 4000;
+
+        // Create auto save config timer
+        saveConfig_Timer = new FormTimer();
+        saveConfig_Timer.Tick += (sender, e) => config?.Save();
+        saveConfig_Timer.Interval = 30000;
 
         // Add version to title
         if (Application.ProductVersion.Contains('+'))
@@ -143,7 +155,7 @@ partial class MainWindow : Form
         audioPlay_Button.Click += AudioPlay_ButtonClicked;
 
         // Create state
-        state = new ApplicationState(openPath)
+        state = new ApplicationState(openPath ?? config.OpenFolder)
         {
             Progress = new Progress<TaskProgressInfo>(OnProgress),
             SortFileList = AlphabeticalFileSort,
@@ -161,7 +173,38 @@ partial class MainWindow : Form
         };
         state.Init();
 
-        SetFileListColumnHeaderText(0, false);
+        // Apply config
+        try
+        {
+            bool maximized = config.WindowMaximized;
+            Size = new Size(config.WindowWidth, config.WindowHeight);
+            if (config.WindowX.HasValue && config.WindowY.HasValue)
+            {
+                StartPosition = FormStartPosition.Manual;
+                Location = new Point(config.WindowX.Value, config.WindowY.Value);
+            }
+            if (maximized)
+            {
+                WindowState = FormWindowState.Maximized;
+            }
+            wordWrap_MenuItem.Checked = config.WordWrap;
+            panels_SplitContainer.SplitterDistance = config.SplitterDistance;
+            SortFileList(config.SortColumn, config.SortInverted);
+            files_ListView.Columns[1].Width = config.FileSizeColumnWidth;
+            pnaShowEmpty_MenuItem.Checked = config.ShowEmptyPnaFiles;
+        }
+        catch (Exception ex)
+        {
+            OnError(ex);
+            config = new Config(GetConfigPath());
+        }
+    }
+
+    private static string GetConfigPath()
+    {
+        return Path.Combine(
+            ApplicationState.GetExeFolder() ?? string.Empty,
+            CONFIG_FILENAME);
     }
 
     private void OnError(Exception ex)
@@ -228,6 +271,7 @@ partial class MainWindow : Form
     {
         path_TextBox.Text = text;
         path_TextBox.SelectionStart = path_TextBox.Text.Length;
+        config.OpenFolder = text;
     }
 
     private void OnFileCaption(string caption)
@@ -424,10 +468,23 @@ partial class MainWindow : Form
 
     private void SetEditors_MenuItemClicked(object sender, EventArgs e)
     {
-        using var dialog = new SetEditorsWindow(state.EditorSettings);
+        using var dialog = new SetEditorsWindow(new EditorSettings
+        {
+            TextEditorPath = config.TextEditorPath,
+            TextEditorArgs = config.TextEditorArgs,
+            ImageEditorPath = config.ImageEditorPath,
+            ImageEditorArgs = config.ImageEditorArgs,
+            HexEditorPath = config.HexEditorPath,
+            HexEditorArgs = config.HexEditorArgs,
+        });
         if (dialog.ShowDialog() == DialogResult.OK)
         {
-            state.EditorSettings = dialog.EditorSettings;
+            config.TextEditorPath = dialog.EditorSettings.TextEditorPath;
+            config.TextEditorArgs = dialog.EditorSettings.TextEditorArgs;
+            config.ImageEditorPath = dialog.EditorSettings.ImageEditorPath;
+            config.ImageEditorArgs = dialog.EditorSettings.ImageEditorArgs;
+            config.HexEditorPath = dialog.EditorSettings.HexEditorPath;
+            config.HexEditorArgs = dialog.EditorSettings.HexEditorArgs;
         }
     }
 
@@ -438,22 +495,34 @@ partial class MainWindow : Form
 
     private void EditInApp_MenuItemClicked(object sender, EventArgs e)
     {
-        state.EditSelectedFileInApp(null);
+        state.EditSelectedFileInApp(editorType => editorType switch
+        {
+            EditorType.Text => (config.TextEditorPath, config.TextEditorArgs),
+            EditorType.Image => (config.ImageEditorPath, config.ImageEditorArgs),
+            EditorType.Hex => (config.HexEditorPath, config.HexEditorArgs),
+            _ => throw new ArgumentException("Invalid editor type.", nameof(editorType))
+        });
     }
 
     private void EditAsText_MenuItemClicked(object sender, EventArgs e)
     {
-        state.EditSelectedFileInApp(EditorType.Text);
+        state.EditSelectedFileInApp(_ =>
+            (config.TextEditorPath, config.TextEditorArgs)
+        );
     }
 
     private void EditAsImage_MenuItemClicked(object sender, EventArgs e)
     {
-        state.EditSelectedFileInApp(EditorType.Image);
+        state.EditSelectedFileInApp(_ =>
+            (config.ImageEditorPath, config.ImageEditorArgs)
+        );
     }
 
     private void EditAsHex_MenuItemClicked(object sender, EventArgs e)
     {
-        state.EditSelectedFileInApp(EditorType.Hex);
+        state.EditSelectedFileInApp(_ =>
+            (config.HexEditorPath, config.HexEditorArgs)
+        );
     }
 
     private void Rename_MenuItemClicked(object sender, EventArgs e)
@@ -539,6 +608,7 @@ partial class MainWindow : Form
     {
         textPreview_Scintilla.WrapMode = wordWrap_MenuItem.Checked
             ? WrapMode.Word : WrapMode.None;
+        config.WordWrap = wordWrap_MenuItem.Checked;
     }
 
     private void ViewMetadata_MenuItemClicked(object sender, EventArgs e)
@@ -549,6 +619,7 @@ partial class MainWindow : Form
     private void PnaShowEmpty_MenuItemCheckChanged(object sender, EventArgs e)
     {
         state.SetShowEmptyPnaFiles(pnaShowEmpty_MenuItem.Checked);
+        config.ShowEmptyPnaFiles = pnaShowEmpty_MenuItem.Checked;
     }
 
     private void Cancel_ButtonClicked(object sender, EventArgs e)
@@ -572,7 +643,26 @@ partial class MainWindow : Form
 
     private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
     {
-        state.Close();
+        config.Save();
+    }
+
+    private void MainForm_SizeChanged(object sender, EventArgs e)
+    {
+        config.WindowMaximized = WindowState == FormWindowState.Maximized;
+        if (WindowState == FormWindowState.Normal)
+        {
+            config.WindowWidth = Width;
+            config.WindowHeight = Height;
+        }
+    }
+
+    private void MainForm_LocationChanged(object sender, EventArgs e)
+    {
+        if (WindowState == FormWindowState.Normal)
+        {
+            config.WindowX = Location.X;
+            config.WindowY = Location.Y;
+        }
     }
 
     private void Files_ListViewClientSizeChanged(object sender, EventArgs e)
@@ -591,6 +681,7 @@ partial class MainWindow : Form
                     files_ListView.ClientSize.Width
                     - files_ListView.Columns[e.ColumnIndex].Width;
                 ShowScrollBar(files_ListView.Handle, 0 /* SB_HORZ */, 0 /* Hide */);
+                config.FileSizeColumnWidth = files_ListView.Columns[1].Width;
             }
             finally
             {
@@ -749,33 +840,33 @@ partial class MainWindow : Form
     {
         Comparison<FileInfo> sort = e.Column == 0 ? AlphabeticalFileSort : FileSizeFileSort;
         bool invert = state.SortFileList == sort;
+        SortFileList(e.Column, invert);
+    }
+
+    private void Panels_SplitContainerSplitterMoving(object sender, SplitterCancelEventArgs e)
+    {
+        config.SplitterDistance = e.SplitX;
+    }
+
+    private void Panels_SplitContainerClientSizeChanged(object sender, EventArgs e)
+    {
+        panels_SplitContainer.SplitterDistance = config.SplitterDistance;
+    }
+
+    private void SortFileList(int column, bool invert)
+    {
+        Comparison<FileInfo> sort = column == 0
+            ? AlphabeticalFileSort
+            : FileSizeFileSort;
         if (invert)
         {
-            // Invert sort if clicked again
             state.SortFileList = (a, b) => -sort(a, b);
         }
         else
         {
             state.SortFileList = sort;
         }
-        SetFileListColumnHeaderText(e.Column, invert);
-    }
 
-    private void Panels_SplitContainerSplitterMoving(object sender, SplitterCancelEventArgs e)
-    {
-        splitterDistance = e.SplitX;
-    }
-
-    private void Panels_SplitContainerClientSizeChanged(object sender, EventArgs e)
-    {
-        if (splitterDistance != 0)
-        {
-            panels_SplitContainer.SplitterDistance = splitterDistance;
-        }
-    }
-
-    private void SetFileListColumnHeaderText(int column, bool invert)
-    {
         if (column == 0)
         {
             files_ListView.Columns[0].Text = "Name " + (invert ? "⌄" : "⌃");
@@ -786,6 +877,9 @@ partial class MainWindow : Form
             files_ListView.Columns[0].Text = "Name";
             files_ListView.Columns[1].Text = (invert ? "⌄" : "⌃") + " Size";
         }
+
+        config.SortColumn = column;
+        config.SortInverted = invert;
     }
 
     private static string HexPreview(ReadOnlySpan<byte> data)

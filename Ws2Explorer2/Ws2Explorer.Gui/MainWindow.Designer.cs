@@ -118,7 +118,9 @@
             files_ListView.TabIndex = 0;
             files_ListView.UseCompatibleStateImageBehavior = false;
             files_ListView.View = View.Details;
+            files_ListView.ColumnWidthChanged += Files_ListViewColumnWidthChanged;
             files_ListView.SelectedIndexChanged += Files_ListViewSelectedIndexChanged;
+            files_ListView.ClientSizeChanged += Files_ListViewClientSizeChanged;
             files_ListView.DragDrop += Files_ListViewDragDropped;
             files_ListView.DragOver += Files_ListViewDragOver;
             files_ListView.DoubleClick += Files_ListViewDoubleClicked;
@@ -638,7 +640,6 @@
             Padding = new Padding(4);
             Text = "Ws2Explorer";
             FormClosing += MainForm_FormClosing;
-            ResizeEnd += MainForm_FormResizeEnd;
             panels_SplitContainer.Panel1.ResumeLayout(false);
             panels_SplitContainer.Panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).EndInit();

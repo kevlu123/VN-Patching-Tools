@@ -14,6 +14,8 @@ partial class MainWindow : Form
     private readonly ApplicationState state;
     private readonly CommonOpenFileDialog openFileDialog = new();
     private readonly System.Windows.Forms.Timer statusClear_Timer = new();
+    private int filesListViewFileSizeColumnWidth;
+    private bool filesListViewColumnWidthChanging;
 
     private readonly Scintilla textPreview_Scintilla;
 
@@ -66,6 +68,9 @@ partial class MainWindow : Form
         // Hide status bar
         progress_ProgressBar.Visible = false;
         cancel_Button.Visible = false;
+
+        filesListViewFileSizeColumnWidth = files_ListView.Columns[1].Width;
+        files_ListView.Columns[0].Width = files_ListView.ClientSize.Width - filesListViewFileSizeColumnWidth;
 
         // Create preview controls
 #pragma warning disable CS0618 // Type or member is obsolete (Lexer)
@@ -564,9 +569,27 @@ partial class MainWindow : Form
         state.Close();
     }
 
-    private void MainForm_FormResizeEnd(object sender, EventArgs e)
+    private void Files_ListViewClientSizeChanged(object sender, EventArgs e)
     {
+        Files_ListViewColumnWidthChanged(sender, new ColumnWidthChangedEventArgs(1));
+    }
 
+    private void Files_ListViewColumnWidthChanged(object sender, ColumnWidthChangedEventArgs e)
+    {
+        if (!filesListViewColumnWidthChanging)
+        {
+            filesListViewColumnWidthChanging = true;
+            try
+            {
+                files_ListView.Columns[1 - e.ColumnIndex].Width =
+                    files_ListView.ClientSize.Width - files_ListView.Columns[e.ColumnIndex].Width;
+                filesListViewFileSizeColumnWidth = files_ListView.Columns[1].Width;
+            }
+            finally
+            {
+                filesListViewColumnWidthChanging = false;
+            }
+        }
     }
 
     private void OpenAsArc_MenuItemClicked(object sender, EventArgs e)

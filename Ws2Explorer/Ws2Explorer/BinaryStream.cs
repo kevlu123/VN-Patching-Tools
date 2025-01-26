@@ -1,6 +1,7 @@
 ﻿using Pipelines.Sockets.Unofficial;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Ws2Explorer;
 
@@ -216,12 +217,11 @@ public sealed class BinaryStream : IDisposable
         }
     }
 
-    public Task<T> Decode<T>(IProgress<TaskProgressInfo>? progress = null, bool decRef = true)
+    public Task<T> Decode<T>(bool decRef = true)
         where T : class, IFile<T>
     {
         return Task.Run(() =>
         {
-            using var pr = new ProgressReporter("Decoding file", progress);
             var file = T.Decode(this, out _);
             if (decRef)
             {
@@ -231,7 +231,11 @@ public sealed class BinaryStream : IDisposable
         });
     }
 
-    public Task<IFile> Decode(IProgress<TaskProgressInfo>? progress = null, bool decRef = true)
+    [SuppressMessage("Design", "CA1068:CancellationToken parameters must come last", Justification = "decRef should only be used as a named argument.")]
+    public Task<IFile> Decode(
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default,
+        bool decRef = true)
     {
         return Task.Run(() =>
         {
@@ -246,6 +250,10 @@ public sealed class BinaryStream : IDisposable
             bool TryType<T>()
                 where T : class, IFile<T>
             {
+                if (ct.IsCancellationRequested)
+                {
+                    return true; // Short circuit further down
+                }
                 try
                 {
                     var file = T.Decode(this, out var confidence);
@@ -282,6 +290,10 @@ public sealed class BinaryStream : IDisposable
                 {
                     DecRef();
                 }
+            }
+            if (ct.IsCancellationRequested)
+            {
+                throw new TaskCanceledException();
             }
             return highConfidence ? candidates[^1] : candidates[0];
         });
@@ -321,20 +333,19 @@ public sealed class BinaryStream : IDisposable
 
 public static class BinaryStreamExtensions
 {
-    public static async Task<T> Decode<T>(
-        this Task<BinaryStream> self,
-        IProgress<TaskProgressInfo>? progress = null,
-        bool decRef = true)
+    public static async Task<T> Decode<T>(this Task<BinaryStream> self, bool decRef = true)
         where T : class, IFile<T>
     {
-        return await (await self).Decode<T>(progress, decRef);
+        return await (await self).Decode<T>(decRef: decRef);
     }
 
+    [SuppressMessage("Design", "CA1068:CancellationToken parameters must come last", Justification = "decRef should only be used as a named argument.")]
     public static async Task<IFile> Decode(
         this Task<BinaryStream> self,
         IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default,
         bool decRef = true)
     {
-        return await (await self).Decode(progress, decRef);
+        return await (await self).Decode(progress, ct, decRef: decRef);
     }
 }

@@ -53,7 +53,7 @@ public static class GameTool
         foreach (var rioFilename in GetRioFilenames(gameFolder))
         {
             var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
-                .Decode<ArcFile>(progress);
+                .Decode<ArcFile>();
             rioFiles.Add(new() { Name = rioFilename, Folder = arc });
         }
 
@@ -63,7 +63,7 @@ public static class GameTool
             "'start.ws2' not found.",
             "Multiple 'start.ws2' found.");
         using var entryWs2 = await entryRio.Folder.OpenFile("start.ws2", progress, ct)
-            .Decode<Ws2File>(progress);
+            .Decode<Ws2File>();
         List<Op> ops = [.. entryWs2.Ops];
         var entryOp = ops.Single(
             op => op.Code == Opcode.JUMP_FILE_07,
@@ -116,13 +116,13 @@ public static class GameTool
             "'script.arc' not found.",
             "Multiple 'script.arc' found.");
         using var scriptArc = await gameFolder.OpenFile(scriptFilename.Filename, progress, ct)
-            .Decode<ArcFile>(progress);
+            .Decode<ArcFile>();
         using var contents = await ((IFolder)scriptArc).GetContents(progress, ct);
         foreach (var filename in contents.Keys.ToArray())
         {
             try
             {
-                using var luac = await contents[filename].Decode<LuacFile>(progress);
+                using var luac = await contents[filename].Decode<LuacFile>();
                 var lua = string.Format("""
 hex_source = "{0}"
 function hex_to_array(str)
@@ -152,14 +152,14 @@ end
         foreach (var rioFilename in GetRioFilenames(gameFolder))
         {
             using var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
-                .Decode<ArcFile>(progress);
+                .Decode<ArcFile>();
             var ws2Filenames = arc.ListFiles()
                 .Select(fi => fi.Filename)
                 .Where(f => f.EndsWith(".ws2", StringComparison.OrdinalIgnoreCase));
             foreach (var ws2Filename in ws2Filenames)
             {
                 using var ws2 = await arc.OpenFile(ws2Filename, progress, ct)
-                    .Decode<Ws2File>(progress);
+                    .Decode<Ws2File>();
                 var choiceOps = ws2.Ops
                     .Where(op => op.Code == Opcode.SHOW_CHOICE_0F)
                     .Select(op => new ChoiceInfo

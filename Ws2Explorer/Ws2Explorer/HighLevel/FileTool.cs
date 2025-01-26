@@ -30,7 +30,7 @@ public static class FileTool
             {
                 var child = await folders[^1].Folder
                     .OpenFile(parts[i - 1], progress, ct)
-                    .Decode(progress);
+                    .Decode(progress, ct);
                 if (child is IFolder subfolder)
                 {
                     folders.Add(new NamedFolder

@@ -229,7 +229,7 @@ class ApplicationState(string? openPath)
             }
 
             var folder = await selectedFileNonParent.File.Stream
-                .Decode<T>(progress, decRef: false);
+                .Decode<T>(decRef: false);
             folderStack.Add(new NamedFolder
             {
                 Folder = folder,

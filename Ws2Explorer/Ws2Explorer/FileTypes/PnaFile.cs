@@ -171,7 +171,7 @@ public sealed class PnaFile : IArchive<PnaFile>
         Header = JsonSerializer.Deserialize<PnaHeader>(headerStream.Span);
 
         var totalLen = PnaHeader.Size
-            + (Header.FileCount * PnaImageMetadata.Size)
+            + (imageMetas.Count * PnaImageMetadata.Size)
             + Enumerable.Range(0, imageMetas.Count)
                 .Sum(i => pngs[i]?.Stream.Length ?? 0);
         Stream = new BinaryStream(totalLen);

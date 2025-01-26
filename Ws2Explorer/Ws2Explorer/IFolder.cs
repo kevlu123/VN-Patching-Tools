@@ -46,7 +46,7 @@ public interface IFolder
         {
             foreach (var (filename, stream) in contents)
             {
-                files.Add(filename, await stream.Decode(progress, decRef: false));
+                files.Add(filename, await stream.Decode(progress, ct, decRef: false));
             }
             return files;
         }
@@ -70,7 +70,7 @@ public interface IFolder
             {
                 try
                 {
-                    files.Add(filename, await stream.Decode<T>(progress, decRef: false));
+                    files.Add(filename, await stream.Decode<T>(decRef: false));
                 }
                 catch (DecodeException) { }
             }

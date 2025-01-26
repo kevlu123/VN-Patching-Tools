@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../Ws2Explorer/Ws2Explorer/Ws2Explorer.csproj" />
+    <ProjectReference Include="../../Ws2Explorer/Legacy/Ws2Explorer/Ws2Explorer.csproj" />
   </ItemGroup>
 
 </Project>

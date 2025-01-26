@@ -1,37 +1,54 @@
 ﻿namespace Ws2Explorer.Gui;
 
-partial class RenameWindow : Form {
-    public string? NewName { get; private set; }
+partial class RenameWindow : Form
+{
+    public string Filename { get; private set; }
 
-    public RenameWindow(string oldName) {
+    public RenameWindow(string oldName)
+    {
         InitializeComponent();
         StartPosition = FormStartPosition.CenterParent;
-        filenameTextBox.Text = oldName;
+        Filename = oldName;
+        filename_TextBox.Text = oldName;
+
+        StartPosition = FormStartPosition.CenterParent;
     }
 
-    private void RenameButtonClicked(object sender, EventArgs e) {
-        var newName = filenameTextBox.Text.Trim();
-        if (newName.Length == 0) {
-            MainWindow.ShowErrorMessageBox("The new name cannot be empty.");
+    private void Rename_ButtonClicked(object sender, EventArgs e)
+    {
+        var newName = filename_TextBox.Text.Trim();
+        if (newName.Length == 0)
+        {
+            MessageBox.Show(
+                "The new name cannot be empty.",
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
             return;
         }
 
-        NewName = newName;
-        DialogResult = DialogResult.OK;
+        DialogResult = Filename == newName
+            ? DialogResult.Cancel
+            : DialogResult.OK;
+        Filename = newName;
     }
 
-    private void CancelButtonClicked(object sender, EventArgs e) {
+    private void Cancel_ButtonClicked(object sender, EventArgs e)
+    {
         DialogResult = DialogResult.Cancel;
     }
 
-    protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
-        if (keyData == Keys.Escape) {
-            CancelButtonClicked(this, EventArgs.Empty);
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        if (keyData == Keys.Escape)
+        {
+            Cancel_ButtonClicked(this, EventArgs.Empty);
             return true;
         }
 
-        if (keyData == Keys.Enter) {
-            RenameButtonClicked(this, EventArgs.Empty);
+        if (keyData == Keys.Enter)
+        {
+            Rename_ButtonClicked(this, EventArgs.Empty);
             return true;
         }
 

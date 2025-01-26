@@ -1,10 +1,11 @@
 namespace Ws2Explorer.Gui;
 
-static class Program {
+static class Program
+{
     [STAThread]
-    static void Main(string[] args) {
-        var openPath = args.Length > 0 ? args[0] : null;
-
+    static void Main(string[] args)
+    {
+        var openPath = args.Length == 0 ? null : args[0];
         ApplicationConfiguration.Initialize();
         Application.Run(new MainWindow(openPath));
     }

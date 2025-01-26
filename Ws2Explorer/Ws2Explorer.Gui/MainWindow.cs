@@ -1,310 +1,43 @@
-using Microsoft.WindowsAPICodePack.Dialogs;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using NAudio.Vorbis;
+using NAudio.Wave;
 using ScintillaNET;
-using System.Collections.Specialized;
-using System.ComponentModel.Design;
-using System.Diagnostics;
+using System.Drawing.Text;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using Ws2Explorer.HighLevel;
 using FormTimer = System.Windows.Forms.Timer;
-
-#if INCLUDE_VIDEO_PLAYER
-using LibVLCSharp.WinForms;
-using LibVLCSharp.Shared;
-#endif
 
 namespace Ws2Explorer.Gui;
 
-public partial class MainWindow : Form {
-    private enum ExternalEditorType {
-        Text,
-        Image,
-        Hex,
-    }
+partial class MainWindow : Form
+{
+    private const string CONFIG_FILENAME = "config.json";
 
-    class ProtectedByteViewer : ByteViewer {
-        protected override void WndProc(ref Message m) {
-            try {
-                base.WndProc(ref m);
-            } catch (Exception) {
-                MessageBox.Show(
-                    "The hex viewer control has crashed. Reset the control by disabling and re-enabling the hex viewer.",
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-        }
-    }
-
-    class Terminal {
-        private readonly TextBox inputControl;
-        private readonly Scintilla outputControl;
-        private readonly Func<CancellationTokenSource> ctsGetter;
-        private readonly Ws2Explorer.Program program;
-        private readonly List<string> history = new();
-        private int historyIndex;
-
-        public event EventHandler OnUpdateRequired = delegate { };
-
-        public Terminal(TextBox inputControl, Scintilla outputControl, Func<CancellationTokenSource> ctsGetter) {
-            this.inputControl = inputControl;
-            this.outputControl = outputControl;
-            this.ctsGetter = ctsGetter;
-
-            program = new Ws2Explorer.Program();
-            program.OnOutput += (_, text) => outputControl.AppendTextBypassReadonly(text + "\n");
-
-            inputControl.KeyDown += KeyPressed;
-        }
-
-        private async void KeyPressed(object? sender, KeyEventArgs e) {
-            switch (e.KeyData) {
-                case Keys.Enter:
-                    e.SuppressKeyPress = true;
-                    history.Add(inputControl.Text);
-                    historyIndex = history.Count;
-                    await EnterKeyPressed();
-                    break;
-                case Keys.Up:
-                    e.SuppressKeyPress = true;
-                    if (historyIndex > 0) {
-                        historyIndex--;
-                        inputControl.Text = history[historyIndex];
-                    }
-                    break;
-                case Keys.Down:
-                    e.SuppressKeyPress = true;
-                    if (historyIndex < history.Count - 1) {
-                        historyIndex++;
-                        inputControl.Text = history[historyIndex];
-                    } else if (historyIndex == history.Count - 1) {
-                        historyIndex++;
-                        inputControl.Text = "";
-                    }
-                    break;
-            }
-        }
-
-        private async Task EnterKeyPressed() {
-            var input = inputControl.Text;
-            inputControl.Text = "";
-            outputControl.AppendTextBypassReadonly($"{Environment.CurrentDirectory}> {input}\n");
-
-            var args = ParseArgs(input);
-            if (args.Length == 0) {
-                return;
-            }
-            var cmd = args[0];
-
-            bool force = cmd == "force";
-            if (force) {
-                args = args[1..];
-                cmd = args[0];
-            }
-
-            if (cmd == "clear") {
-                outputControl.SetTextBypassReadonly("");
-                return;
-            }
-
-            if (!Ws2Explorer.Program.CommandWillWrite(cmd)) {
-                await program.Run(args, ctsGetter().Token);
-                return;
-            }
-
-            using (var guard = new TaskGuard(showErrorStatus: false)) {
-                if (!guard.Acquired && !force) {
-                    outputControl.AppendTextBypassReadonly(
-                        "Error: Another write operation is already in progress and \n" +
-                        "the current command has been aborted to prevent data corruption. \n" +
-                        "Prefix the command with 'force ' to ignore this safeguard.\n"
-                        );
-                    return;
-                }
-                await program.Run(args, ctsGetter().Token);
-            }
-            OnUpdateRequired(this, EventArgs.Empty);
-        }
-
-        private static string[] ParseArgs(string input) {
-            var parts = new List<string>();
-            var part = "";
-            bool inQuote = false;
-            foreach (var c in input) {
-                switch (c) {
-                    case ' ' when !inQuote:
-                        if (part.Length > 0) {
-                            parts.Add(part);
-                            part = "";
-                        }
-                        break;
-                    case '"':
-                        inQuote = !inQuote;
-                        break;
-                    default:
-                        part += c;
-                        break;
-                }
-            }
-            if (part.Length > 0) {
-                parts.Add(part);
-            }
-            return parts.ToArray();
-        }
-    }
-
-    class TaskGuard : IDisposable {
-        private static bool isTaskRunning;
-        public bool Acquired { get; }
-
-        public TaskGuard(bool showErrorStatus = true) {
-            Acquired = !isTaskRunning;
-            isTaskRunning = true;
-            if (!Acquired && showErrorStatus) {
-                instance.ShowStatus("Wait for the current operation to finish.");
-            }
-        }
-
-        public void Dispose() {
-            if (Acquired) {
-                isTaskRunning = false;
-            }
-        }
-    }
-
-    private static MainWindow instance = null!;
-    private readonly Config config;
+    private Config config;
+    private readonly ApplicationState state;
     private readonly CommonOpenFileDialog openFileDialog = new();
-    private readonly FormTimer clearStatusTextTimer;
-    private readonly Stack<string> folderUndoHistory = new();
-    private readonly Stack<string> folderRedoHistory = new();
-    private readonly IProgress<(int, string, float)> progress;
-    private IFolder? currentFolder;
-    private BinaryFile? currentBinaryFile;
-    private CancellationTokenSource cts = new();
-    private ProtectedByteViewer? hexPreviewBox;
-    private readonly TabPage hexPreviewTab;
-    private Size restoredWindowSize;
-    private int currentProgressTask;
+    private readonly FormTimer statusClear_Timer;
+    private readonly FormTimer saveConfig_Timer;
+    private bool filesListViewColumnWidthChanging;
 
-#if INCLUDE_VIDEO_PLAYER
-    private readonly LibVLC vlc;
-    private readonly MediaPlayer mediaPlayer;
-    private readonly TabPage videoPreviewTab;
-    private readonly VideoView videoPreviewBox;
-#endif
+    private readonly Scintilla textPreview_Scintilla;
 
-    public MainWindow(string? openPath) {
-        instance = this;
-        InitializeComponent();
+    private readonly PictureBox imagePreview_PictureBox;
 
-#if INCLUDE_VIDEO_PLAYER
-        Core.Initialize(); // First startup takes a while
-        vlc = new LibVLC();
-        mediaPlayer = new MediaPlayer(vlc) {
-            Mute = true
-        };
-        videoPreviewBox = new VideoView {
-            Dock = DockStyle.Fill,
-            MediaPlayer = mediaPlayer,
-        };
-        videoPreviewTab = new TabPage("Video") {
-            Controls = { videoPreviewBox }
-        };
-        previewerTabControl.TabPages.Add(videoPreviewTab);
-#endif
+    private readonly Label fontPreview_Label;
+    private PrivateFontCollection fontCollection = new();
+    private GCHandle fontGCHandle = GCHandle.Alloc(Array.Empty<byte>(), GCHandleType.Pinned);
 
-        var currentProcess = Process.GetCurrentProcess();
-        var exeDir = currentProcess.MainModule != null ? Path.GetDirectoryName(currentProcess.MainModule.FileName) : "";
-        var configPath = Path.Combine(exeDir ?? "", "ws2explorerguiconfig.json");
-        config = Config.Load(configPath);
+    private readonly WaveOutEvent audioPlayer;
+    private VorbisWaveReader? audioReader;
+    private readonly Button audioPlay_Button;
 
-        progress = new Progress<(int id, string task, float value)>(x => {
-            if (x.value <= 0) {
-                currentProgressTask = x.id;
-            } else if (x.id != currentProgressTask) {
-                return;
-            }
-            int v = (int)(x.value * 100);
-            if (v >= progressBar.Maximum) {
-                taskLabel.Text = "";
-                progressBar.Visible = false;
-                cancelButton.Visible = false;
-            } else {
-                taskLabel.Text = x.task;
-                progressBar.Visible = true;
-                cancelButton.Visible = true;
-                progressBar.Value = v + 1;
-                progressBar.Value = v;
-            }
-        });
-
-        clearStatusTextTimer = new FormTimer {
-            Interval = 3000,
-        };
-        clearStatusTextTimer.Tick += (sender, e) => {
-            statusLabel.Text = "";
-            clearStatusTextTimer.Stop();
-        };
-
-        hexPreviewTab = new TabPage("Hex");
-
-        encodingDropDown.Items.AddRange(PrettyNameEncoding.Encodings);
-        encodingDropDown.SelectedIndex = 0;
-
-        var terminal = new Terminal(terminalInputTextBox, terminalOutputTextBox, () => cts);
-        terminal.OnUpdateRequired += async (_, _) => await ReopenFolder();
-
-        InitScintillaTextBox();
-
-        try {
-            Size = new Size(config.WindowWidth, config.WindowHeight);
-            restoredWindowSize = Size;
-            if (config.WindowMaximized) {
-                WindowState = FormWindowState.Maximized;
-            } else if (config.WindowX.HasValue && config.WindowY.HasValue) {
-                StartPosition = FormStartPosition.Manual;
-            }
-            if (config.WindowX.HasValue && config.WindowY.HasValue) {
-                Location = new Point(config.WindowX.Value, config.WindowY.Value);
-            }
-            wordWrapMenuItem.Checked = config.WordWrap;
-            showEmptyPnaFilesMenuItem.Checked = config.ShowEmptyPnaFiles;
-            showHexMenuItem.Checked = config.ShowHexViewer;
-            showTerminalMenuItem.Checked = config.ShowTerminal;
-            terminalPreviewerSplitContainer.Panel2Collapsed = !config.ShowTerminal;
-
-            // Workaround for split container having 0 size during constructor
-            // which would cause the splitter distance setter to throw.
-            Task.Run(() => terminalPreviewerSplitContainer.Invoke(() => {
-                terminalPreviewerSplitContainer.SplitterDistance = config.PreviewerPanelHeight;
-                filePreviewerSplitContainer.SplitterDistance = config.FilePanelWidth;
-            }));
-        } catch (Exception ex) {
-            ShowStatus($"Error loading config: {ex.GetMessage()}");
-            config = new Config() { SavePath = config.SavePath };
-        }
-
-        try {
-            if (openPath != null) {
-                _ = OpenFolderFromPath(openPath);
-            } else if (config.OpenFolder.Length > 0) {
-                _ = OpenFolderFromPath(config.OpenFolder);
-            }
-        } catch {
-            config.OpenFolder = "";
-        }
-
-        if (currentFolder == null) {
-            try {
-                _ = OpenFolderFromPath(Environment.CurrentDirectory);
-            } catch { }
-        }
-    }
-
-    private void InitScintillaTextBox() {
-        // https://github.com/robinrodricks/ScintillaNET.Demo/blob/master/ScintillaNET.Demo/MainForm.cs
-
-        static Color IntToColorInvert(int rgb) {
+    public MainWindow(string? openPath)
+    {
+        static Color IntToColorInvert(int rgb)
+        {
             byte r = (byte)(rgb >> 16);
             byte g = (byte)(rgb >> 8);
             byte b = (byte)rgb;
@@ -312,1004 +45,1010 @@ public partial class MainWindow : Form {
                 255,
                 255 - r,
                 255 - g,
-                255 - b
-                );
+                255 - b);
         }
 
-        textPreviewBox.StyleResetDefault();
-        textPreviewBox.Styles[Style.Default].Font = "Consolas";
-        textPreviewBox.Styles[Style.Default].Size = 10;
-        textPreviewBox.Styles[Style.Default].BackColor = IntToColorInvert(0x000000);
-        textPreviewBox.Styles[Style.Default].ForeColor = IntToColorInvert(0xFFFFFF);
-        textPreviewBox.Styles[Style.Default].ForeColor = IntToColorInvert(0xFFFFFF);
-        textPreviewBox.CaretLineVisible = false;
-        textPreviewBox.StyleClearAll();
+        InitializeComponent();
 
-        textPreviewBox.Styles[Style.Cpp.Identifier].ForeColor = IntToColorInvert(0xD0DAE2);
-        textPreviewBox.Styles[Style.Cpp.Comment].ForeColor = IntToColorInvert(0xBD758B);
-        textPreviewBox.Styles[Style.Cpp.CommentLine].ForeColor = IntToColorInvert(0x40BF57);
-        textPreviewBox.Styles[Style.Cpp.CommentDoc].ForeColor = IntToColorInvert(0x2FAE35);
-        textPreviewBox.Styles[Style.Cpp.Number].ForeColor = IntToColorInvert(0xFFFF00);
-        textPreviewBox.Styles[Style.Cpp.String].ForeColor = IntToColorInvert(0xFFFF00);
-        textPreviewBox.Styles[Style.Cpp.Character].ForeColor = IntToColorInvert(0xE95454);
-        textPreviewBox.Styles[Style.Cpp.Preprocessor].ForeColor = IntToColorInvert(0x8AAFEE);
-        textPreviewBox.Styles[Style.Cpp.Operator].ForeColor = IntToColorInvert(0xE0E0E0);
-        textPreviewBox.Styles[Style.Cpp.Regex].ForeColor = IntToColorInvert(0xff00ff);
-        textPreviewBox.Styles[Style.Cpp.CommentLineDoc].ForeColor = IntToColorInvert(0x77A7DB);
-        textPreviewBox.Styles[Style.Cpp.Word].ForeColor = IntToColorInvert(0x48A8EE);
-        textPreviewBox.Styles[Style.Cpp.Word2].ForeColor = IntToColorInvert(0xF98906);
-        textPreviewBox.Styles[Style.Cpp.CommentDocKeyword].ForeColor = IntToColorInvert(0xB3D991);
-        textPreviewBox.Styles[Style.Cpp.CommentDocKeywordError].ForeColor = IntToColorInvert(0xFF0000);
-        textPreviewBox.Styles[Style.Cpp.GlobalClass].ForeColor = IntToColorInvert(0x48A8EE);
+        config = Config.Load(GetConfigPath());
 
-        textPreviewBox.SetKeywords(0, "class extends implements import interface new case do while else if for in switch throw get set function var try catch finally while with default break continue delete return each const namespace package include use is as instanceof typeof author copy default deprecated eventType example exampleText exception haxe inheritDoc internal link mtasc mxmlc param private return see serial serialData serialField since throws usage version langversion playerversion productversion dynamic private public partial static intrinsic internal native override protected AS3 final super this arguments null Infinity NaN undefined true false abstract as base bool break by byte case catch char checked class const continue decimal default delegate do double descending explicit event extern else enum false finally fixed float for foreach from goto group if implicit in int interface internal into is lock long new null namespace object operator out override orderby params private protected public readonly ref return switch struct sbyte sealed short sizeof stackalloc static string select this throw true try typeof uint ulong unchecked unsafe ushort using var virtual volatile void while where yield");
-        textPreviewBox.SetKeywords(1, "void Null ArgumentError arguments Array Boolean Class Date DefinitionError Error EvalError Function int Math Namespace Number Object RangeError ReferenceError RegExp SecurityError String SyntaxError TypeError uint XML XMLList Boolean Byte Char DateTime Decimal Double Int16 Int32 Int64 IntPtr SByte Single UInt16 UInt32 UInt64 UIntPtr Void Path File System Windows Forms ScintillaNET");
+        // Create status clear timer
+        statusClear_Timer = new FormTimer();
+        statusClear_Timer.Tick += (sender, e) =>
+        {
+            status_StatusLabel.Text = string.Empty;
+            statusClear_Timer.Stop();
+        };
+        statusClear_Timer.Interval = 4000;
 
-        textPreviewBox.CaretLineVisible = false;
+        // Create auto save config timer
+        saveConfig_Timer = new FormTimer();
+        saveConfig_Timer.Tick += (sender, e) => config?.Save();
+        saveConfig_Timer.Interval = 30000;
 
-        terminalOutputTextBox.Styles[Style.Default].Font = "Consolas";
-        terminalOutputTextBox.Styles[Style.Default].Size = 10;
-        terminalOutputTextBox.CaretLineVisible = false;
-    }
-
-    private async void MenuFileOpenFileClicked(object sender, EventArgs e) {
-        openFileDialog.IsFolderPicker = false;
-        if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) {
-            await OpenFolderFromPath(openFileDialog.FileName);
+        // Add version to title
+        if (Application.ProductVersion.Contains('+'))
+        {
+            // Untagged version identified by commit hash
+            Text += $" @{Application.ProductVersion.Split('+')[^1][..7]}";
         }
-    }
-
-    private async void MenuFileOpenFolderClicked(object sender, EventArgs e) {
-        openFileDialog.IsFolderPicker = true;
-        if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) {
-            await OpenFolderFromPath(openFileDialog.FileName);
-        }
-    }
-
-    private async Task OpenFolderFromPath(string path, bool modifyHistory = true) {
-        IFolder folder;
-        try {
-            folder = await Folder.GetFolder(path, cts.Token, progress);
-        } catch (Exception ex) {
-            ShowErrorMessageBox($"Cannot open folder '{path}': {ex.GetMessage()}");
-            return;
+        else
+        {
+            // Tagged version
+            Text += $" {Application.ProductVersion}";
         }
 
-        OpenFolder(folder, modifyHistory);
+        // Hide status bar
+        progress_ProgressBar.Visible = false;
+        cancel_Button.Visible = false;
 
-        config.Save();
-    }
+        // Hide file list view horizontal scrollbar
+        ShowScrollBar(files_ListView.Handle, 0 /* SB_HORZ */, 0 /* Hide */);
 
-    private void OpenFolder(IFolder folder, bool modifyHistory = true) {
-        List<FileMetadata> children;
-        try {
-            children = folder.ListChildren();
-        } catch (Exception ex) {
-            ShowErrorMessageBox($"Cannot list folder '{folder.FullPath}': {ex.GetMessage()}");
-            return;
-        }
+        // Set file list view column width
+        Files_ListViewColumnWidthChanged(this, new ColumnWidthChangedEventArgs(1));
 
-        if (modifyHistory) {
-            folderUndoHistory.TryPeek(out var nextUndo);
-            if (currentFolder != null && nextUndo != currentFolder.FullPath) {
-                folderUndoHistory.Push(currentFolder.FullPath);
+        // Create preview controls
+#pragma warning disable CS0618 // Type or member is obsolete (Lexer)
+        textPreview_Scintilla = new Scintilla
+        {
+            BorderStyle = ScintillaNET.BorderStyle.FixedSingle,
+            BiDirectionality = BiDirectionalDisplayType.Disabled,
+            UseRightToLeftReadingLayout = false,
+            CaretLineBackColor = Color.Black,
+            CaretLineVisible = false,
+            TabIndents = true,
+            Dock = DockStyle.Fill,
+            Lexer = Lexer.Cpp,
+            LexerName = "cpp",
+            WrapMode = WrapMode.None,
+            ScrollWidth = 49,
+        };
+#pragma warning restore CS0618 // Type or member is obsolete (Lexer)
+        textPreview_Scintilla.Margins.Capacity = 5;
+        textPreview_Scintilla.StyleResetDefault();
+        textPreview_Scintilla.Styles[Style.Default].Font = "Consolas";
+        textPreview_Scintilla.Styles[Style.Default].Size = 10;
+        textPreview_Scintilla.Styles[Style.Default].BackColor = IntToColorInvert(0x000000);
+        textPreview_Scintilla.Styles[Style.Default].ForeColor = IntToColorInvert(0xFFFFFF);
+        textPreview_Scintilla.Styles[Style.Default].ForeColor = IntToColorInvert(0xFFFFFF);
+        textPreview_Scintilla.StyleClearAll();
+        textPreview_Scintilla.Styles[Style.Cpp.Identifier].ForeColor = IntToColorInvert(0xD0DAE2);
+        textPreview_Scintilla.Styles[Style.Cpp.Comment].ForeColor = IntToColorInvert(0xBD758B);
+        textPreview_Scintilla.Styles[Style.Cpp.CommentLine].ForeColor = IntToColorInvert(0x40BF57);
+        textPreview_Scintilla.Styles[Style.Cpp.CommentDoc].ForeColor = IntToColorInvert(0x2FAE35);
+        textPreview_Scintilla.Styles[Style.Cpp.Number].ForeColor = IntToColorInvert(0xFFFF00);
+        textPreview_Scintilla.Styles[Style.Cpp.String].ForeColor = IntToColorInvert(0xFFFF00);
+        textPreview_Scintilla.Styles[Style.Cpp.Character].ForeColor = IntToColorInvert(0xE95454);
+        textPreview_Scintilla.Styles[Style.Cpp.Preprocessor].ForeColor = IntToColorInvert(0x8AAFEE);
+        textPreview_Scintilla.Styles[Style.Cpp.Operator].ForeColor = IntToColorInvert(0xE0E0E0);
+        textPreview_Scintilla.Styles[Style.Cpp.Regex].ForeColor = IntToColorInvert(0xff00ff);
+        textPreview_Scintilla.Styles[Style.Cpp.CommentLineDoc].ForeColor = IntToColorInvert(0x77A7DB);
+        textPreview_Scintilla.Styles[Style.Cpp.Word].ForeColor = IntToColorInvert(0x48A8EE);
+        textPreview_Scintilla.Styles[Style.Cpp.Word2].ForeColor = IntToColorInvert(0xF98906);
+        textPreview_Scintilla.Styles[Style.Cpp.CommentDocKeyword].ForeColor = IntToColorInvert(0xB3D991);
+        textPreview_Scintilla.Styles[Style.Cpp.CommentDocKeywordError].ForeColor = IntToColorInvert(0xFF0000);
+        textPreview_Scintilla.Styles[Style.Cpp.GlobalClass].ForeColor = IntToColorInvert(0x48A8EE);
+        textPreview_Scintilla.SetKeywords(0, "class extends implements import interface new case do while else if for in switch throw get set function var try catch finally while with default break continue delete return each const namespace package include use is as instanceof typeof author copy default deprecated eventType example exampleText exception haxe inheritDoc internal link mtasc mxmlc param private return see serial serialData serialField since throws usage version langversion playerversion productversion dynamic private public partial static intrinsic internal native override protected AS3 final super this arguments null Infinity NaN undefined true false abstract as base bool break by byte case catch char checked class const continue decimal default delegate do double descending explicit event extern else enum false finally fixed float for foreach from goto group if implicit in int interface internal into is lock long new null namespace object operator out override orderby params private protected public readonly ref return switch struct sbyte sealed short sizeof stackalloc static string select this throw true try typeof uint ulong unchecked unsafe ushort using var virtual volatile void while where yield");
+        textPreview_Scintilla.SetKeywords(1, "void Null ArgumentError arguments Array Boolean Class Date DefinitionError Error EvalError Function int Math Namespace Number Object RangeError ReferenceError RegExp SecurityError String SyntaxError TypeError uint XML XMLList Boolean Byte Char DateTime Decimal Double Int16 Int32 Int64 IntPtr SByte Single UInt16 UInt32 UInt64 UIntPtr Void Path File System Windows Forms ScintillaNET");
+
+        imagePreview_PictureBox = new PictureBox
+        {
+            Dock = DockStyle.Fill,
+            SizeMode = PictureBoxSizeMode.Zoom,
+        };
+
+        fontPreview_Label = new Label
+        {
+            UseCompatibleTextRendering = true,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleCenter,
+            Text = "The quick brown fox jumps over the lazy dog\n0123456789",
+        };
+
+        audioPlayer = new WaveOutEvent();
+        audioPlay_Button = new Button
+        {
+            Text = "Play",
+            Dock = DockStyle.Bottom,
+            Height = 30,
+        };
+        audioPlay_Button.Click += AudioPlay_ButtonClicked;
+
+        // Create state
+        state = new ApplicationState(openPath ?? config.OpenFolder)
+        {
+            Progress = new Progress<TaskProgressInfo>(OnProgress),
+            SortFileList = AlphabeticalFileSort,
+            OnError = OnError,
+            OnInfo = OnInfo,
+            OnStatus = OnStatus,
+            OnFileList = OnFileList,
+            OnPathText = OnPathText,
+            OnFileCaption = OnFileCaption,
+            OnChoiceList = OnChoiceList,
+            OnPreviewBinary = OnPreviewBinary,
+            OnPreviewText = OnPreviewText,
+            OnPreviewPng = OnPreviewPng,
+            OnPreviewOgg = OnPreviewOgg,
+            OnPreviewFont = OnPreviewFont,
+        };
+        state.Init();
+
+        // Apply config
+        try
+        {
+            bool maximized = config.WindowMaximized;
+            Size = new Size(config.WindowWidth, config.WindowHeight);
+            if (config.WindowX.HasValue && config.WindowY.HasValue)
+            {
+                StartPosition = FormStartPosition.Manual;
+                Location = new Point(config.WindowX.Value, config.WindowY.Value);
             }
-            folderRedoHistory.Clear();
-        }
-
-        currentFolder = folder;
-
-        var fullPath = folder.FullPath;
-        SetPathTextBoxText(fullPath);
-        config.OpenFolder = fullPath;
-
-        fileListView.Items.Clear();
-        FileListViewIndexChanged(this, EventArgs.Empty);
-
-        fileListView.BeginUpdate();
-        try {
-            if (currentFolder.Parent != null) {
-                fileListView.Items.Add(new ListViewItem(new[] {
-                    "..",
-                    "",
-                }));
+            if (maximized)
+            {
+                WindowState = FormWindowState.Maximized;
             }
+            wordWrap_MenuItem.Checked = config.WordWrap;
+            panels_SplitContainer.SplitterDistance = config.SplitterDistance;
+            SortFileList(config.SortColumn, config.SortInverted);
+            files_ListView.Columns[1].Width = config.FileSizeColumnWidth;
+            pnaShowEmpty_MenuItem.Checked = config.ShowEmptyPnaFiles;
+        }
+        catch (Exception ex)
+        {
+            OnError(ex);
+            config = new Config(GetConfigPath());
+        }
+    }
 
-            children.Sort((a, b) => {
-                if (a.IsFolder != b.IsFolder) {
-                    return a.IsFolder ? -1 : 1;
+    private static string GetConfigPath()
+    {
+        return Path.Combine(
+            ApplicationState.GetExeFolderPath() ?? string.Empty,
+            CONFIG_FILENAME);
+    }
+
+    private void OnError(Exception ex)
+    {
+        using var dialog = new InfoWindow("Error", GetDetailedErrorMessage(ex));
+        dialog.ShowDialog();
+    }
+
+    private static void OnInfo(string message)
+    {
+        MessageBox.Show(message);
+    }
+
+    private void OnStatus(string message)
+    {
+        status_StatusLabel.Text = message;
+        statusClear_Timer.Stop();
+        statusClear_Timer.Start();
+    }
+
+    private void OnProgress(TaskProgressInfo info)
+    {
+        Invoke(() =>
+        {
+            int v = (int)(info.Value * 100);
+            if (v >= progress_ProgressBar.Maximum)
+            {
+                task_StatusLabel.Text = string.Empty;
+                progress_ProgressBar.Visible = false;
+                cancel_Button.Visible = false;
+            }
+            else
+            {
+                task_StatusLabel.Text = info.Description;
+                progress_ProgressBar.Visible = true;
+                cancel_Button.Visible = true;
+                // Workaround for progress bar not updating
+                progress_ProgressBar.Value = v + 1;
+                progress_ProgressBar.Value = v;
+            }
+        });
+    }
+
+    private void OnFileList(IReadOnlyCollection<FileInfo> fileList)
+    {
+        var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
+        nfi.NumberGroupSeparator = " ";
+
+        files_ListView.Items.Clear();
+        files_ListView.BeginUpdate();
+        foreach (var file in fileList)
+        {
+            files_ListView.Items.Add(new ListViewItem(
+                new string[] {
+                    (file.IsDirectory && file.Filename != "..") ? $"{file.Filename}/" : file.Filename,
+                    file.FileSize?.ToString("#,0", nfi) ?? string.Empty,
                 }
+            ));
+        }
+        files_ListView.EndUpdate();
+    }
 
-                //var extA = Path.GetExtension(a.Name);
-                //var extB = Path.GetExtension(b.Name);
-                //if (extA != extB) {
-                //    return string.Compare(extA, extB, StringComparison.OrdinalIgnoreCase);
-                //}
+    private void OnPathText(string text)
+    {
+        path_TextBox.Text = text;
+        path_TextBox.SelectionStart = path_TextBox.Text.Length;
+        config.OpenFolder = text;
+    }
 
-                return string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
-            });
+    private void OnFileCaption(string caption)
+    {
+        caption_StatusLabel.Text = caption;
+    }
 
-            foreach (var child in children) {
-                if (folder is PnaFile && child.Length == 0 && !showEmptyPnaFilesMenuItem.Checked) {
-                    continue;
+    public void OnPreviewBinary(BinaryStream stream)
+    {
+        audioPlayer.Stop();
+
+        OnPreviewText(HexPreview(stream.Span));
+    }
+
+    public void OnPreviewText(string text)
+    {
+        audioPlayer.Stop();
+
+        textPreview_Scintilla.Text = text;
+        if (!panels_SplitContainer.Panel2.Controls.Contains(textPreview_Scintilla))
+        {
+            panels_SplitContainer.Panel2.Controls.Clear();
+            panels_SplitContainer.Panel2.Controls.Add(textPreview_Scintilla);
+        }
+    }
+
+    public void OnPreviewPng(BinaryStream stream)
+    {
+        audioPlayer.Stop();
+
+        var array = new byte[stream.Length];
+        stream.Span.CopyTo(array);
+        var memoryStream = new MemoryStream(array);
+        imagePreview_PictureBox.Image = Image.FromStream(memoryStream);
+        if (!panels_SplitContainer.Panel2.Controls.Contains(imagePreview_PictureBox))
+        {
+            panels_SplitContainer.Panel2.Controls.Clear();
+            panels_SplitContainer.Panel2.Controls.Add(imagePreview_PictureBox);
+        }
+    }
+
+    public void OnPreviewOgg(BinaryStream stream)
+    {
+        audioPlayer.Stop();
+        audioReader?.Dispose();
+        var array = new byte[stream.Length];
+        stream.Span.CopyTo(array);
+        var memoryStream = new MemoryStream(array);
+        audioReader = new VorbisWaveReader(memoryStream);
+        audioPlayer.Init(audioReader);
+
+        audioPlay_Button.Text = "Play";
+        if (!panels_SplitContainer.Panel2.Controls.Contains(audioPlay_Button))
+        {
+            panels_SplitContainer.Panel2.Controls.Clear();
+            panels_SplitContainer.Panel2.Controls.Add(audioPlay_Button);
+        }
+    }
+
+    public void OnPreviewFont(BinaryStream stream)
+    {
+        audioPlayer.Stop();
+
+        fontCollection.Dispose();
+        fontCollection = new PrivateFontCollection();
+
+        fontGCHandle.Free();
+        fontGCHandle = GCHandle.Alloc(new byte[stream.Length], GCHandleType.Pinned);
+        stream.Span.CopyTo((byte[])fontGCHandle.Target!);
+        fontCollection.AddMemoryFont(fontGCHandle.AddrOfPinnedObject(), stream.Length);
+
+        fontPreview_Label.Font = new Font(fontCollection.Families[0], 20);
+        if (!panels_SplitContainer.Panel2.Controls.Contains(fontPreview_Label))
+        {
+            panels_SplitContainer.Panel2.Controls.Clear();
+            panels_SplitContainer.Panel2.Controls.Add(fontPreview_Label);
+        }
+    }
+
+    public void OnChoiceList(List<ChoiceInfo> choiceInfos)
+    {
+        var texts = new List<string>();
+        foreach (var choiceInfo in choiceInfos)
+        {
+            texts.Add($"{choiceInfo.Filename}");
+            foreach (var choice in choiceInfo.Choices)
+            {
+                if (choice.JumpOp.Code == 0x06)
+                {
+                    // Jump
+                    texts.Add($"  \"{choice.Text}\" -> Label {choice.JumpOp.Arguments[0].Label}");
                 }
-                fileListView.Items.Add(new ListViewItem(new[] {
-                    child.Name + (child.IsFolder ? "/" : ""),
-                    child.Length.ToString() ?? "",
-                }));
-            }
-        } finally {
-            fileListView.EndUpdate();
-        }
-    }
-
-    private async void FileListViewDoubleClicked(object sender, EventArgs e) {
-        var currentFolder = this.currentFolder;
-
-        if (currentFolder == null) {
-            return;
-        }
-
-        if (IsParentFolderSelected()) {
-            if (currentFolder.Parent != null) {
-                OpenFolder(currentFolder.Parent);
-            }
-            return;
-        }
-
-        var selectedFilenames = GetSelectedFilenames();
-        if (selectedFilenames.Length == 0) {
-            return;
-        }
-        var selectedFilename = selectedFilenames[0];
-
-        IFile file;
-        try {
-            file = await currentFolder.GetChild(selectedFilename, cts.Token, progress);
-        } catch (Exception ex) {
-            ShowErrorMessageBox($"Cannot open '{selectedFilename}': {ex.GetMessage()}");
-            return;
-        }
-
-        if (file is not IFolder folder) {
-            ShowStatus($"Cannot open '{selectedFilename}': Not a folder");
-            return;
-        }
-
-        OpenFolder(folder);
-    }
-
-    private void ShowStatus(string text) {
-        statusLabel.Text = text;
-        clearStatusTextTimer.Stop();
-        clearStatusTextTimer.Start();
-    }
-
-    public static void ShowErrorMessageBox(string text) {
-        MessageBox.Show(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-    }
-
-    private async Task ReopenFolder() {
-        if (currentFolder != null) {
-            await OpenFolderFromPath(currentFolder.FullPath, false);
-        }
-        if (currentBinaryFile != null) {
-            try {
-                currentBinaryFile = await Folder.GetFile(
-                    ((IFile)currentBinaryFile).FullPath,
-                    cts.Token,
-                    progress
-                    ) as BinaryFile;
-                if (currentBinaryFile != null) {
-                    await OpenBinaryFile(currentBinaryFile);
+                else
+                {
+                    // Jump file
+                    texts.Add($"  \"{choice.Text}\" -> {choice.JumpOp.Arguments[0].String}");
                 }
-            } catch { }
-        }
-    }
-
-    private async void MenuFileExportClicked(object sender, EventArgs e) {
-        if (currentFolder == null) {
-            ShowStatus("No file selected to export");
-            return;
-        }
-
-        using var guard = new TaskGuard();
-        if (!guard.Acquired) {
-            return;
-        }
-
-        var binaryFiles = new List<BinaryFile>();
-        try {
-            var files = await GetSelectedFiles(currentFolder);
-            if (files.Length == 0) {
-                ShowStatus("No file selected to export");
-                return;
             }
-
-            foreach (var file in files) {
-                if (file is not BinaryFile binaryFile) {
-                    ShowErrorMessageBox($"Cannot export '{file.Name}': Not a regular file");
-                    return;
-                }
-                binaryFiles.Add(binaryFile);
-            }
-        } catch (Exception ex) {
-            ShowErrorMessageBox($"Cannot export: {ex.GetMessage()}");
-            return;
+            texts.Add(string.Empty);
         }
-
-        string[] destinations;
-        if (binaryFiles.Count > 1) {
-            openFileDialog.IsFolderPicker = true;
-            if (openFileDialog.ShowDialog() != CommonFileDialogResult.Ok) {
-                return;
-            }
-            destinations = binaryFiles
-                .Select(x => Path.Combine(openFileDialog.FileName, x.Name))
-                .ToArray();
-        } else {
-            var ext = Path.GetExtension(binaryFiles[0].Name);
-            var filter = string.IsNullOrEmpty(ext)
-                ? new CommonFileDialogFilter("All files", "*")
-                : new CommonFileDialogFilter($"{ext} file", $"*{ext}");
-            using var saveFileDialog = new CommonSaveFileDialog();
-            saveFileDialog.Filters.Add(filter);
-            saveFileDialog.DefaultFileName = binaryFiles[0].Name;
-            if (saveFileDialog.ShowDialog() != CommonFileDialogResult.Ok) {
-                return;
-            }
-            var dst = saveFileDialog.FileName;
-            if (dst.EndsWith(".*")) {
-                dst = dst[..^2];
-            }
-            destinations = new[] { dst };
-        }
-
-        try {
-            foreach (var (file, dst) in binaryFiles.Zip(destinations)) {
-                await using var dstFile = File.Create(dst);
-                await file.Stream.CopyToAsync(dstFile, cts.Token);
-            }
-        } catch (Exception ex) {
-            ShowErrorMessageBox($"Cannot export: {ex.GetMessage()}");
-        }
+        using var dialog = new InfoWindow("Choices", string.Join("\r\n", texts));
+        dialog.ShowDialog();
     }
 
-    private bool IsParentFolderSelected() {
-        return fileListView.SelectedItems.Count == 1 && fileListView.SelectedItems[0].Text == "..";
-    }
-
-    private string[] GetSelectedFilenames() {
-        return fileListView.SelectedItems
-            .Cast<ListViewItem>()
-            .Select(x => x.Text.TrimEnd('/'))
-            .Where(x => x != "..")
-            .ToArray();
-    }
-
-    private async Task<IFile[]> GetSelectedFiles(IFolder folder) {
-        var files = new List<IFile>();
-        foreach (var filename in GetSelectedFilenames()) {
-            files.Add(await folder.GetChild(filename, cts.Token, progress));
-        }
-        return files.ToArray();
-    }
-
-    private async Task OpenBinaryFile(BinaryFile file) {
-        currentBinaryFile = file;
-
-        imagePreviewBox.Image = null;
-#if INCLUDE_VIDEO_PLAYER
-        mediaPlayer.Media = null;
-#endif
-        textPreviewBox.SetTextBypassReadonly("");
-
-        if (file is Ws2File ws2) {
-            fileInfoLabel.Text = $"WS2 ({ws2.Ws2Version.ToString().Replace('_', '.')})";
-        } else if (file is ImageFile imageFile) {
-            fileInfoLabel.Text = $"{imageFile.ImageType} ({imageFile.Image.Width}x{imageFile.Image.Height})";
-        } else if (file.IsText) {
-            fileInfoLabel.Text = "TEXT";
-        } else {
-            var fileTypeName = file.GetType().Name;
-            fileInfoLabel.Text = (fileTypeName.EndsWith("File") ? fileTypeName[..^4] : fileTypeName).ToUpper();
-        }
-
-        await Task.Yield();
-        bool shown = true;
-        if (file is ImageFile image) {
-            imagePreviewBox.Image = image.Image;
-            await Task.Yield();
-            previewerTabControl.SelectedTab = imagePreviewTab;
-#if INCLUDE_VIDEO_PLAYER
-        } else if (file is VideoFile video) {
-            video.Stream.Reset();
-            mediaPlayer.Play(new Media(vlc, new StreamMediaInput(video.Stream.MemoryStream)));
-            await Task.Yield();
-            previewerTabControl.SelectedTab = videoPreviewTab;
-#endif
-        } else if (currentBinaryFile.IsText) {
-            if (encodingDropDown.SelectedItem == currentBinaryFile.SuggestedEncoding) {
-                textPreviewBox.SetTextBypassReadonly(currentBinaryFile.GetText(currentBinaryFile.SuggestedEncoding!));
-            } else {
-                // Auto sets text as well
-                encodingDropDown.SelectedItem = currentBinaryFile.SuggestedEncoding;
-            }
-            await Task.Yield();
-            previewerTabControl.SelectedTab = textPreviewTab;
-        } else if (showHexMenuItem.Checked) {
-            previewerTabControl.SelectedTab = hexPreviewTab;
-        } else {
-            shown = false;
-        }
-
-        if (shown) {
-            previewerTabControl.Visible = true;
-        }
-
-        if (showHexMenuItem.Checked) {
-            await Task.Yield();
-            hexPreviewBox?.SetBytes(currentBinaryFile.Stream.MemoryStream.ToArray());
-        }
-
-        fileListView.Focus();
-    }
-
-    private async void FileListViewIndexChanged(object sender, EventArgs e) {
-        var selectedFilenames = GetSelectedFilenames();
-        if (selectedFilenames.Length != 1 || currentFolder == null) {
-            return;
-        }
-        var selectedFilename = selectedFilenames[0];
-
-        IFile file;
-        try {
-            file = await currentFolder.GetChild(selectedFilename, cts.Token, progress);
-        } catch (Exception ex) {
-            ShowStatus($"Cannot open '{selectedFilename}': {ex.GetMessage()}");
-            return;
-        }
-
-        if (file is not BinaryFile binaryFile) {
-            currentBinaryFile = null;
-            fileInfoLabel.Text = "";
-            previewerTabControl.Visible = false;
-            return;
-        }
-
-        await OpenBinaryFile(binaryFile);
-    }
-
-    private async void MenuViewShowEmptyPnaChecked(object sender, EventArgs e) {
-        await ReopenFolder();
-    }
-
-    private static bool ShowConfirmationPrompt(string text, MessageBoxIcon icon) {
-        return MessageBox.Show(text, "Confirmation", MessageBoxButtons.YesNo, icon) == DialogResult.Yes;
-    }
-
-    private static bool ShowConfirmationPrompt(string text) {
-        return ShowConfirmationPrompt(text, MessageBoxIcon.Question);
-    }
-
-    private async void PathTextBoxKeyDown(object sender, KeyEventArgs e) {
-        if (e.KeyCode == Keys.Enter) {
-            await OpenFolderFromPath(pathTextBox.Text);
-        }
-    }
-
-    private void FileListViewKeyDown(object sender, KeyEventArgs e) {
-        if (e.KeyCode == Keys.Enter) {
-            FileListViewDoubleClicked(sender, EventArgs.Empty);
-            return;
-        }
-
-        if (e.KeyCode == Keys.Back) {
-            MenuViewGoToParentClicked(sender, EventArgs.Empty);
-            return;
-        }
-    }
-
-    protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
-        if (keyData == (Keys.Control | Keys.C) && fileListView.Focused) {
-            CopyToClipboard();
-            return true;
-        }
-
-        if (keyData == (Keys.Control | Keys.V) && fileListView.Focused) {
-            _ = PasteFromClipboard();
-            return true;
-        }
-
-        if (keyData == Keys.Tab && pathTextBox.SelectionStart == pathTextBox.Text.Length) {
-            async void RunAsync() {
-                if (pathTextBox.Focused) {
-                    var autocompleted = await AutocompletePath(pathTextBox.Text);
-                    if (autocompleted != null) {
-                        SetPathTextBoxText(autocompleted);
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        if (files_ListView.Focused)
+        {
+            switch (keyData)
+            {
+                case Keys.Control | Keys.C:
+                    Copy_MenuItemClicked(this, EventArgs.Empty);
+                    return true;
+                case Keys.Control | Keys.V:
+                    Paste_MenuItemClicked(this, EventArgs.Empty);
+                    return true;
+                case Keys.Enter:
+                    Files_ListViewDoubleClicked(this, EventArgs.Empty);
+                    return true;
+                case Keys.Delete:
+                    Delete_MenuItemClicked(this, EventArgs.Empty);
+                    return true;
+                case Keys.Back:
+                    GoToParent_MenuItemClicked(this, EventArgs.Empty);
+                    return true;
+                case Keys.Escape:
+                    files_ListView.SelectedIndices.Clear();
+                    return true;
+                case Keys.Control | Keys.A:
+                    files_ListView.SelectedIndices.Clear();
+                    for (var i = 0; i < files_ListView.Items.Count; i++)
+                    {
+                        files_ListView.SelectedIndices.Add(i);
                     }
-                    return;
-                }
-
-                if (terminalInputTextBox.Focused) {
-                    var text = terminalInputTextBox.Text;
-                    var caretIndex = terminalInputTextBox.SelectionStart;
-                    var spaceIndexLeft = text.LastIndexOf(' ', caretIndex - 1);
-                    var spaceIndexRight = text.IndexOf(' ', caretIndex);
-                    spaceIndexRight = spaceIndexRight == -1 ? text.Length : spaceIndexRight;
-                    var path = text[(spaceIndexLeft + 1)..spaceIndexRight];
-                    var autocompleted = await AutocompletePath(path);
-                    if (autocompleted != null) {
-                        terminalInputTextBox.Text = text[..(spaceIndexLeft + 1)] + autocompleted + text[spaceIndexRight..];
-                        terminalInputTextBox.SelectionStart = spaceIndexLeft + 1 + autocompleted.Length;
-                    }
-                }
+                    return true;
             }
-            RunAsync();
-            return true;
         }
-
+        else if (path_TextBox.SelectionStart == path_TextBox.Text.Length)
+        {
+            switch (keyData)
+            {
+                case Keys.Tab:
+                    state.AutoCompletePath(path_TextBox.Text);
+                    return true;
+                case Keys.Enter:
+                    state.OpenPath(path_TextBox.Text);
+                    return true;
+            }
+        }
         return base.ProcessCmdKey(ref msg, keyData);
     }
 
-    private async Task<string?> AutocompletePath(string path) {
-        var splitIndex = path.LastIndexOfAny(new[] { '\\', '/' });
-        if (splitIndex == -1) {
-            return null;
-        }
-        var folderName = path[..splitIndex];
-        var filename = path[(splitIndex + 1)..];
-
-        string[] children;
-        try {
-            var folder = await Folder.GetFolder(folderName, cts.Token, progress);
-            children = folder.ListChildren()
-                .Select(x => x.Name)
-                .ToArray();
-        } catch (Exception ex) {
-            ShowStatus($"Cannot list folder '{folderName}': {ex.GetMessage()}");
-            return null;
-        }
-
-        var candidates = children
-            .Where(x => x.StartsWith(filename, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        string result;
-        if (candidates.Length == 1 && candidates[0] == filename) {
-            result = path + "/";
-        } else if (candidates.Length > 0) {
-            result = Path.Combine(folderName, candidates[0]);
-        } else {
-            return null;
-        }
-
-        return result.Replace('\\', '/');
-    }
-
-    private void SetPathTextBoxText(string text) {
-        pathTextBox.Text = text.Replace('\\', '/');
-        pathTextBox.SelectionStart = text.Length;
-    }
-
-    private async void MenuEditSwapFileClicked(object sender, EventArgs e) {
-        var currentFolder = this.currentFolder;
-        if (currentFolder == null) {
-            ShowStatus("Select two files to swap");
-            return;
-        }
-
-        var selectedFilenames = GetSelectedFilenames();
-        if (selectedFilenames.Length != 2) {
-            ShowStatus("Select two files to swap");
-            return;
-        }
-
-        using (var guard = new TaskGuard()) {
-            if (!guard.Acquired) {
-                return;
-            }
-
-            var a = selectedFilenames[0];
-            var b = selectedFilenames[1];
-            try {
-                await currentFolder.SwapChildren(a, b, cts.Token, progress);
-            } catch (Exception ex) {
-                ShowErrorMessageBox($"Cannot swap '{a}' <-> '{b}': {ex.GetMessage()}");
-            }
-        }
-
-        await ReopenFolder();
-    }
-
-    private void CancelButtonClicked(object sender, EventArgs e) {
-        if (ShowConfirmationPrompt("Cancel current operation?\nCancelling may leave corrupt files.", MessageBoxIcon.Warning)) {
-            cts.Cancel();
-            cts = new CancellationTokenSource();
+    private void NewFile_MenuItemClicked(object sender, EventArgs e)
+    {
+        using var dialog = new NewFileWindow();
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            state.CreateNewFile(dialog.Filename);
         }
     }
 
-    private async void MenuEditOpenAsHexClicked(object sender, EventArgs e) {
-        await OpenExternalEditor("Hex", config.HexEditorPath, config.HexEditorArgs);
-    }
-
-    private async void MenuEditOpenInAppClicked(object sender, EventArgs e) {
-        if (currentBinaryFile == null) {
-            ShowStatus("Select a file to open");
-            return;
-        }
-
-        if (currentBinaryFile is ImageFile) {
-            await OpenExternalEditor("Image", config.ImageEditorPath, config.ImageEditorArgs);
-        } else if (currentBinaryFile.IsText) {
-            await OpenExternalEditor("Text", config.TextEditorPath, config.TextEditorArgs);
-        } else {
-            await OpenExternalEditor("Hex", config.HexEditorPath, config.HexEditorArgs);
+    private void Open_MenuItemClicked(object sender, EventArgs e)
+    {
+        openFileDialog.IsFolderPicker = false;
+        if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+        {
+            state.OpenPath(openFileDialog.FileName);
         }
     }
 
-    private async Task OpenExternalEditor(string editorType, string editorPath, string editorArgs) {
-        var currentBinaryFile = this.currentBinaryFile;
-        var currentFolder = currentBinaryFile?.Parent;
-        if (currentFolder == null || currentBinaryFile == null) {
-            ShowStatus("Select a file to open");
-            return;
+    private void OpenFolder_MenuItemClicked(object sender, EventArgs e)
+    {
+        openFileDialog.IsFolderPicker = true;
+        if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+        {
+            state.OpenPath(openFileDialog.FileName);
         }
+    }
 
-        var guard = new TaskGuard();
-        if (!guard.Acquired) {
-            // Don't need to dispose guard because it's not acquired
-            return;
-        }
-
-        string? targetFilename = null;
-        try {
-            var currentBinaryFileFullPath = ((IFile)currentBinaryFile).FullPath;
-            if (currentBinaryFile.IsRealFile) {
-                targetFilename = currentBinaryFileFullPath;
-            } else {
-                try {
-                    targetFilename = $"{Path.GetTempFileName()}.{currentBinaryFile.Name}";
-                    await using var tempFileStream = File.Create(targetFilename);
-                    await currentBinaryFile.Stream.CopyToAsync(tempFileStream, cts.Token);
-                } catch (Exception ex) {
-                    ShowErrorMessageBox($"Cannot export '{currentBinaryFile.Name}' for editing: {ex.GetMessage()}");
-                    return;
+    private void Export_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.ExportSelectedFile(filenames =>
+        {
+            if (filenames.Length == 1)
+            {
+                var filename = filenames[0];
+                var ext = Path.GetExtension(filename);
+                var filter = string.IsNullOrEmpty(ext)
+                    ? new CommonFileDialogFilter("All files", "*")
+                    : new CommonFileDialogFilter($"{ext} file", $"*{ext}");
+                using var saveFileDialog = new CommonSaveFileDialog();
+                saveFileDialog.Filters.Add(filter);
+                saveFileDialog.DefaultFileName = "file";
+                if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    var dst = saveFileDialog.FileName;
+                    return [dst.EndsWith(".*") ? dst[..^2] : dst];
                 }
+                return null;
             }
-
-            if (editorPath.Length == 0) {
-                ShowStatus("No editor set for media type: " + editorType);
-                return;
-            }
-
-            bool complete = false;
-            while (!complete) {
-                try {
-                    Process proc = Process.Start(editorPath, $"{editorArgs} \"{targetFilename}\"");
-
-                    await proc.WaitForExitAsync(cts.Token);
-
-                    if (!currentBinaryFile.IsRealFile) {
-                        var newData = await File.ReadAllBytesAsync(targetFilename, cts.Token);
-
-                        if (newData.Length == currentBinaryFile.Stream.Length &&
-                            newData.SequenceEqual(currentBinaryFile.Stream.MemoryStream.ToArray())) {
-                            ShowStatus("No changes made");
-                            return;
-                        }
-
-                        await currentFolder.CopyFiles(
-                            new[] { targetFilename },
-                            new[] { currentBinaryFile.Name },
-                            _ => true,
-                            cts.Token,
-                            progress
-                        );
-                        ShowStatus("Changes applied");
-                    }
-                    complete = true;
-                } catch (Exception ex) {
-                    var dialogResult = MessageBox.Show(
-                        $"Copy failed for '{targetFilename}': {ex.GetMessage()}\n\n",
-                        "Error",
-                        MessageBoxButtons.RetryCancel);
-                    if (dialogResult == DialogResult.Cancel) {
-                        complete = true;
-                    }
+            else
+            {
+                openFileDialog.IsFolderPicker = true;
+                if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    return filenames
+                        .Select(f => Path.Combine(openFileDialog.FileName, f))
+                        .ToArray();
                 }
+                return null;
             }
-        } finally {
-            if (!currentBinaryFile.IsRealFile && targetFilename != null) {
-                try {
-                    File.Delete(targetFilename);
-                } catch { }
-            }
-            guard.Dispose();
-        }
-
-        await ReopenFolder();
+        });
     }
 
-    private void EncodingDropDownIndexChanged(object sender, EventArgs e) {
-        var encoding = (Encoding?)encodingDropDown.SelectedItem;
-        if (encoding == null) {
-            return;
-        }
-
-        if (currentBinaryFile == null) {
-            return;
-        }
-
-        if (currentBinaryFile.Stream.Length > BinaryFile.MAX_TEXT_SIZE) {
-            ShowStatus("File too large to preview as text");
-            return;
-        }
-
-        textPreviewBox.SetTextBypassReadonly(currentBinaryFile.GetText(encoding));
+    private void Reveal_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.RevealInFileExplorer();
     }
 
-    private void MenuFileExitClicked(object sender, EventArgs e) {
+    private void SetEditors_MenuItemClicked(object sender, EventArgs e)
+    {
+        using var dialog = new SetEditorsWindow(new EditorSettings
+        {
+            TextEditorPath = config.TextEditorPath,
+            TextEditorArgs = config.TextEditorArgs,
+            ImageEditorPath = config.ImageEditorPath,
+            ImageEditorArgs = config.ImageEditorArgs,
+            HexEditorPath = config.HexEditorPath,
+            HexEditorArgs = config.HexEditorArgs,
+        });
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            config.TextEditorPath = dialog.EditorSettings.TextEditorPath;
+            config.TextEditorArgs = dialog.EditorSettings.TextEditorArgs;
+            config.ImageEditorPath = dialog.EditorSettings.ImageEditorPath;
+            config.ImageEditorArgs = dialog.EditorSettings.ImageEditorArgs;
+            config.HexEditorPath = dialog.EditorSettings.HexEditorPath;
+            config.HexEditorArgs = dialog.EditorSettings.HexEditorArgs;
+        }
+    }
+
+    private void Exit_MenuItemClicked(object sender, EventArgs e)
+    {
         Close();
     }
 
-    private async void MenuEditDeleteClicked(object sender, EventArgs e) {
-        if (!fileListView.Focused) {
-            return;
-        }
-
-        var selectedFilenames = GetSelectedFilenames();
-        if (selectedFilenames.Length == 0 || currentFolder == null) {
-            ShowStatus("Select files to delete");
-            return;
-        }
-
-        if (selectedFilenames.Length == 1) {
-            if (!ShowConfirmationPrompt($"Delete {selectedFilenames[0]}?")) {
-                return;
-            }
-        } else {
-            if (!ShowConfirmationPrompt($"Delete {selectedFilenames.Length} files?")) {
-                return;
-            }
-        }
-
-        using (var guard = new TaskGuard()) {
-            if (!guard.Acquired) {
-                return;
-            }
-
-            try {
-                await currentFolder.DeleteChildren(selectedFilenames, cts.Token, progress);
-            } catch (Exception ex) {
-                ShowErrorMessageBox($"Cannot delete files: {ex.GetMessage()}");
-            }
-        }
-
-        await ReopenFolder();
+    private void EditInApp_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.EditSelectedFileInApp(editorType => editorType switch
+        {
+            EditorType.Text => (config.TextEditorPath, config.TextEditorArgs),
+            EditorType.Image => (config.ImageEditorPath, config.ImageEditorArgs),
+            EditorType.Hex => (config.HexEditorPath, config.HexEditorArgs),
+            _ => throw new ArgumentException("Invalid editor type.", nameof(editorType))
+        });
     }
 
-    private void MenuEditCopyClicked(object sender, EventArgs e) {
-        CopyToClipboard();
+    private void EditAsText_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.EditSelectedFileInApp(_ =>
+            (config.TextEditorPath, config.TextEditorArgs)
+        );
     }
 
-    private void CopyToClipboard() {
-        if (currentFolder == null) {
-            ShowStatus("Select files to copy");
-            return;
-        }
-
-        var selectedFilenames = new StringCollection();
-        selectedFilenames.AddRange(
-            GetSelectedFilenames()
-                .Select(x => Path.Combine(currentFolder.FullPath, x).Replace('\\', '/'))
-                .ToArray()
-            );
-
-        if (selectedFilenames.Count == 0) {
-            ShowStatus("Select files to copy");
-            return;
-        }
-
-        try {
-            Clipboard.SetFileDropList(selectedFilenames);
-        } catch (ExternalException ex) {
-            ShowErrorMessageBox($"Cannot copy to clipboard: {ex.GetMessage()}");
-        }
+    private void EditAsImage_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.EditSelectedFileInApp(_ =>
+            (config.ImageEditorPath, config.ImageEditorArgs)
+        );
     }
 
-    private async void MenuEditPasteClicked(object sender, EventArgs e) {
-        await PasteFromClipboard();
+    private void EditAsHex_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.EditSelectedFileInApp(_ =>
+            (config.HexEditorPath, config.HexEditorArgs)
+        );
     }
 
-    private async Task PasteFromClipboard() {
-        if (currentFolder == null) {
-            ShowStatus("No folder open");
-            return;
-        }
-
-        string[] filenames;
-        try {
-            filenames = Clipboard.GetFileDropList()
-                .Cast<string>()
-                .ToArray();
-        } catch (ExternalException ex) {
-            ShowErrorMessageBox($"Cannot paste from clipboard: {ex.GetMessage()}");
-            return;
-        }
-
-        if (filenames.Length == 0) {
-            ShowStatus("No files to paste");
-            return;
-        }
-
-        using (var guard = new TaskGuard()) {
-            if (!guard.Acquired) {
-                return;
-            }
-
-            try {
-                var destinations = filenames
-                    .Select(x => Path.GetFileName(x))
-                    .ToArray();
-                await currentFolder.CopyFiles(filenames, destinations, ShowConfirmationPrompt, cts.Token, progress);
-            } catch (Exception ex) {
-                ShowErrorMessageBox($"Paste failed: {ex.GetMessage()}");
-            }
-        }
-
-        await ReopenFolder();
-    }
-
-    private async void MenuEditRenameClicked(object sender, EventArgs e) {
-        if (currentFolder == null) {
-            ShowStatus("No folder open");
-            return;
-        }
-        if (!currentFolder.CanRenameChildren) {
-            ShowStatus("This folder type does not support renaming files");
-            return;
-        }
-
-        using (var guard = new TaskGuard()) {
-            if (!guard.Acquired) {
-                return;
-            }
-
-            var selectedFilenames = GetSelectedFilenames();
-            if (selectedFilenames.Length != 1) {
-                ShowStatus("Select a single file to rename");
-                return;
-            }
-
-            var oldName = selectedFilenames[0];
+    private void Rename_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.RenameFile(oldName =>
+        {
             using var dialog = new RenameWindow(oldName);
+            return dialog.ShowDialog() == DialogResult.OK
+                ? dialog.Filename : oldName;
+        });
+    }
+
+    private void Delete_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.DeleteSelectedFiles(files =>
+        {
+            var text = $"Delete files:\n{string.Join("\n", files)}";
+            return MessageBox.Show(
+                text,
+                "Delete files",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button1) == DialogResult.Yes;
+        });
+    }
+
+    private void Duplicate_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.DuplicateSelectedFile(existing =>
+        {
+            using var dialog = new OverwriteWindow(existing);
             dialog.ShowDialog();
-            if (dialog.NewName == null) {
-                return;
-            }
-
-            try {
-                await currentFolder.RenameChild(oldName, dialog.NewName, cts.Token, progress);
-            } catch (Exception ex) {
-                ShowErrorMessageBox($"Cannot rename '{oldName}' -> '{dialog.NewName}': {ex.GetMessage()}");
-            }
-        }
-
-        await ReopenFolder();
+            return dialog.OverwriteMode;
+        });
     }
 
-    private async void MenuViewRefreshClicked(object sender, EventArgs e) {
-        await ReopenFolder();
+    private void Copy_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.CopySelectedFiles();
     }
 
-    private void MenuViewGoToParentClicked(object sender, EventArgs e) {
-        if (currentFolder?.Parent != null) {
-            OpenFolder(currentFolder.Parent);
-        }
+    private void Paste_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.PasteFiles(existing =>
+        {
+            using var dialog = new OverwriteWindow(existing);
+            dialog.ShowDialog();
+            return dialog.OverwriteMode;
+        });
     }
 
-    private async void MenuViewGoBackClicked(object sender, EventArgs e) {
-        if (folderUndoHistory.Count > 0) {
-            if (currentFolder != null) {
-                folderRedoHistory.Push(currentFolder.FullPath);
-            }
-            await OpenFolderFromPath(folderUndoHistory.Pop(), false);
-        }
+    private void PnaAddEntry_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.AddPnaEntry();
     }
 
-    private async void MenuViewGoForwardClicked(object sender, EventArgs e) {
-        if (folderUndoHistory.Count > 0) {
-            if (currentFolder != null) {
-                folderRedoHistory.Push(currentFolder.FullPath);
-            }
-            await OpenFolderFromPath(folderUndoHistory.Pop(), false);
-        }
+    private void PnaSwap_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.SwapSelectedPnaEntries();
     }
 
-    private void MenuViewWordWrapClicked(object sender, EventArgs e) {
-        textPreviewBox.WrapMode = wordWrapMenuItem.Checked
-            ? WrapMode.Word
-            : WrapMode.None;
+    private void Refresh_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.RefreshFolder();
     }
 
-    private async void MenuViewShowEmptyPNAFilesClicked(object sender, EventArgs e) {
-        await ReopenFolder();
+    private void GoToParent_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.OpenParentFolder();
     }
 
-    private async void MenuViewShowHexChecked(object sender, EventArgs e) {
-        config.ShowHexViewer = showHexMenuItem.Checked;
-        if (showHexMenuItem.Checked) {
-            hexPreviewBox = new() {
-                Dock = DockStyle.Fill,
-            };
-            hexPreviewTab.Controls.Add(hexPreviewBox);
-            previewerTabControl.TabPages.Add(hexPreviewTab);
-        } else {
-            previewerTabControl.TabPages.Remove(hexPreviewTab);
-            hexPreviewTab.Controls.Remove(hexPreviewBox);
-        }
-        await ReopenFolder();
+    private void GoBack_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.GoBack();
     }
 
-    private void MenuFileRevealInExplorerClicked(object sender, EventArgs e) {
-        if (currentFolder == null) {
-            ShowStatus("No folder open");
-            return;
-        }
+    private void GoForward_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.GoForward();
+    }
 
-        var filenames = GetSelectedFilenames()
-            .Select(x => Path.Combine(currentFolder.FullPath, x).Replace('\\', '/'))
-            .ToArray();
+    private void WordWrap_MenuItemCheckChanged(object sender, EventArgs e)
+    {
+        textPreview_Scintilla.WrapMode = wordWrap_MenuItem.Checked
+            ? WrapMode.Word : WrapMode.None;
+        config.WordWrap = wordWrap_MenuItem.Checked;
+    }
 
-        string path;
-        if (filenames.Length == 0) {
-            path = currentFolder.FullPath;
-        } else {
-            path = filenames[0];
-        }
-        path = path.Replace('/', '\\');
+    private void ViewMetadata_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.ShowFileMetadata();
+    }
 
-        try {
-            Process.Start("explorer.exe", $"/select, \"{path}\"");
-        } catch (Exception ex) {
-            ShowStatus($"Cannot reveal in explorer: {ex.GetMessage()}");
+    private void PnaShowEmpty_MenuItemCheckChanged(object sender, EventArgs e)
+    {
+        state.SetShowEmptyPnaFiles(pnaShowEmpty_MenuItem.Checked);
+        config.ShowEmptyPnaFiles = pnaShowEmpty_MenuItem.Checked;
+    }
+
+    private void Cancel_ButtonClicked(object sender, EventArgs e)
+    {
+        var result = MessageBox.Show(
+            "Are you sure you want to cancel the current task?\nIf there is a write in progress, this may leave corrupted files.",
+            "Cancel Task",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question,
+            MessageBoxDefaultButton.Button2);
+        if (result == DialogResult.Yes)
+        {
+            state.CancelTask();
         }
     }
 
-    private void MenuEditCopyPathClicked(object sender, EventArgs e) {
-        if (currentFolder == null) {
-            ShowStatus("No folder open");
-            return;
-        }
-
-        var filenames = GetSelectedFilenames()
-            .Select(x => Path.Combine(currentFolder.FullPath, x).Replace('\\', '/'))
-            .ToArray();
-
-        string text;
-        if (filenames.Length == 0) {
-            text = currentFolder.FullPath;
-        } else if (filenames.Length == 1) {
-            text = filenames[0];
-        } else {
-            text = string.Join(' ', filenames.Select(x => $"\"{x}\""));
-        }
-
-        try {
-            Clipboard.SetText(text);
-        } catch (ExternalException ex) {
-            ShowErrorMessageBox($"Cannot copy to clipboard: {ex.GetMessage()}");
+    private void Files_ListViewDoubleClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenSelectedFolder(index);
         }
     }
 
-    private void MenuViewShowTerminalCheckChanged(object sender, EventArgs e) {
-        terminalPreviewerSplitContainer.Panel2Collapsed = !showTerminalMenuItem.Checked;
+    private void Files_ListViewSelectedIndexChanged(object sender, EventArgs e)
+    {
+        state.SelectFiles(files_ListView.SelectedIndices.Cast<int>());
     }
 
-    private void MenuFileSetExternalEditorPathsClicked(object sender, EventArgs e) {
-        using var dialog = new ExternalEditorPathWindow(config);
-        if (dialog.ShowDialog() == DialogResult.OK) {
-            config.TextEditorPath = dialog.TextEditorPath;
-            config.TextEditorArgs = dialog.TextEditorArgs;
-            config.ImageEditorPath = dialog.ImageEditorPath;
-            config.ImageEditorArgs = dialog.ImageEditorArgs;
-            config.HexEditorPath = dialog.HexEditorPath;
-            config.HexEditorArgs = dialog.HexEditorArgs;
-        }
-    }
-
-    private void OnFormClosing(object sender, FormClosingEventArgs e) {
-        config.ShowEmptyPnaFiles = showEmptyPnaFilesMenuItem.Checked;
-        config.ShowHexViewer = showHexMenuItem.Checked;
-        config.ShowTerminal = showTerminalMenuItem.Checked;
-        config.WordWrap = wordWrapMenuItem.Checked;
-        config.FilePanelWidth = filePreviewerSplitContainer.SplitterDistance;
-        config.PreviewerPanelHeight = terminalPreviewerSplitContainer.SplitterDistance;
-        if (Location.X >= 0 && Location.Y >= 0) {
-            config.WindowX = Location.X;
-            config.WindowY = Location.Y;
-        }
-        config.WindowWidth = restoredWindowSize.Width;
-        config.WindowHeight = restoredWindowSize.Height;
-        config.WindowMaximized = WindowState == FormWindowState.Maximized;
+    private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+    {
         config.Save();
     }
 
-    private void OnFormResized(object sender, EventArgs e) {
-        if (WindowState == FormWindowState.Normal) {
-            restoredWindowSize = Size;
+    private void MainForm_SizeChanged(object sender, EventArgs e)
+    {
+        config.WindowMaximized = WindowState == FormWindowState.Maximized;
+        if (WindowState == FormWindowState.Normal)
+        {
+            config.WindowWidth = Width;
+            config.WindowHeight = Height;
         }
     }
 
-    private async void MenuEditDuplicateButtonClicked(object sender, EventArgs e) {
-        var currentBinaryFile = this.currentBinaryFile;
-        var currentFolder = currentBinaryFile?.Parent;
-        if (currentBinaryFile == null || currentFolder == null) {
-            ShowStatus("No file open");
-            return;
+    private void MainForm_LocationChanged(object sender, EventArgs e)
+    {
+        if (WindowState == FormWindowState.Normal)
+        {
+            config.WindowX = Location.X;
+            config.WindowY = Location.Y;
+        }
+    }
+
+    private void Files_ListViewClientSizeChanged(object sender, EventArgs e)
+    {
+        Files_ListViewColumnWidthChanged(sender, new ColumnWidthChangedEventArgs(1));
+    }
+
+    private void Files_ListViewColumnWidthChanged(object sender, ColumnWidthChangedEventArgs e)
+    {
+        if (!filesListViewColumnWidthChanging)
+        {
+            filesListViewColumnWidthChanging = true;
+            try
+            {
+                files_ListView.Columns[1 - e.ColumnIndex].Width =
+                    files_ListView.ClientSize.Width
+                    - files_ListView.Columns[e.ColumnIndex].Width;
+                ShowScrollBar(files_ListView.Handle, 0 /* SB_HORZ */, 0 /* Hide */);
+                config.FileSizeColumnWidth = files_ListView.Columns[1].Width;
+            }
+            finally
+            {
+                filesListViewColumnWidthChanging = false;
+            }
+        }
+    }
+
+    private void OpenAsArc_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenArchiveAs<ArcFile>(index);
+        }
+    }
+
+    private void OpenAsPna_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenArchiveAs<PnaFile>(index);
+        }
+    }
+
+    private void OpenAsPan_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenArchiveAs<PanFile>(index);
+        }
+    }
+
+    private void OpenAsPtf_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenArchiveAs<PtfFile>(index);
+        }
+    }
+
+    private void OpenAsWs2_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenArchiveAs<Ws2File>(index);
+        }
+    }
+
+    private void CreateArc_MenuItemClicked(object sender, EventArgs e)
+    {
+        CreateArchive<ArcFile>(new CommonFileDialogFilter("ARC file", "*.arc"));
+    }
+
+    private void CreatePna_MenuItemClicked(object sender, EventArgs e)
+    {
+        CreateArchive<PnaFile>(new CommonFileDialogFilter("PNA file", "*.pna"));
+    }
+
+    private void CreatePan_MenuItemClicked(object sender, EventArgs e)
+    {
+        CreateArchive<PanFile>(new CommonFileDialogFilter("PAN file", "*.pan"));
+    }
+
+    private void CreatePtf_MenuItemClicked(object sender, EventArgs e)
+    {
+        CreateArchive<PtfFile>(new CommonFileDialogFilter("PTF file", "*.ptf"));
+    }
+
+    private void CreateWs2_MenuItemClicked(object sender, EventArgs e)
+    {
+        CreateArchive<Ws2File>(new CommonFileDialogFilter("WS2 file", "*.ws2"));
+    }
+
+    private void CreateArchive<T>(CommonFileDialogFilter filter)
+        where T : class, IArchive<T>
+    {
+        using var saveFileDialog = new CommonSaveFileDialog();
+        saveFileDialog.Filters.Add(filter);
+        saveFileDialog.DefaultFileName = "file";
+        if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+        {
+            var dst = saveFileDialog.FileName;
+            state.CreateArchive<T>(dst);
+        }
+    }
+
+    private void About_MenuItemClicked(object sender, EventArgs e)
+    {
+        using var dialog = new InfoWindow("About", string.Join("\r\n", [
+            $"{Text} (GPLv3) by Kevin Lu",
+            "  https://github.com/kevlu123/VN-Patching-Tools/tree/master/Ws2Explorer",
+            "",
+            "Libraries",
+            "  Locale Emulator (GPLv3) by xupefei",
+            "    https://github.com/xupefei/Locale-Emulator",
+            "    https://github.com/xupefei/Locale-Emulator-Core",
+        ]));
+        dialog.ShowDialog();
+    }
+
+    private void AudioPlay_ButtonClicked(object? sender, EventArgs e)
+    {
+        if (audioPlayer.PlaybackState == PlaybackState.Stopped)
+        {
+            audioPlayer.Play();
+            audioPlay_Button.Text = "Stop";
+        }
+        else
+        {
+            audioPlayer.Stop();
+            audioPlay_Button.Text = "Play";
+        }
+    }
+
+    private void Path_TextBoxDragDropped(object sender, DragEventArgs e)
+    {
+        var files = (string[]?)e.Data?.GetData(DataFormats.FileDrop);
+        if (files != null && files.Length != 0)
+        {
+            path_TextBox.Text = files[0];
+        }
+    }
+
+    private void Path_TextBoxDragOver(object sender, DragEventArgs e)
+    {
+        e.Effect = e.Data?.GetDataPresent(DataFormats.FileDrop) == true
+            ? DragDropEffects.Link
+            : DragDropEffects.None;
+    }
+
+    private void Files_ListViewDragDropped(object sender, DragEventArgs e)
+    {
+        var files = (string[]?)e.Data?.GetData(DataFormats.FileDrop);
+        if (files != null && files.Length != 0)
+        {
+            state.InsertFiles(files, existing =>
+            {
+                using var dialog = new OverwriteWindow(existing);
+                dialog.ShowDialog();
+                return dialog.OverwriteMode;
+            });
+        }
+    }
+
+    private void Files_ListViewDragOver(object sender, DragEventArgs e)
+    {
+        e.Effect = e.Data?.GetDataPresent(DataFormats.FileDrop) == true
+            ? DragDropEffects.Copy
+            : DragDropEffects.None;
+    }
+
+    private void Files_ListViewColumnClicked(object sender, ColumnClickEventArgs e)
+    {
+        Comparison<FileInfo> sort = e.Column == 0 ? AlphabeticalFileSort : FileSizeFileSort;
+        bool invert = state.SortFileList == sort;
+        SortFileList(e.Column, invert);
+    }
+
+    private void Panels_SplitContainerSplitterMoving(object sender, SplitterCancelEventArgs e)
+    {
+        config.SplitterDistance = e.SplitX;
+    }
+
+    private void Panels_SplitContainerClientSizeChanged(object sender, EventArgs e)
+    {
+        panels_SplitContainer.SplitterDistance = config.SplitterDistance;
+    }
+
+    private void SortFileList(int column, bool invert)
+    {
+        Comparison<FileInfo> sort = column == 0
+            ? AlphabeticalFileSort
+            : FileSizeFileSort;
+        if (invert)
+        {
+            state.SortFileList = (a, b) => -sort(a, b);
+        }
+        else
+        {
+            state.SortFileList = sort;
         }
 
-        using (var guard = new TaskGuard()) {
-            if (!guard.Acquired) {
-                return;
-            }
+        if (column == 0)
+        {
+            files_ListView.Columns[0].Text = "Name " + (invert ? "⌄" : "⌃");
+            files_ListView.Columns[1].Text = "Size";
+        }
+        else
+        {
+            files_ListView.Columns[0].Text = "Name";
+            files_ListView.Columns[1].Text = (invert ? "⌄" : "⌃") + " Size";
+        }
 
-            var tempFilename = Path.GetTempFileName();
-            var newFilename = currentBinaryFile.Name + ".bak";
+        config.SortColumn = column;
+        config.SortInverted = invert;
+    }
 
-            try {
-                await using (var tempFile = File.Create(tempFilename)) {
-                    currentBinaryFile.Stream.Reset();
-                    await currentBinaryFile.Stream.MemoryStream.CopyToAsync(tempFile, cts.Token);
+    private static string HexPreview(ReadOnlySpan<byte> data)
+    {
+        const int MAX_LENGTH = 0x10000;
+        bool truncated = data.Length > MAX_LENGTH;
+        if (truncated)
+        {
+            data = data[..(MAX_LENGTH)];
+        }
+
+        var sb = new StringBuilder();
+        for (int i = 0; i < data.Length; i += 16)
+        {
+            sb.Append($"{i:X4}  ");
+            for (int j = 0; j < 16; j++)
+            {
+                if (i + j < data.Length)
+                {
+                    sb.Append($"{data[i + j]:X2} ");
+                    if (j == 7)
+                    {
+                        sb.Append(' ');
+                    }
                 }
-                await currentFolder.CopyFiles(new[] { tempFilename }, new[] { newFilename }, ShowConfirmationPrompt, cts.Token, progress);
-            } catch (Exception ex) {
-                ShowErrorMessageBox($"Cannot duplicate file: {ex.GetMessage()}");
-            } finally {
-                try {
-                    File.Delete(tempFilename);
-                } catch { }
+                else
+                {
+                    sb.Append("   ");
+                }
             }
+            sb.Append(' ');
+            for (int j = 0; j < 16; j++)
+            {
+                if (i + j < data.Length)
+                {
+                    var c = data[i + j];
+                    sb.Append(c >= 32 && c < 127 ? (char)c : '.');
+                }
+            }
+            sb.AppendLine();
         }
 
-        await ReopenFolder();
+        if (truncated)
+        {
+            sb.AppendLine("...");
+        }
+        return sb.ToString();
     }
 
-    private async void PnaAddEntryButtonClicked(object sender, EventArgs e) {
-        using (var guard = new TaskGuard()) {
-            if (!guard.Acquired) {
-                return;
-            }
-
-            if (currentFolder is PnaFile pnaFile) {
-                await pnaFile.AddEntry(cts.Token, progress);
-            } else {
-                ShowStatus("Current folder is not a PNA file.");
-                return;
+    public static string GetDetailedErrorMessage(Exception exception)
+    {
+        var message = new StringBuilder();
+        message.AppendLine($"[{exception.GetType().FullName}]");
+        message.AppendLine(exception.Message);
+        if (exception is AggregateException aggregateException)
+        {
+            foreach (var innerException in aggregateException.InnerExceptions)
+            {
+                message.AppendLine(GetDetailedErrorMessage(innerException));
             }
         }
-
-        await ReopenFolder();
-    }
-}
-
-static class Extensions {
-    public static string GetMessage(this Exception ex) {
-        return $"({ex.GetType().Name}) {ex.Message}";
-    }
-
-    public static void AppendTextBypassReadonly(this Scintilla scintilla, string text) {
-        scintilla.ReadOnly = false;
-        scintilla.AppendText(text);
-        scintilla.GotoPosition(scintilla.TextLength);
-        scintilla.ScrollCaret();
-        scintilla.ReadOnly = true;
+        else if (exception.InnerException != null)
+        {
+            message.AppendLine();
+            message.AppendLine("======== Caused by ========");
+            message.AppendLine(GetDetailedErrorMessage(exception.InnerException));
+        }
+        else
+        {
+            message.AppendLine(exception.StackTrace);
+        }
+        return message.ToString();
     }
 
-    public static void SetTextBypassReadonly(this Scintilla scintilla, string text) {
-        scintilla.ReadOnly = false;
-        scintilla.Text = text;
-        scintilla.ReadOnly = true;
+    private static int AlphabeticalFileSort(FileInfo lhs, FileInfo rhs)
+    {
+        int r = rhs.IsDirectory.CompareTo(lhs.IsDirectory);
+        if (r != 0)
+        {
+            return r;
+        }
+        return string.Compare(lhs.Filename, rhs.Filename, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static int FileSizeFileSort(FileInfo lhs, FileInfo rhs)
+    {
+        int r = rhs.IsDirectory.CompareTo(lhs.IsDirectory);
+        if (r != 0)
+        {
+            return r;
+        }
+        r = (rhs.FileSize ?? -1).CompareTo(lhs.FileSize ?? -1);
+        if (r != 0)
+        {
+            return r;
+        }
+        return string.Compare(lhs.Filename, rhs.Filename, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [LibraryImport("user32")]
+    private static partial void ShowScrollBar(IntPtr hwnd, int wBar, int bShow);
+
+    private void SetEntry_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.SetEntry((current, options) =>
+        {
+            using var dialog = new SetWs2EntryWindow(current, options);
+            dialog.ShowDialog();
+            return dialog.EntryPointName;
+        });
+    }
+
+    private void LaunchGame_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.LaunchGame();
+    }
+
+    private void ConvertLuacToText_MenuItemClicked(object sender, EventArgs e)
+    {
+        var result = MessageBox.Show(
+            "This will convert compiled Lua files to text form by embedding a byte array. This will not decompile the scripts. Are you sure?",
+            "Confirm",
+            MessageBoxButtons.YesNo);
+        if (result == DialogResult.Yes)
+        {
+            state.ConvertLuacToText();
+        }
+    }
+
+    private void ShowChoices_MenuItem(object sender, EventArgs e)
+    {
+        state.GetChoices();
     }
 }

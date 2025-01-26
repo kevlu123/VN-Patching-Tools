@@ -22,47 +22,49 @@
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent() {
-            filenameTextBox = new TextBox();
-            button1 = new Button();
-            button2 = new Button();
+        private void InitializeComponent()
+        {
+            filename_TextBox = new TextBox();
+            cancel_Button = new Button();
+            rename_Button = new Button();
             SuspendLayout();
             // 
-            // filenameTextBox
+            // filename_TextBox
             // 
-            filenameTextBox.Location = new Point(12, 12);
-            filenameTextBox.Name = "filenameTextBox";
-            filenameTextBox.Size = new Size(353, 23);
-            filenameTextBox.TabIndex = 0;
+            filename_TextBox.Location = new Point(12, 12);
+            filename_TextBox.Name = "filename_TextBox";
+            filename_TextBox.Size = new Size(353, 23);
+            filename_TextBox.TabIndex = 0;
             // 
-            // button1
+            // cancel_Button
             // 
-            button1.Location = new Point(290, 41);
-            button1.Name = "button1";
-            button1.Size = new Size(75, 23);
-            button1.TabIndex = 1;
-            button1.Text = "Cancel";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += CancelButtonClicked;
+            cancel_Button.Location = new Point(290, 41);
+            cancel_Button.Name = "cancel_Button";
+            cancel_Button.Size = new Size(75, 23);
+            cancel_Button.TabIndex = 1;
+            cancel_Button.Text = "Cancel";
+            cancel_Button.UseVisualStyleBackColor = true;
+            cancel_Button.Click += Cancel_ButtonClicked;
             // 
-            // button2
+            // rename_Button
             // 
-            button2.Location = new Point(209, 41);
-            button2.Name = "button2";
-            button2.Size = new Size(75, 23);
-            button2.TabIndex = 2;
-            button2.Text = "Rename";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += RenameButtonClicked;
+            rename_Button.Location = new Point(209, 41);
+            rename_Button.Name = "rename_Button";
+            rename_Button.Size = new Size(75, 23);
+            rename_Button.TabIndex = 2;
+            rename_Button.Text = "Rename";
+            rename_Button.UseVisualStyleBackColor = true;
+            rename_Button.Click += Rename_ButtonClicked;
             // 
             // RenameWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(375, 75);
-            Controls.Add(button2);
-            Controls.Add(button1);
-            Controls.Add(filenameTextBox);
+            Controls.Add(rename_Button);
+            Controls.Add(cancel_Button);
+            Controls.Add(filename_TextBox);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "RenameWindow";
@@ -75,8 +77,8 @@
 
         #endregion
 
-        private TextBox filenameTextBox;
-        private Button button1;
-        private Button button2;
+        private TextBox filename_TextBox;
+        private Button cancel_Button;
+        private Button rename_Button;
     }
 }

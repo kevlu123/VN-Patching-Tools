@@ -1,13 +1,85 @@
 ﻿namespace Ws2Explorer;
 
-public interface IFolder : IFile {
-    bool CanRenameChildren { get; }
+public interface IFolder
+{
+    bool IsRoot => false;
 
-    List<FileMetadata> ListChildren();
-    Task<IFile> GetChild(string name, CancellationToken ct, ITaskProgress? progress);
-    Task NotifyChildChanged(string child, BinaryStream newData, CancellationToken ct, ITaskProgress? progress);
-    Task RenameChild(string from, string to, CancellationToken ct, ITaskProgress? progress);
-    Task CopyFiles(string[] fromFullPath, string[] to, Func<string, bool> prompt, CancellationToken ct, ITaskProgress? progress);
-    Task SwapChildren(string a, string b, CancellationToken ct, ITaskProgress? progress);
-    Task DeleteChildren(string[] names, CancellationToken ct, ITaskProgress? progress);
+    List<FileInfo> ListFiles();
+
+    Task<BinaryStream> OpenFile(
+        string filename,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default);
+
+    IFolder OpenFolder(string name)
+    {
+        throw new FileNotFoundException("File not found.", name);
+    }
+
+    async Task<DisposingDictionary<string, BinaryStream>> GetContents(
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        var contents = new DisposingDictionary<string, BinaryStream>();
+        try
+        {
+            foreach (var fileInfo in ListFiles())
+            {
+                contents[fileInfo.Filename] = await OpenFile(fileInfo.Filename, progress, ct);
+            }
+            return contents;
+        }
+        catch
+        {
+            contents.Dispose();
+            throw;
+        }
+    }
+
+    async Task<DisposingDictionary<string, IFile>> GetFiles(
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        using var contents = (await GetContents(progress, ct)).ToDisposingDictionary();
+        var files = new DisposingDictionary<string, IFile>();
+        try
+        {
+            foreach (var (filename, stream) in contents)
+            {
+                files.Add(filename, await stream.Decode(progress, decRef: false));
+            }
+            return files;
+        }
+        catch
+        {
+            files.Dispose();
+            throw;
+        }
+    }
+
+    async Task<DisposingDictionary<string, T>> GetFiles<T>(
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+        where T : class, IFile<T>
+    {
+        using var contents = (await GetContents(progress, ct)).ToDisposingDictionary();
+        var files = new DisposingDictionary<string, T>();
+        try
+        {
+            foreach (var (filename, stream) in contents)
+            {
+                try
+                {
+                    files.Add(filename, await stream.Decode<T>(progress, decRef: false));
+                }
+                catch (DecodeException) { }
+            }
+            return files;
+        }
+        catch
+        {
+            files.Dispose();
+            throw;
+        }
+    }
 }

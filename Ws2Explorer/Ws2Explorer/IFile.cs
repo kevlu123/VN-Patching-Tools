@@ -1,9 +1,12 @@
-namespace Ws2Explorer;
+﻿namespace Ws2Explorer;
 
-public interface IFile {
-    IFolder? Parent { get; }
-    string Name { get; }
-    string FullPath => (Parent == null ? Name : Path.Combine(Parent.FullPath, Name))
-        .Replace('\\', '/');
-    void DetachParent();
+public interface IFile : IDisposable
+{
+    BinaryStream Stream { get; }
+}
+
+public interface IFile<T> : IFile
+    where T : class, IFile<T>
+{
+    static abstract T Decode(BinaryStream stream, out DecodeConfidence confidence);
 }

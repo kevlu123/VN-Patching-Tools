@@ -6,8 +6,10 @@ using System.Drawing.Text;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using Ws2Explorer.HighLevel;
 using FormTimer = System.Windows.Forms.Timer;
+using Flowchart = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>;
 
 namespace Ws2Explorer.Gui;
 
@@ -167,6 +169,8 @@ partial class MainWindow : Form
             OnPathText = OnPathText,
             OnFileCaption = OnFileCaption,
             OnChoiceList = OnChoiceList,
+            OnJsonFlowchart = OnJsonFlowchart,
+            OnMermaidFlowchart = OnMermaidFlowchart,
             OnPreviewBinary = OnPreviewBinary,
             OnPreviewText = OnPreviewText,
             OnPreviewPng = OnPreviewPng,
@@ -281,14 +285,14 @@ partial class MainWindow : Form
         caption_StatusLabel.Text = caption;
     }
 
-    public void OnPreviewBinary(BinaryStream stream)
+    private void OnPreviewBinary(BinaryStream stream)
     {
         audioPlayer.Stop();
 
         OnPreviewText(HexPreview(stream.Span));
     }
 
-    public void OnPreviewText(string text)
+    private void OnPreviewText(string text)
     {
         audioPlayer.Stop();
 
@@ -300,7 +304,7 @@ partial class MainWindow : Form
         }
     }
 
-    public void OnPreviewPng(BinaryStream stream)
+    private void OnPreviewPng(BinaryStream stream)
     {
         audioPlayer.Stop();
 
@@ -315,7 +319,7 @@ partial class MainWindow : Form
         }
     }
 
-    public void OnPreviewOgg(BinaryStream stream)
+    private void OnPreviewOgg(BinaryStream stream)
     {
         audioPlayer.Stop();
         audioReader?.Dispose();
@@ -333,7 +337,7 @@ partial class MainWindow : Form
         }
     }
 
-    public void OnPreviewFont(BinaryStream stream)
+    private void OnPreviewFont(BinaryStream stream)
     {
         audioPlayer.Stop();
 
@@ -353,7 +357,7 @@ partial class MainWindow : Form
         }
     }
 
-    public void OnChoiceList(List<ChoiceInfo> choiceInfos)
+    private void OnChoiceList(List<ChoiceInfo> choiceInfos)
     {
         var texts = new List<string>();
         foreach (var choiceInfo in choiceInfos)
@@ -375,6 +379,42 @@ partial class MainWindow : Form
             texts.Add(string.Empty);
         }
         using var dialog = new InfoWindow("Choices", string.Join("\r\n", texts));
+        dialog.ShowDialog();
+    }
+
+    private void OnJsonFlowchart(Flowchart flowchart)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("{");
+        var i = 0;
+        foreach (var (src, dsts) in flowchart)
+        {
+            sb.Append($"  \"{src}\": ");
+            sb.Append(JsonSerializer.Serialize(dsts));
+            if (i < flowchart.Count - 1)
+            {
+                sb.Append(',');
+            }
+            sb.AppendLine();
+            i++;
+        }
+        sb.AppendLine("]");
+        using var dialog = new InfoWindow("Flowchart", sb.ToString());
+        dialog.ShowDialog();
+    }
+
+    private void OnMermaidFlowchart(Flowchart flowchart)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("graph TD;");
+        foreach (var (src, dsts) in flowchart)
+        {
+            foreach (var dst in dsts)
+            {
+                sb.AppendLine($"  {src}-->{dst}");
+            }
+        }
+        using var dialog = new InfoWindow("Flowchart", sb.ToString());
         dialog.ShowDialog();
     }
 
@@ -967,7 +1007,7 @@ partial class MainWindow : Form
         return sb.ToString();
     }
 
-    public static string GetDetailedErrorMessage(Exception exception)
+    private static string GetDetailedErrorMessage(Exception exception)
     {
         var message = new StringBuilder();
         message.AppendLine($"[{exception.GetType().FullName}]");
@@ -1050,5 +1090,15 @@ partial class MainWindow : Form
     private void ShowChoices_MenuItem(object sender, EventArgs e)
     {
         state.GetChoices();
+    }
+
+    private void JsonFlowchart_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.GetJsonFlowchart();
+    }
+
+    private void MermaidFlowchart_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.GetMermaidFlowchart();
     }
 }

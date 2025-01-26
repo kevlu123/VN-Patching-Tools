@@ -48,7 +48,7 @@ public sealed class ArcFile : IArchive<ArcFile>
             {
                 DataLen = reader.ReadNonnegativeInt32(),
                 DataOffset = reader.ReadNonnegativeInt32(),
-                Filename = reader.ReadUTF16String(),
+                Filename = reader.ReadUTF16String().ToLowerInvariant(),
             };
             subHeaders.Add(subHeader.Filename, subHeader);
             checked
@@ -162,7 +162,7 @@ public sealed class ArcFile : IArchive<ArcFile>
         CancellationToken ct = default)
     {
         using var pr = new ProgressReporter($"Opening {filename}", progress);
-        if (!subHeaders.TryGetValue(filename, out var subHeader))
+        if (!subHeaders.TryGetValue(filename.ToLowerInvariant(), out var subHeader))
         {
             throw new FileNotFoundException(filename);
         }

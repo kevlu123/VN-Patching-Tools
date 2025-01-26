@@ -172,4 +172,43 @@ end
         }
         return choices;
     }
+
+    public static async Task<Dictionary<string, List<string>>> GetFlowchart(
+        Directory gameFolder,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        var graph = new Dictionary<string, List<string>>();
+        foreach (var rioFilename in GetRioFilenames(gameFolder))
+        {
+            using var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
+                .Decode<ArcFile>();
+            var ws2Filenames = arc.ListFiles()
+                .Select(fi => fi.Filename)
+                .Where(f => f.EndsWith(".ws2", StringComparison.OrdinalIgnoreCase));
+
+            foreach (var ws2Filename in ws2Filenames)
+            {
+                var nameNoExt = ws2Filename[..^4];
+                if (!graph.ContainsKey(ws2Filename))
+                {
+                    graph[nameNoExt] = [];
+                }
+
+                using var ws2 = await arc.OpenFile(ws2Filename, progress, ct)
+                    .Decode<Ws2File>();
+                var jumpOps = ws2.Ops
+                    .Where(op => op.Code == Opcode.JUMP_FILE_07)
+                    .Select(op => op.Arguments[0].String.ToLowerInvariant());
+                var choiceOps = ws2.Ops
+                    .Where(op => op.Code == Opcode.SHOW_CHOICE_0F)
+                    .SelectMany(op => op.Arguments[0].ChoiceArray
+                        .Where(j => j.JumpOp.Code == Opcode.JUMP_FILE_07)
+                        .Select(j => j.JumpOp.Arguments[0].String.ToLowerInvariant()));
+                graph[nameNoExt].AddRange(jumpOps);
+                graph[nameNoExt].AddRange(choiceOps);
+            }
+        }
+        return graph;
+    }
 }

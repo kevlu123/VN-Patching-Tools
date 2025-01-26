@@ -102,8 +102,12 @@
             launchGame_MenuItem = new ToolStripMenuItem();
             setEntry_MenuItem = new ToolStripMenuItem();
             convertLuacToText_MenuItem = new ToolStripMenuItem();
-            back_Panel = new Panel();
             showChoices_MenuItem = new ToolStripMenuItem();
+            jsonFlowchart_MenuItem = new ToolStripMenuItem();
+            mermaidFlowchart_MenuItem = new ToolStripMenuItem();
+            back_Panel = new Panel();
+            toolStripSeparator10 = new ToolStripSeparator();
+            toolStripSeparator11 = new ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -641,7 +645,7 @@
             // 
             // gameToolStripMenuItem
             // 
-            gameToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, setEntry_MenuItem, convertLuacToText_MenuItem, showChoices_MenuItem });
+            gameToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, toolStripSeparator11, setEntry_MenuItem, convertLuacToText_MenuItem, toolStripSeparator10, showChoices_MenuItem, mermaidFlowchart_MenuItem, jsonFlowchart_MenuItem });
             gameToolStripMenuItem.Name = "gameToolStripMenuItem";
             gameToolStripMenuItem.Size = new Size(50, 20);
             gameToolStripMenuItem.Text = "Game";
@@ -650,7 +654,7 @@
             // 
             launchGame_MenuItem.Name = "launchGame_MenuItem";
             launchGame_MenuItem.ShortcutKeys = Keys.F10;
-            launchGame_MenuItem.Size = new Size(211, 22);
+            launchGame_MenuItem.Size = new Size(249, 22);
             launchGame_MenuItem.Text = "Launch Game";
             launchGame_MenuItem.Click += LaunchGame_MenuItemClicked;
             // 
@@ -658,17 +662,41 @@
             // 
             setEntry_MenuItem.Name = "setEntry_MenuItem";
             setEntry_MenuItem.ShortcutKeys = Keys.F11;
-            setEntry_MenuItem.Size = new Size(211, 22);
+            setEntry_MenuItem.Size = new Size(249, 22);
             setEntry_MenuItem.Text = "Set WS2 Entry Point...";
             setEntry_MenuItem.Click += SetEntry_MenuItemClicked;
             // 
             // convertLuacToText_MenuItem
             // 
             convertLuacToText_MenuItem.Name = "convertLuacToText_MenuItem";
-            convertLuacToText_MenuItem.ShortcutKeys = Keys.F6;
-            convertLuacToText_MenuItem.Size = new Size(211, 22);
+            convertLuacToText_MenuItem.ShortcutKeys = Keys.F12;
+            convertLuacToText_MenuItem.Size = new Size(249, 22);
             convertLuacToText_MenuItem.Text = "Convert Luac to Text";
             convertLuacToText_MenuItem.Click += ConvertLuacToText_MenuItemClicked;
+            // 
+            // showChoices_MenuItem
+            // 
+            showChoices_MenuItem.Name = "showChoices_MenuItem";
+            showChoices_MenuItem.ShortcutKeys = Keys.F7;
+            showChoices_MenuItem.Size = new Size(249, 22);
+            showChoices_MenuItem.Text = "Show Choices...";
+            showChoices_MenuItem.Click += ShowChoices_MenuItem;
+            // 
+            // jsonFlowchart_MenuItem
+            // 
+            jsonFlowchart_MenuItem.Name = "jsonFlowchart_MenuItem";
+            jsonFlowchart_MenuItem.ShortcutKeys = Keys.Shift | Keys.F8;
+            jsonFlowchart_MenuItem.Size = new Size(249, 22);
+            jsonFlowchart_MenuItem.Text = "Show JSON Flowchart...";
+            jsonFlowchart_MenuItem.Click += JsonFlowchart_MenuItemClicked;
+            // 
+            // mermaidFlowchart_MenuItem
+            // 
+            mermaidFlowchart_MenuItem.Name = "mermaidFlowchart_MenuItem";
+            mermaidFlowchart_MenuItem.ShortcutKeys = Keys.F8;
+            mermaidFlowchart_MenuItem.Size = new Size(249, 22);
+            mermaidFlowchart_MenuItem.Text = "Show Mermaid Flowchart...";
+            mermaidFlowchart_MenuItem.Click += MermaidFlowchart_MenuItemClicked;
             // 
             // back_Panel
             // 
@@ -680,13 +708,15 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
-            // showChoices_MenuItem
+            // toolStripSeparator10
             // 
-            showChoices_MenuItem.Name = "showChoices_MenuItem";
-            showChoices_MenuItem.ShortcutKeys = Keys.F7;
-            showChoices_MenuItem.Size = new Size(211, 22);
-            showChoices_MenuItem.Text = "Show Choices...";
-            showChoices_MenuItem.Click += ShowChoices_MenuItem;
+            toolStripSeparator10.Name = "toolStripSeparator10";
+            toolStripSeparator10.Size = new Size(246, 6);
+            // 
+            // toolStripSeparator11
+            // 
+            toolStripSeparator11.Name = "toolStripSeparator11";
+            toolStripSeparator11.Size = new Size(246, 6);
             // 
             // MainWindow
             // 
@@ -793,5 +823,9 @@
         private ToolStripMenuItem launchGame_MenuItem;
         private ToolStripMenuItem convertLuacToText_MenuItem;
         private ToolStripMenuItem showChoices_MenuItem;
+        private ToolStripMenuItem jsonFlowchart_MenuItem;
+        private ToolStripMenuItem mermaidFlowchart_MenuItem;
+        private ToolStripSeparator toolStripSeparator11;
+        private ToolStripSeparator toolStripSeparator10;
     }
 }

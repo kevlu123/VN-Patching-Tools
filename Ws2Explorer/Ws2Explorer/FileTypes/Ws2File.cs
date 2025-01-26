@@ -72,7 +72,7 @@ public sealed class Ws2File : IArchive<Ws2File>
     public Task<BinaryStream> OpenFile(string filename, IProgress<TaskProgressInfo>? progress = null, CancellationToken ct = default)
     {
         string data;
-        switch (filename)
+        switch (filename.ToLowerInvariant())
         {
             case SUMMARY_FILENAME:
                 var currentName = "";

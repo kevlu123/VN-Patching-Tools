@@ -2,6 +2,9 @@
 
 partial class InfoWindow : Form
 {
+    private const int MAX_WIDTH = 800;
+    private const int MAX_HEIGHT = 600;
+
     public InfoWindow(string caption, string message)
     {
         InitializeComponent();
@@ -13,8 +16,8 @@ partial class InfoWindow : Form
         int padding = message_TextBox.Left;
 
         message_TextBox.Size = new Size(
-            dummy_Label.Width + 30,
-            dummy_Label.Height + 30);
+            Math.Min(dummy_Label.Width + 30, MAX_WIDTH),
+            Math.Min(dummy_Label.Height + 30, MAX_HEIGHT));
         ClientSize = new Size(
             message_TextBox.Width + (2 * padding),
             message_TextBox.Height + (3 * padding) + ok_Button.Height);

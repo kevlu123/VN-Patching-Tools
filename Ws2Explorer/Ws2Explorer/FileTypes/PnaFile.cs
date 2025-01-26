@@ -250,6 +250,7 @@ public sealed class PnaFile : IArchive<PnaFile>
     {
         using var pr = new ProgressReporter($"Opening {filename}", progress);
 
+        filename = filename.ToLowerInvariant();
         if (filename == HEADER_FILENAME)
         {
             var data = JsonSerializer.SerializeToUtf8Bytes(Header);
@@ -346,6 +347,7 @@ public sealed class PnaFile : IArchive<PnaFile>
 
     public static int? ImageIndex(string name)
     {
+        name = name.ToLowerInvariant();
         if (name.StartsWith("img") && name.EndsWith(".png") && int.TryParse(name[3..^4], out int v))
         {
             return v;
@@ -355,6 +357,7 @@ public sealed class PnaFile : IArchive<PnaFile>
 
     public static int? MetaIndex(string name)
     {
+        name = name.ToLowerInvariant();
         if (name.StartsWith("meta") && name.EndsWith(".json") && int.TryParse(name[4..^5], out int v))
         {
             return v;

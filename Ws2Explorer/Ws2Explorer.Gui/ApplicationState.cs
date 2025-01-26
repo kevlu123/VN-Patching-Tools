@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Ws2Explorer.HighLevel;
+using Flowchart = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>;
 
 namespace Ws2Explorer.Gui;
 
@@ -27,6 +28,8 @@ class ApplicationState(string? openPath)
     public Action<string>? OnPathText { get; set; }
     public Action<string>? OnFileCaption { get; set; }
     public Action<List<ChoiceInfo>>? OnChoiceList { get; set; }
+    public Action<Flowchart>? OnJsonFlowchart { get; set; }
+    public Action<Flowchart>? OnMermaidFlowchart { get; set; }
     public Action<BinaryStream>? OnPreviewBinary { get; set; }
     public Action<BinaryStream>? OnPreviewPng { get; set; }
     public Action<BinaryStream>? OnPreviewOgg { get; set; }
@@ -78,7 +81,7 @@ class ApplicationState(string? openPath)
         throw ex;
 
     success:
-        PushHistory();
+        PushHistoryInternal();
         progress = new Progress<TaskProgressInfo>(info =>
         {
             if (info.Value <= 0)
@@ -105,7 +108,7 @@ class ApplicationState(string? openPath)
         Protect(interruptable: false, async ct =>
         {
             await OpenPathInternal(path, ct);
-            PushHistory();
+            PushHistoryInternal();
         });
     }
 
@@ -143,7 +146,7 @@ class ApplicationState(string? openPath)
         {
             null => string.Empty,
             { File: null } => "DIRECTORY",
-            { File: IFile file } => GetFileShortDescription(file),
+            { File: IFile file } => GetFileShortDescriptionInternal(file),
         };
 
         if (ct.IsCancellationRequested)
@@ -213,7 +216,7 @@ class ApplicationState(string? openPath)
                 throw new SilentError($"'{name}' is not a folder.");
             }
             UpdateFileListInternal();
-            PushHistory();
+            PushHistoryInternal();
         });
     }
 
@@ -236,7 +239,7 @@ class ApplicationState(string? openPath)
                 Name = selectedFileNonParent.Info.Filename,
             });
             UpdateFileListInternal();
-            PushHistory();
+            PushHistoryInternal();
         });
     }
 
@@ -246,7 +249,7 @@ class ApplicationState(string? openPath)
         Protect(interruptable: false, async ct =>
         {
             using var streams = new DisposingList<BinaryStream>();
-            var filenames = GetSelectedFilenames();
+            var filenames = GetSelectedFilenamesInternal();
             var folder = folderStack[^1].Folder;
             foreach (var filename in filenames)
             {
@@ -286,7 +289,7 @@ class ApplicationState(string? openPath)
             }
             folderStack.Pop();
             UpdateFileListInternal();
-            PushHistory();
+            PushHistoryInternal();
         });
     }
 
@@ -297,7 +300,7 @@ class ApplicationState(string? openPath)
 
     private async Task RefreshFolderInternal(CancellationToken ct)
     {
-        await OpenPathInternal(GetCurrentFolderPath(), ct);
+        await OpenPathInternal(GetCurrentFolderPathInternal(), ct);
     }
 
     public void ShowFileMetadata()
@@ -308,7 +311,7 @@ class ApplicationState(string? openPath)
             {
                 if (selectedFile.File != null)
                 {
-                    OnInfo?.Invoke(GetFileLongDescription(selectedFile.File));
+                    OnInfo?.Invoke(GetFileLongDescriptionInternal(selectedFile.File));
                 }
                 else
                 {
@@ -322,7 +325,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            var selectedFilenames = GetSelectedFilenames();
+            var selectedFilenames = GetSelectedFilenamesInternal();
             if (selectedFilenames.Count != 1)
             {
                 throw new SilentError("Select exactly one file to rename.");
@@ -348,7 +351,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            var paths = GetSelectedFilenames();
+            var paths = GetSelectedFilenamesInternal();
             if (paths.Count == 0)
             {
                 throw new SilentError("No files selected.");
@@ -369,7 +372,7 @@ class ApplicationState(string? openPath)
     {
         ProtectSync(() =>
         {
-            var paths = GetFullSelectedFilenames();
+            var paths = GetFullSelectedFilenamesInternal();
             Clipboard.SetFileDropList([.. paths]);
             if (paths.Count == 1)
             {
@@ -579,7 +582,7 @@ class ApplicationState(string? openPath)
     {
         ProtectSync(() =>
         {
-            var filenames = GetFullSelectedFilenames();
+            var filenames = GetFullSelectedFilenamesInternal();
             if (filenames.Count == 0)
             {
                 throw new SilentError("Select at least one file.");
@@ -592,7 +595,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            var filenames = GetSelectedFilenames();
+            var filenames = GetSelectedFilenamesInternal();
             var destinations = saveDialog([.. filenames]);
             if (destinations == null)
             {
@@ -628,7 +631,7 @@ class ApplicationState(string? openPath)
 
             backHistory.Pop();
             var newPath = backHistory.Peek();
-            var oldPath = GetCurrentFolderPath();
+            var oldPath = GetCurrentFolderPathInternal();
 
             // Optimize going up a directory
             try
@@ -656,7 +659,7 @@ class ApplicationState(string? openPath)
             if (forwardHistory.TryPop(out var path))
             {
                 await OpenPathInternal(path, ct);
-                backHistory.Push(GetCurrentFolderPath());
+                backHistory.Push(GetCurrentFolderPathInternal());
             }
             else
             {
@@ -665,9 +668,9 @@ class ApplicationState(string? openPath)
         });
     }
 
-    private void PushHistory()
+    private void PushHistoryInternal()
     {
-        backHistory.Push(GetCurrentFolderPath());
+        backHistory.Push(GetCurrentFolderPathInternal());
         forwardHistory.Clear();
     }
 
@@ -756,11 +759,17 @@ class ApplicationState(string? openPath)
             {
                 var gamePath = Path.Combine(gameFolder.FullPath, "AdvHD.exe");
                 var leprocPath = Path.Combine(GetExeFolderPath()!, "LEProc.exe");
-                Process.Start(new ProcessStartInfo(leprocPath)
+
+                if (!File.Exists(gamePath))
+                {
+                    throw new FileNotFoundException("Game executable not found.");
+                }
+
+                using var proc = Process.Start(new ProcessStartInfo(leprocPath)
                 {
                     ArgumentList = { gamePath },
                     WorkingDirectory = gameFolder.FullPath,
-                });
+                }) ?? throw new IOException("Failed to launch Locale Emulator (LEProc.exe).");
             }
             else
             {
@@ -775,11 +784,7 @@ class ApplicationState(string? openPath)
         {
             if (folderStack[^1].Folder is Directory dir)
             {
-                await GameTool.SetEntryPoint(
-                    dir,
-                    prompt,
-                    progress,
-                    ct);
+                await GameTool.SetEntryPoint(dir, prompt, progress, ct);
                 await RefreshFolderInternal(ct);
             }
             else
@@ -795,10 +800,7 @@ class ApplicationState(string? openPath)
         {
             if (folderStack[^1].Folder is Directory dir)
             {
-                await GameTool.ConvertLuacToText(
-                    dir,
-                    progress,
-                    ct);
+                await GameTool.ConvertLuacToText(dir, progress, ct);
                 await RefreshFolderInternal(ct);
             }
             else
@@ -814,10 +816,7 @@ class ApplicationState(string? openPath)
         {
             if (folderStack[^1].Folder is Directory dir)
             {
-                var choices = await GameTool.GetChoices(
-                    dir,
-                    progress,
-                    ct);
+                var choices = await GameTool.GetChoices(dir, progress, ct);
                 OnChoiceList?.Invoke(choices);
             }
             else
@@ -827,7 +826,30 @@ class ApplicationState(string? openPath)
         });
     }
 
-    private string GetCurrentFolderPath()
+    public void GetJsonFlowchart()
+    {
+        Protect(interruptable: false, async ct => await GetFlowChartInternal(OnJsonFlowchart, ct));
+    }
+
+    public void GetMermaidFlowchart()
+    {
+        Protect(interruptable: false, async ct => await GetFlowChartInternal(OnMermaidFlowchart, ct));
+    }
+
+    private async Task GetFlowChartInternal(Action<Flowchart>? callback, CancellationToken ct)
+    {
+        if (folderStack[^1].Folder is Directory dir)
+        {
+            var flowchart = await GameTool.GetFlowchart(dir, progress, ct);
+            callback?.Invoke(flowchart);
+        }
+        else
+        {
+            throw new SilentError("Navigate to the game directory.");
+        }
+    }
+
+    private string GetCurrentFolderPathInternal()
     {
         return Path.Combine(
             folderStack
@@ -835,15 +857,15 @@ class ApplicationState(string? openPath)
                 .ToArray());
     }
 
-    private List<string> GetFullSelectedFilenames()
+    private List<string> GetFullSelectedFilenamesInternal()
     {
-        var folderPath = GetCurrentFolderPath();
-        return GetSelectedFilenames()
+        var folderPath = GetCurrentFolderPathInternal();
+        return GetSelectedFilenamesInternal()
             .ConvertAll(s => Path.Combine(folderPath, s))
 ;
     }
 
-    private List<string> GetSelectedFilenames()
+    private List<string> GetSelectedFilenamesInternal()
     {
         return selectedIndices
             .Select(i => fileList[i].Filename)
@@ -892,7 +914,7 @@ class ApplicationState(string? openPath)
         }
     }
 
-    private static string GetFileShortDescription(IFile file)
+    private static string GetFileShortDescriptionInternal(IFile file)
     {
         return file switch
         {
@@ -913,7 +935,7 @@ class ApplicationState(string? openPath)
         };
     }
 
-    private static string GetFileLongDescription(IFile file)
+    private static string GetFileLongDescriptionInternal(IFile file)
     {
         return file switch
         {
@@ -976,7 +998,7 @@ class ApplicationState(string? openPath)
         }
         selectedFile = null;
         selectedFileNonParent = null;
-        OnPathText?.Invoke(GetCurrentFolderPath());
+        OnPathText?.Invoke(GetCurrentFolderPathInternal());
         OnFileList?.Invoke(fileList.AsReadOnly());
     }
 

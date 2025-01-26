@@ -154,7 +154,7 @@ public sealed class PtfFile : IArchive<PtfFile>
 
     public Task<BinaryStream> OpenFile(string filename, IProgress<TaskProgressInfo>? progress = null, CancellationToken ct = default)
     {
-        switch (filename)
+        switch (filename.ToLowerInvariant())
         {
             case FONT_FILENAME:
             case $"{FONT_FILENAME}.ttf":

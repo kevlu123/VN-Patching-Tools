@@ -58,6 +58,7 @@
             message_TextBox.Multiline = true;
             message_TextBox.Name = "message_TextBox";
             message_TextBox.ReadOnly = true;
+            message_TextBox.ScrollBars = ScrollBars.Both;
             message_TextBox.Size = new Size(100, 23);
             message_TextBox.TabIndex = 2;
             message_TextBox.WordWrap = false;

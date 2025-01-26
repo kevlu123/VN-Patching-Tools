@@ -6,6 +6,7 @@ using System.Drawing.Text;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using static System.Net.WebRequestMethods;
 using FormTimer = System.Windows.Forms.Timer;
 
 namespace Ws2Explorer.Gui;
@@ -209,7 +210,7 @@ partial class MainWindow : Form
 
     private void OnError(Exception ex)
     {
-        using var dialog = new ErrorWindow(GetDetailedErrorMessage(ex));
+        using var dialog = new InfoWindow("Error", GetDetailedErrorMessage(ex));
         dialog.ShowDialog();
     }
 
@@ -775,14 +776,16 @@ partial class MainWindow : Form
 
     private void About_MenuItemClicked(object sender, EventArgs e)
     {
-        MessageBox.Show(
-            $"{Text} by Kevin Lu\n" +
-            "\n" +
-            "Licensed under GPLv3\n" +
-            "https://github.com/kevlu123/VN-Patching-Tools/tree/master/Ws2Explorer",
-            "About",
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
+        using var dialog = new InfoWindow("About", string.Join("\r\n", [
+            $"{Text} (GPLv3) by Kevin Lu",
+            "  https://github.com/kevlu123/VN-Patching-Tools/tree/master/Ws2Explorer",
+            "",
+            "Libraries",
+            "  Locale Emulator (GPLv3) by xupefei",
+            "    https://github.com/xupefei/Locale-Emulator",
+            "    https://github.com/xupefei/Locale-Emulator-Core",
+        ]));
+        dialog.ShowDialog();
     }
 
     private void AudioPlay_ButtonClicked(object? sender, EventArgs e)

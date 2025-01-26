@@ -1,11 +1,12 @@
 ﻿namespace Ws2Explorer.Gui;
 
-partial class ErrorWindow : Form
+partial class InfoWindow : Form
 {
-    public ErrorWindow(string message)
+    public InfoWindow(string caption, string message)
     {
         InitializeComponent();
 
+        Text = caption;
         dummy_Label.Text = message;
         message_TextBox.Text = message;
 

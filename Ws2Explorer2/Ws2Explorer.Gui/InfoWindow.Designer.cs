@@ -1,6 +1,6 @@
 ﻿namespace Ws2Explorer.Gui
 {
-    partial class ErrorWindow
+    partial class InfoWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -62,7 +62,7 @@
             message_TextBox.TabIndex = 2;
             message_TextBox.WordWrap = false;
             // 
-            // ErrorWindow
+            // InfoWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -73,8 +73,7 @@
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             MinimizeBox = false;
-            Name = "ErrorWindow";
-            Text = "Error";
+            Name = "InfoWindow";
             ResumeLayout(false);
             PerformLayout();
         }

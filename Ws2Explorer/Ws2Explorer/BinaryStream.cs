@@ -80,6 +80,8 @@ public sealed class BinaryStream : IDisposable
 
     public int Length { get; }
 
+    public bool Writable { get; private set; } = true;
+
     public Span<byte> Span
     {
         get
@@ -107,8 +109,8 @@ public sealed class BinaryStream : IDisposable
         }
     }
 
-    public BinaryStream(string utfData)
-        : this(Encoding.UTF8.GetBytes(utfData), 0, Encoding.UTF8.GetByteCount(utfData))
+    public BinaryStream(string utf8Data)
+        : this(Encoding.UTF8.GetBytes(utf8Data), 0, Encoding.UTF8.GetByteCount(utf8Data))
     {
     }
 
@@ -288,6 +290,11 @@ public sealed class BinaryStream : IDisposable
     public static bool StreamEquals(BinaryStream lhs, BinaryStream rhs)
     {
         return lhs.Memory.Span.SequenceEqual(rhs.Memory.Span);
+    }
+
+    public void Freeze()
+    {
+        Writable = false;
     }
 
     public void IncRef()

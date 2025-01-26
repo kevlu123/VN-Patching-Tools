@@ -25,6 +25,7 @@ public sealed class VideoFile : IFile<VideoFile>
         }
 
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
         confidence = DecodeConfidence.High;
     }

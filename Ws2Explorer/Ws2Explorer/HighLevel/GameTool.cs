@@ -13,6 +13,36 @@ public static class GameTool
             .ToList();
     }
 
+    private static T Single<T>(
+        this IEnumerable<T> source,
+        Func<T, bool> predicate,
+        string noneError,
+        string multipleError)
+        where T : notnull
+    {
+        var count = 0;
+        T? result = default;
+        foreach (var item in source)
+        {
+            if (predicate(item))
+            {
+                result = item;
+                count++;
+                if (count > 1)
+                {
+                    throw new InvalidDataException(multipleError);
+                }
+            }
+        }
+
+        if (count == 0)
+        {
+            throw new InvalidDataException(noneError);
+        }
+
+        return result!;
+    }
+
     public static async Task SetEntryPoint(
         Directory gameFolder,
         Func<string, string[], string> setEntry,
@@ -29,11 +59,16 @@ public static class GameTool
 
         var entryRio = rioFiles.Single(
             rio => rio.Folder.ListFiles()
-                .Any(fi => fi.Filename.Equals("start.ws2", StringComparison.CurrentCultureIgnoreCase)));
+                .Any(fi => fi.Filename.Equals("start.ws2", StringComparison.CurrentCultureIgnoreCase)),
+            "'start.ws2' not found.",
+            "Multiple 'start.ws2' found.");
         using var entryWs2 = await entryRio.Folder.OpenFile("start.ws2", progress, ct)
             .Decode<Ws2File>(progress);
         List<Op> ops = [.. entryWs2.Ops];
-        var entryOp = ops.Single(op => op.Code == Opcode.JUMP_FILE_07);
+        var entryOp = ops.Single(
+            op => op.Code == Opcode.JUMP_FILE_07,
+            "JumpFile op not found.",
+            "Multiple JumpFile ops found.");
         var currentEntry = entryOp.Arguments[0].String;
 
         var options = rioFiles
@@ -77,7 +112,9 @@ public static class GameTool
         CancellationToken ct = default)
     {
         var scriptFilename = gameFolder.ListFiles()
-            .Single(fi => fi.Filename.Equals("script.arc", StringComparison.OrdinalIgnoreCase));
+            .Single(fi => fi.Filename.Equals("script.arc", StringComparison.OrdinalIgnoreCase),
+            "'script.arc' not found.",
+            "Multiple 'script.arc' found.");
         using var scriptArc = await gameFolder.OpenFile(scriptFilename.Filename, progress, ct)
             .Decode<ArcFile>(progress);
         using var contents = await ((IFolder)scriptArc).GetContents(progress, ct);

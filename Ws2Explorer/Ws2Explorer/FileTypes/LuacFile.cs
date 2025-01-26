@@ -22,6 +22,7 @@ public sealed class LuacFile : IFile<LuacFile>
         LuaVersion = reader.ReadUInt8();
 
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
         confidence = DecodeConfidence.High;
     }

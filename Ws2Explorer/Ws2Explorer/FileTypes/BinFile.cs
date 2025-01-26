@@ -15,6 +15,7 @@ public sealed class BinFile : IFile<BinFile>
     private BinFile(BinaryStream stream, out DecodeConfidence confidence)
     {
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
         confidence = DecodeConfidence.Low;
     }

@@ -38,6 +38,7 @@ public sealed class PngFile : IFile<PngFile>
         ImageHeight = reader.ReadNonnegativeInt32BE();
 
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
         confidence = DecodeConfidence.High;
     }

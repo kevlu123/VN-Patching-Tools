@@ -47,6 +47,7 @@ public static class Ws2Compiler
             byte b = stream.Span[i];
             writer.WriteUInt8At(i, (byte)((b << 6) | (b >> 2)));
         }
+        data.Freeze();
 
         var reader = new BinaryReader(data);
         var ops = new List<(Op op, int offset)>()
@@ -220,6 +221,7 @@ public static class Ws2Compiler
             writer.WriteUInt8At(i, (byte)((b << 2) | (b >> 6)));
         }
 
+        data.Freeze();
         data.IncRef();
         return data;
     }

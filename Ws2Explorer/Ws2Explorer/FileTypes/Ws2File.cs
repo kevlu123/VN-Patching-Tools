@@ -21,6 +21,7 @@ public sealed class Ws2File : IArchive<Ws2File>
         Ops = [.. Ws2Compiler.Decompile(stream, out _)];
 
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
         confidence = (Ops.Length > 1 && Ops[1].Code != 0)
             ? DecodeConfidence.High
@@ -33,10 +34,9 @@ public sealed class Ws2File : IArchive<Ws2File>
         {
             if (name == OPS_FILENAME)
             {
-                var text = stream
-                    .Decode<TextFile>(decRef: false).Result
-                    .Text;
-                Ops = [.. Ws2Compiler.FromJson(text)];
+                using var textFile = stream
+                    .Decode<TextFile>(decRef: false).Result;
+                Ops = [.. Ws2Compiler.FromJson(textFile.Text)];
                 Stream = Ws2Compiler.Compile(Ops);
                 return;
             }

@@ -82,8 +82,9 @@ public sealed class PanFile : IArchive<PanFile>
 
         jsonForm = JsonSerializer.SerializeToUtf8Bytes(entries);
 
-        stream.IncRef();
         Stream = stream;
+        stream.Freeze();
+        stream.IncRef();
         confidence = DecodeConfidence.High;
     }
 
@@ -117,6 +118,8 @@ public sealed class PanFile : IArchive<PanFile>
                 writer.WriteSjisString(subEntry.Filename);
             }
         }
+
+        Stream.Freeze();
     }
 
     public static PanFile Decode(BinaryStream stream, out DecodeConfidence confidence)

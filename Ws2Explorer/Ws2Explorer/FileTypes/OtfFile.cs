@@ -18,6 +18,7 @@ public sealed class OtfFile : IFile<OtfFile>
         }
 
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
         confidence = DecodeConfidence.High;
     }

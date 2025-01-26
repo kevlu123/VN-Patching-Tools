@@ -18,8 +18,9 @@ public sealed class TtfFile : IFile<TtfFile>
         }
 
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
-        confidence = DecodeConfidence.High; // Low?
+        confidence = DecodeConfidence.High;
     }
 
     public static TtfFile Decode(BinaryStream stream, out DecodeConfidence confidence)

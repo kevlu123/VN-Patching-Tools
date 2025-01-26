@@ -20,11 +20,16 @@ public sealed class TextFile : IFile<TextFile>
 
     public Encoding Encoding { get; }
 
+    public TextFile(string text) : this(new BinaryStream(text), Encoding.UTF8)
+    {
+    }
+
     public TextFile(BinaryStream stream, Encoding encoding)
     {
         Text = encoding.GetString(stream.Span);
         Encoding = encoding;
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
     }
 
@@ -45,6 +50,7 @@ public sealed class TextFile : IFile<TextFile>
                 }
                 Encoding = encoding;
                 Stream = stream;
+                stream.Freeze();
                 stream.IncRef();
                 confidence = DecodeConfidence.Low;
                 return;

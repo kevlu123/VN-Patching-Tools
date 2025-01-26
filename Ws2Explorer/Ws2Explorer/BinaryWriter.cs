@@ -3,13 +3,23 @@ using System.Text;
 
 namespace Ws2Explorer;
 
-public class BinaryWriter(BinaryStream stream)
+public class BinaryWriter
 {
-    private readonly BinaryStream stream = stream;
+    private readonly BinaryStream stream;
 
     public int Position { get; set; }
 
-    public int Length { get; } = stream.Length;
+    public int Length { get; }
+
+    public BinaryWriter(BinaryStream stream)
+    {
+        if (!stream.Writable)
+        {
+            throw new InvalidOperationException("Stream is not writable.");
+        }
+        this.stream = stream;
+        Length = stream.Length;
+    }
 
     public void Seek(int position)
     {

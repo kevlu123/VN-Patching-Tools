@@ -97,6 +97,7 @@ public sealed class PnaFile : IArchive<PnaFile>
         }
 
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
         confidence = DecodeConfidence.High;
     }
@@ -201,6 +202,8 @@ public sealed class PnaFile : IArchive<PnaFile>
                 writer.WriteBytes(png.Stream.Span);
             }
         }
+
+        Stream.Freeze();
     }
 
     public static PnaFile Decode(BinaryStream stream, out DecodeConfidence confidence)

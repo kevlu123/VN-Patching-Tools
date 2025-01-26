@@ -41,6 +41,7 @@ public sealed class OggFile : IFile<OggFile>
         }
 
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
         confidence = DecodeConfidence.High;
     }

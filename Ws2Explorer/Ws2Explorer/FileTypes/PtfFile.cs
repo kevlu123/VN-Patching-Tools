@@ -64,6 +64,7 @@ public sealed class PtfFile : IArchive<PtfFile>
         FontType = fontType;
 
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
         confidence = DecodeConfidence.High;
     }
@@ -112,8 +113,10 @@ public sealed class PtfFile : IArchive<PtfFile>
         using var compressed = Compress(decompressed, XorKey);
         FontType = GetFontType(decompressed.Span) ?? throw new ArchiveCreationException("Font type not recognized.");
         Stream = compressed;
+        compressed.Freeze();
         compressed.IncRef();
         this.decompressed = decompressed.Clone();
+        this.decompressed.Freeze();
     }
 
     public static PtfFile Decode(BinaryStream stream, out DecodeConfidence confidence)

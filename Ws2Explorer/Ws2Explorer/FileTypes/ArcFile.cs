@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 
 namespace Ws2Explorer;
 
@@ -71,6 +72,7 @@ public sealed class ArcFile : IArchive<ArcFile>
         }
 
         Stream = stream;
+        stream.Freeze();
         stream.IncRef();
         confidence = Header.FileCount == 0
             ? DecodeConfidence.Low
@@ -121,6 +123,8 @@ public sealed class ArcFile : IArchive<ArcFile>
             var stream = contents[filename];
             writer.WriteBytes(stream.Span);
         }
+
+        Stream.Freeze();
     }
 
     public static ArcFile Decode(BinaryStream stream, out DecodeConfidence confidence)

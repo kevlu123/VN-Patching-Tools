@@ -1,6 +1,6 @@
 ﻿namespace Ws2Explorer.Gui
 {
-    partial class Ws2EntryPointWindow
+    partial class SetWs2EntryWindow
     {
         /// <summary>
         /// Required designer variable.

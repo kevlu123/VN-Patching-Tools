@@ -1,4 +1,6 @@
-﻿namespace Ws2Explorer;
+﻿using System.Diagnostics;
+
+namespace Ws2Explorer;
 
 public static class FileHelper
 {

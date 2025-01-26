@@ -203,7 +203,7 @@ partial class MainWindow : Form
     private static string GetConfigPath()
     {
         return Path.Combine(
-            ApplicationState.GetExeFolder() ?? string.Empty,
+            ApplicationState.GetExeFolderPath() ?? string.Empty,
             CONFIG_FILENAME);
     }
 
@@ -982,13 +982,18 @@ partial class MainWindow : Form
     [LibraryImport("user32")]
     private static partial void ShowScrollBar(IntPtr hwnd, int wBar, int bShow);
 
-    private void SetEntryPoint_MenuItemClicked(object sender, EventArgs e)
+    private void SetEntry_MenuItemClicked(object sender, EventArgs e)
     {
-        state.SetEntryPoint((current, options) =>
+        state.SetEntry((current, options) =>
         {
-            using var dialog = new Ws2EntryPointWindow(current, options);
+            using var dialog = new SetWs2EntryWindow(current, options);
             dialog.ShowDialog();
             return dialog.EntryPointName;
         });
+    }
+
+    private void LaunchGame_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.LaunchGame();
     }
 }

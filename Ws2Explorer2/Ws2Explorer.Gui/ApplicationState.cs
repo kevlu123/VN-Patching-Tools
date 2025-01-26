@@ -48,7 +48,7 @@ class ApplicationState(string? openPath)
         }
     }
 
-    public static string? GetExeFolder()
+    public static string? GetExeFolderPath()
     {
         var module = Process.GetCurrentProcess().MainModule;
         return module == null ? null : Path.GetDirectoryName(module.FileName);
@@ -58,7 +58,7 @@ class ApplicationState(string? openPath)
     {
         List<string?> paths = [
             openPath,
-            GetExeFolder(),
+            GetExeFolderPath(),
             "C:\\",
         ];
         foreach (var path in paths)
@@ -750,7 +750,28 @@ class ApplicationState(string? openPath)
         });
     }
 
-    public void SetEntryPoint(Func<string, string[], string> prompt)
+    public void LaunchGame()
+    {
+        ProtectSync(() =>
+        {
+            if (folderStack[^1].Value is Directory gameFolder)
+            {
+                var gamePath = Path.Combine(gameFolder.FullPath, "AdvHD.exe");
+                var leprocPath = Path.Combine(GetExeFolderPath()!, "LEProc.exe");
+                Process.Start(new ProcessStartInfo(leprocPath)
+                {
+                    ArgumentList = { gamePath },
+                    WorkingDirectory = gameFolder.FullPath,
+                });
+            }
+            else
+            {
+                throw new SilentError("Navigate to the game directory to launch the game.");
+            }
+        });
+    }
+
+    public void SetEntry(Func<string, string[], string> prompt)
     {
         Protect(interruptable: false, async ct =>
         {

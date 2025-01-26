@@ -9,6 +9,7 @@
     <IncludeSourceRevisionInInformationalVersion Condition="'$(Version)' != ''">false</IncludeSourceRevisionInInformationalVersion>
     <Version Condition="'$(Version)' == ''">0.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,7 @@
     <PackageReference Include="Scintilla5.NET" Version="5.3.3.12" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
     <ProjectReference Include="../Ws2Explorer/Ws2Explorer.csproj" />
+    <ProjectReference Include="../LocaleEmulator/LEProc.csproj"/>
   </ItemGroup>
 
   <ItemGroup>

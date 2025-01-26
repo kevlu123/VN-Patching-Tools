@@ -1,10 +1,14 @@
-﻿using Ws2Explorer.Compiler;
-using static Ws2Explorer.FileHelper;
+﻿using System.Diagnostics;
+using Ws2Explorer.Compiler;
+using NamedFolder = Ws2Explorer.FileHelper.Named<Ws2Explorer.IFolder>;
+using OverwriteMode = Ws2Explorer.FileHelper.OverwriteMode;
 
 namespace Ws2Explorer;
 
 public static class GameHelper
 {
+    private const int OP_JUMP_FILE = 0x07;
+
     public static async Task SetEntryPoint(
         Directory gameFolder,
         Func<string, string[], string> setEntry,
@@ -14,7 +18,7 @@ public static class GameHelper
         var rioFilenames = gameFolder.ListFiles()
             .Select(fi => fi.Filename)
             .Where(f => f.Contains("rio", StringComparison.OrdinalIgnoreCase));
-        using var rioFiles = new DisposingList<Named<IFolder>>();
+        using var rioFiles = new DisposingList<NamedFolder>();
         foreach (var rioFilename in rioFilenames)
         {
             var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
@@ -28,7 +32,7 @@ public static class GameHelper
         using var entryWs2 = await entryRio.Value.OpenFile("start.ws2", progress, ct)
             .ToDataFile<Ws2File>(progress);
         List<Op> ops = [.. entryWs2.Ops];
-        var entryOp = ops.Single(op => op.Code == 0x07);
+        var entryOp = ops.Single(op => op.Code == OP_JUMP_FILE);
         var currentEntry = entryOp.Arguments[0].String;
 
         var options = rioFiles
@@ -43,13 +47,13 @@ public static class GameHelper
             return;
         }
 
-        ops[ops.FindIndex(op => op.Code == 0x07)] = new Op
+        ops[ops.FindIndex(op => op.Code == OP_JUMP_FILE)] = new Op
         {
-            Code = 0x07,
+            Code = OP_JUMP_FILE,
             Arguments = [Argument.NewString(newEntry)],
         };
         using var newWs2 = Ws2Compiler.Compile(ops);
-        var hierarchy = new List<Named<IFolder>>
+        var hierarchy = new List<NamedFolder>
         {
             new() { Name = gameFolder.DirectoryName, Value = gameFolder },
             entryRio,

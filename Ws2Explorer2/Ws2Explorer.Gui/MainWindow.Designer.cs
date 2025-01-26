@@ -98,9 +98,10 @@
             viewMetadata_MenuItem = new ToolStripMenuItem();
             viewPna_MenuItem = new ToolStripMenuItem();
             pnaShowEmpty_MenuItem = new ToolStripMenuItem();
-            back_Panel = new Panel();
             gameToolStripMenuItem = new ToolStripMenuItem();
-            setWS2EntryPointToolStripMenuItem = new ToolStripMenuItem();
+            launchGame_MenuItem = new ToolStripMenuItem();
+            setEntry_MenuItem = new ToolStripMenuItem();
+            back_Panel = new Panel();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -295,35 +296,40 @@
             // createArc_MenuItem
             // 
             createArc_MenuItem.Name = "createArc_MenuItem";
-            createArc_MenuItem.Size = new Size(98, 22);
+            createArc_MenuItem.ShortcutKeys = Keys.Control | Keys.F1;
+            createArc_MenuItem.Size = new Size(180, 22);
             createArc_MenuItem.Text = "ARC";
             createArc_MenuItem.Click += CreateArc_MenuItemClicked;
             // 
             // createPna_MenuItem
             // 
             createPna_MenuItem.Name = "createPna_MenuItem";
-            createPna_MenuItem.Size = new Size(98, 22);
+            createPna_MenuItem.ShortcutKeys = Keys.Control | Keys.F2;
+            createPna_MenuItem.Size = new Size(144, 22);
             createPna_MenuItem.Text = "PNA";
             createPna_MenuItem.Click += CreatePna_MenuItemClicked;
             // 
             // createPan_MenuItem
             // 
             createPan_MenuItem.Name = "createPan_MenuItem";
-            createPan_MenuItem.Size = new Size(98, 22);
+            createPan_MenuItem.ShortcutKeys = Keys.Control | Keys.F3;
+            createPan_MenuItem.Size = new Size(144, 22);
             createPan_MenuItem.Text = "PAN";
             createPan_MenuItem.Click += CreatePan_MenuItemClicked;
             // 
             // createPtf_MenuItem
             // 
             createPtf_MenuItem.Name = "createPtf_MenuItem";
-            createPtf_MenuItem.Size = new Size(98, 22);
+            createPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.F4;
+            createPtf_MenuItem.Size = new Size(144, 22);
             createPtf_MenuItem.Text = "PTF";
             createPtf_MenuItem.Click += CreatePtf_MenuItemClicked;
             // 
             // createWs2_MenuItem
             // 
             createWs2_MenuItem.Name = "createWs2_MenuItem";
-            createWs2_MenuItem.Size = new Size(98, 22);
+            createWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.F5;
+            createWs2_MenuItem.Size = new Size(144, 22);
             createWs2_MenuItem.Text = "WS2";
             createWs2_MenuItem.Click += CreateWs2_MenuItemClicked;
             // 
@@ -337,35 +343,40 @@
             // openAsArc_MenuItem
             // 
             openAsArc_MenuItem.Name = "openAsArc_MenuItem";
-            openAsArc_MenuItem.Size = new Size(98, 22);
+            openAsArc_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F1;
+            openAsArc_MenuItem.Size = new Size(180, 22);
             openAsArc_MenuItem.Text = "ARC";
             openAsArc_MenuItem.Click += OpenAsArc_MenuItemClicked;
             // 
             // openAsPna_MenuItem
             // 
             openAsPna_MenuItem.Name = "openAsPna_MenuItem";
-            openAsPna_MenuItem.Size = new Size(98, 22);
+            openAsPna_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F2;
+            openAsPna_MenuItem.Size = new Size(180, 22);
             openAsPna_MenuItem.Text = "PNA";
             openAsPna_MenuItem.Click += OpenAsPna_MenuItemClicked;
             // 
             // openAsPan_MenuItem
             // 
             openAsPan_MenuItem.Name = "openAsPan_MenuItem";
-            openAsPan_MenuItem.Size = new Size(98, 22);
+            openAsPan_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F3;
+            openAsPan_MenuItem.Size = new Size(180, 22);
             openAsPan_MenuItem.Text = "PAN";
             openAsPan_MenuItem.Click += OpenAsPan_MenuItemClicked;
             // 
             // openAsPtf_MenuItem
             // 
             openAsPtf_MenuItem.Name = "openAsPtf_MenuItem";
-            openAsPtf_MenuItem.Size = new Size(98, 22);
+            openAsPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F4;
+            openAsPtf_MenuItem.Size = new Size(180, 22);
             openAsPtf_MenuItem.Text = "PTF";
             openAsPtf_MenuItem.Click += OpenAsPtf_MenuItemClicked;
             // 
             // openAsWs2_MenuItem
             // 
             openAsWs2_MenuItem.Name = "openAsWs2_MenuItem";
-            openAsWs2_MenuItem.Size = new Size(98, 22);
+            openAsWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F5;
+            openAsWs2_MenuItem.Size = new Size(180, 22);
             openAsWs2_MenuItem.Text = "WS2";
             openAsWs2_MenuItem.Click += OpenAsWs2_MenuItemClicked;
             // 
@@ -398,6 +409,8 @@
             // aboutToolStripMenuItem
             // 
             aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            aboutToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+?";
+            aboutToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.Oem2;
             aboutToolStripMenuItem.Size = new Size(229, 22);
             aboutToolStripMenuItem.Text = "About...";
             aboutToolStripMenuItem.Click += About_MenuItemClicked;
@@ -436,7 +449,7 @@
             // 
             editAsText_MenuItem.Name = "editAsText_MenuItem";
             editAsText_MenuItem.ShortcutKeys = Keys.Control | Keys.D1;
-            editAsText_MenuItem.Size = new Size(156, 22);
+            editAsText_MenuItem.Size = new Size(180, 22);
             editAsText_MenuItem.Text = "Text...";
             editAsText_MenuItem.Click += EditAsText_MenuItemClicked;
             // 
@@ -444,7 +457,7 @@
             // 
             editAsImage_MenuItem.Name = "editAsImage_MenuItem";
             editAsImage_MenuItem.ShortcutKeys = Keys.Control | Keys.D2;
-            editAsImage_MenuItem.Size = new Size(156, 22);
+            editAsImage_MenuItem.Size = new Size(180, 22);
             editAsImage_MenuItem.Text = "Image...";
             editAsImage_MenuItem.Click += EditAsImage_MenuItemClicked;
             // 
@@ -452,7 +465,7 @@
             // 
             editAsHex_MenuItem.Name = "editAsHex_MenuItem";
             editAsHex_MenuItem.ShortcutKeys = Keys.Control | Keys.D3;
-            editAsHex_MenuItem.Size = new Size(156, 22);
+            editAsHex_MenuItem.Size = new Size(180, 22);
             editAsHex_MenuItem.Text = "Hex...";
             editAsHex_MenuItem.Click += EditAsHex_MenuItemClicked;
             // 
@@ -624,6 +637,29 @@
             pnaShowEmpty_MenuItem.Text = "Show Empty";
             pnaShowEmpty_MenuItem.CheckedChanged += PnaShowEmpty_MenuItemCheckChanged;
             // 
+            // gameToolStripMenuItem
+            // 
+            gameToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, setEntry_MenuItem });
+            gameToolStripMenuItem.Name = "gameToolStripMenuItem";
+            gameToolStripMenuItem.Size = new Size(50, 20);
+            gameToolStripMenuItem.Text = "Game";
+            // 
+            // launchGame_MenuItem
+            // 
+            launchGame_MenuItem.Name = "launchGame_MenuItem";
+            launchGame_MenuItem.ShortcutKeys = Keys.F10;
+            launchGame_MenuItem.Size = new Size(211, 22);
+            launchGame_MenuItem.Text = "Launch Game";
+            launchGame_MenuItem.Click += LaunchGame_MenuItemClicked;
+            // 
+            // setEntry_MenuItem
+            // 
+            setEntry_MenuItem.Name = "setEntry_MenuItem";
+            setEntry_MenuItem.ShortcutKeys = Keys.F11;
+            setEntry_MenuItem.Size = new Size(211, 22);
+            setEntry_MenuItem.Text = "Set WS2 Entry Point...";
+            setEntry_MenuItem.Click += SetEntry_MenuItemClicked;
+            // 
             // back_Panel
             // 
             back_Panel.Controls.Add(panels_SplitContainer);
@@ -633,20 +669,6 @@
             back_Panel.Name = "back_Panel";
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
-            // 
-            // gameToolStripMenuItem
-            // 
-            gameToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setWS2EntryPointToolStripMenuItem });
-            gameToolStripMenuItem.Name = "gameToolStripMenuItem";
-            gameToolStripMenuItem.Size = new Size(50, 20);
-            gameToolStripMenuItem.Text = "Game";
-            // 
-            // setWS2EntryPointToolStripMenuItem
-            // 
-            setWS2EntryPointToolStripMenuItem.Name = "setWS2EntryPointToolStripMenuItem";
-            setWS2EntryPointToolStripMenuItem.Size = new Size(186, 22);
-            setWS2EntryPointToolStripMenuItem.Text = "Set WS2 Entry Point...";
-            setWS2EntryPointToolStripMenuItem.Click += SetEntryPoint_MenuItemClicked;
             // 
             // MainWindow
             // 
@@ -749,6 +771,7 @@
         private ToolStripMenuItem aboutToolStripMenuItem;
         private ToolStripMenuItem viewMetadata_MenuItem;
         private ToolStripMenuItem gameToolStripMenuItem;
-        private ToolStripMenuItem setWS2EntryPointToolStripMenuItem;
+        private ToolStripMenuItem setEntry_MenuItem;
+        private ToolStripMenuItem launchGame_MenuItem;
     }
 }

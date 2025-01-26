@@ -1,10 +1,10 @@
 ﻿namespace Ws2Explorer.Gui;
 
-partial class Ws2EntryPointWindow : Form
+partial class SetWs2EntryWindow : Form
 {
     public string EntryPointName { get; private set; }
 
-    public Ws2EntryPointWindow(string currentEntryPoint, string[] options)
+    public SetWs2EntryWindow(string currentEntryPoint, string[] options)
     {
         InitializeComponent();
         text_ComboBox.Items.AddRange(options);

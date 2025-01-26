@@ -999,4 +999,16 @@ partial class MainWindow : Form
     {
         state.LaunchGame();
     }
+
+    private void ConvertLuacToText_MenuItemClicked(object sender, EventArgs e)
+    {
+        var result = MessageBox.Show(
+            "This will convert compiled Lua files to text form by embedding a byte array. This will not decompile the scripts. Are you sure?",
+            "Confirm",
+            MessageBoxButtons.YesNo);
+        if (result == DialogResult.Yes)
+        {
+            state.ConvertLuacToText();
+        }
+    }
 }

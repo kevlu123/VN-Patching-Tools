@@ -766,7 +766,7 @@ class ApplicationState(string? openPath)
             }
             else
             {
-                throw new SilentError("Navigate to the game directory to launch the game.");
+                throw new SilentError("Navigate to the game directory.");
             }
         });
     }
@@ -786,7 +786,26 @@ class ApplicationState(string? openPath)
             }
             else
             {
-                throw new SilentError("Navigate to the game directory to change the entry point.");
+                throw new SilentError("Navigate to the game directory.");
+            }
+        });
+    }
+
+    public void ConvertLuacToText()
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            if (folderStack[^1].Value is Directory dir)
+            {
+                await GameHelper.ConvertLuacToText(
+                    dir,
+                    progress,
+                    ct);
+                await RefreshFolderInternal(ct);
+            }
+            else
+            {
+                throw new SilentError("Navigate to the game directory.");
             }
         });
     }

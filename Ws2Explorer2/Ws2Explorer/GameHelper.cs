@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using Ws2Explorer.Compiler;
+﻿using Ws2Explorer.Compiler;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using NamedFolder = Ws2Explorer.FileHelper.Named<Ws2Explorer.IFolder>;
 using OverwriteMode = Ws2Explorer.FileHelper.OverwriteMode;
 
@@ -17,7 +17,8 @@ public static class GameHelper
     {
         var rioFilenames = gameFolder.ListFiles()
             .Select(fi => fi.Filename)
-            .Where(f => f.Contains("rio", StringComparison.OrdinalIgnoreCase));
+            .Where(f => f.Contains("rio", StringComparison.OrdinalIgnoreCase)
+                && f.EndsWith(".arc", StringComparison.OrdinalIgnoreCase));
         using var rioFiles = new DisposingList<NamedFolder>();
         foreach (var rioFilename in rioFilenames)
         {
@@ -26,9 +27,9 @@ public static class GameHelper
             rioFiles.Add(new() { Name = rioFilename, Value = arc });
         }
 
-        var entryRio = rioFiles.FirstOrDefault(
-            rio => rio.Value.ListFiles().Any(fi => fi.Filename == "start.ws2"))
-            ?? throw new FileNotFoundException("start.ws2 not found.");
+        var entryRio = rioFiles.Single(
+            rio => rio.Value.ListFiles()
+                .Any(fi => fi.Filename.Equals("start.ws2", StringComparison.CurrentCultureIgnoreCase)));
         using var entryWs2 = await entryRio.Value.OpenFile("start.ws2", progress, ct)
             .ToDataFile<Ws2File>(progress);
         List<Op> ops = [.. entryWs2.Ops];
@@ -68,5 +69,41 @@ public static class GameHelper
             hierarchy,
             progress,
             ct);
+    }
+
+    public static async Task ConvertLuacToText(
+        Directory gameFolder,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        var scriptFilename = gameFolder.ListFiles()
+            .Single(fi => fi.Filename.Equals("script.arc", StringComparison.OrdinalIgnoreCase));
+        using var scriptArc = await gameFolder.OpenFile(scriptFilename.Filename, progress, ct)
+            .ToDataFile<ArcFile>(progress);
+        using var contents = (await ((IFolder)scriptArc).GetContents(progress, ct))
+            .ToDisposingDictionary();
+        foreach (var filename in contents.Keys.ToArray())
+        {
+            try
+            {
+                using var luac = await contents[filename].ToDataFile<LuacFile>(progress);
+                var lua = string.Format("""
+hex_source = "{0}"
+function hex_to_array(str)
+  return (str:gsub('..', function (cc)
+    return string.char(tonumber(cc, 16))
+  end))
+end
+{1}(hex_to_array(hex_source))()
+""",
+                    Convert.ToHexString(luac.Stream.Span),
+                    luac.LuaVersion == 0x51 ? "loadstring" : "load"
+                );
+                contents[filename] = new BinaryStream(lua);
+            }
+            catch (DecodeException) { }
+        }
+        using var newScriptArc = ArcFile.Create(contents);
+        await gameFolder.WriteFile("script.arc", newScriptArc.Stream, progress, ct);
     }
 }

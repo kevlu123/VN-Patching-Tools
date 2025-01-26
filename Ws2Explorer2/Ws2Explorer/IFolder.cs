@@ -20,23 +20,66 @@ public interface IFolder
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        var contents = new Dictionary<string, BinaryStream>();
-        foreach (var fileInfo in ListFiles())
+        var contents = new DisposingDictionary<string, BinaryStream>();
+        try
         {
-            contents[fileInfo.Filename] = await OpenFile(fileInfo.Filename, progress, ct);
+            foreach (var fileInfo in ListFiles())
+            {
+                contents[fileInfo.Filename] = await OpenFile(fileInfo.Filename, progress, ct);
+            }
+            return contents.ToDictionary();
         }
-        return contents;
+        catch
+        {
+            contents.Dispose();
+            throw;
+        }
     }
 
-    async Task<Dictionary<string, BinaryStream>> GetContentsParallel(
+    async Task<Dictionary<string, IFile>> GetFiles(
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        var results = await Task.WhenAll(ListFiles().Select(async fileInfo =>
+        using var contents = (await GetContents(progress, ct)).ToDisposingDictionary();
+        var files = new DisposingDictionary<string, IFile>();
+        try
         {
-            var stream = await OpenFile(fileInfo.Filename, progress, ct);
-            return new { fileInfo.Filename, Stream = stream };
-        }));
-        return results.ToDictionary(x => x.Filename, x => x.Stream);
+            foreach (var (filename, stream) in contents)
+            {
+                files.Add(filename, await stream.ToDataFile(progress, decRef: false));
+            }
+            return files.ToDictionary();
+        }
+        catch
+        {
+            files.Dispose();
+            throw;
+        }
+    }
+
+    async Task<Dictionary<string, T>> GetFiles<T>(
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+        where T : class, IFile<T>
+    {
+        using var contents = (await GetContents(progress, ct)).ToDisposingDictionary();
+        var files = new DisposingDictionary<string, T>();
+        try
+        {
+            foreach (var (filename, stream) in contents)
+            {
+                try
+                {
+                    files.Add(filename, await stream.ToDataFile<T>(progress, decRef: false));
+                }
+                catch (DecodeException) { }
+            }
+            return files.ToDictionary();
+        }
+        catch
+        {
+            files.Dispose();
+            throw;
+        }
     }
 }

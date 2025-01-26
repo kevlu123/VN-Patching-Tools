@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using NamedFolder = Ws2Explorer.FileHelper.Named<Ws2Explorer.IFolder>;
-using OverwriteMode = Ws2Explorer.FileHelper.OverwriteMode;
+using Ws2Explorer.HighLevel;
 
 namespace Ws2Explorer.Gui;
 
@@ -27,6 +26,7 @@ class ApplicationState(string? openPath)
     public Action<ReadOnlyCollection<FileInfo>>? OnFileList { get; set; }
     public Action<string>? OnPathText { get; set; }
     public Action<string>? OnFileCaption { get; set; }
+    public Action<List<ChoiceInfo>>? OnChoiceList { get; set; }
     public Action<BinaryStream>? OnPreviewBinary { get; set; }
     public Action<BinaryStream>? OnPreviewPng { get; set; }
     public Action<BinaryStream>? OnPreviewOgg { get; set; }
@@ -111,7 +111,7 @@ class ApplicationState(string? openPath)
 
     private async Task OpenPathInternal(string path, CancellationToken ct)
     {
-        var hierarchy = await FileHelper.OpenFolderHierarchy(
+        var hierarchy = await FileTool.OpenFolderHierarchy(
             path,
             progress,
             ct);
@@ -195,7 +195,7 @@ class ApplicationState(string? openPath)
                 // Open real directory
                 folderStack.Add(new NamedFolder
                 {
-                    Value = folderStack[^1].Value.OpenFolder(name),
+                    Folder = folderStack[^1].Folder.OpenFolder(name),
                     Name = name,
                 });
             }
@@ -204,7 +204,7 @@ class ApplicationState(string? openPath)
                 // Open virtual directory
                 folderStack.Add(new NamedFolder
                 {
-                    Value = subfolder,
+                    Folder = subfolder,
                     Name = name,
                 });
             }
@@ -229,10 +229,10 @@ class ApplicationState(string? openPath)
             }
 
             var folder = await selectedFileNonParent.File.Stream
-                .ToDataFile<T>(progress, decRef: false);
+                .Decode<T>(progress, decRef: false);
             folderStack.Add(new NamedFolder
             {
-                Value = folder,
+                Folder = folder,
                 Name = selectedFileNonParent.Info.Filename,
             });
             UpdateFileListInternal();
@@ -247,7 +247,7 @@ class ApplicationState(string? openPath)
         {
             using var streams = new DisposingList<BinaryStream>();
             var filenames = GetSelectedFilenames();
-            var folder = folderStack[^1].Value;
+            var folder = folderStack[^1].Folder;
             foreach (var filename in filenames)
             {
                 streams.Add(await folder.OpenFile(
@@ -266,7 +266,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            await FileHelper.Insert(
+            await FileTool.Insert(
                 folderStack,
                 new Dictionary<string, BinaryStream> { { filename, BinaryStream.Empty } },
                 OverwriteMode.Throw,
@@ -333,7 +333,7 @@ class ApplicationState(string? openPath)
             {
                 throw new SilentError("Cancelled rename.");
             }
-            await FileHelper.Rename(
+            await FileTool.Rename(
                 folderStack,
                 oldName,
                 newName,
@@ -355,7 +355,7 @@ class ApplicationState(string? openPath)
             }
             if (deletePrompt(paths))
             {
-                await FileHelper.Delete(
+                await FileTool.Delete(
                     folderStack,
                     paths,
                     progress,
@@ -405,9 +405,8 @@ class ApplicationState(string? openPath)
         Func<IEnumerable<string>, OverwriteMode?> overwritePrompt,
         CancellationToken ct)
     {
-        using var srcs = (await FileHelper.ReadFiles([.. paths], progress, ct))
-            .ToDisposingDictionary();
-        var dst = folderStack[^1].Value;
+        using var srcs = await FileTool.ReadFiles([.. paths], progress, ct);
+        var dst = folderStack[^1].Folder;
         var existing = dst.ListFiles()
             .Select(f => f.Filename)
             .Where(f => srcs.ContainsKey(f));
@@ -420,7 +419,7 @@ class ApplicationState(string? openPath)
             return;
         }
 
-        await FileHelper.Insert(
+        await FileTool.Insert(
             folderStack,
             srcs,
             overwriteMode.Value,
@@ -439,7 +438,7 @@ class ApplicationState(string? openPath)
             }
             var name = selectedFileNonParent.Info.Filename;
             var dupName = $"{name}.bak";
-            var dst = folderStack[^1].Value;
+            var dst = folderStack[^1].Folder;
 
             OverwriteMode? overwriteMode = dst.ListFiles().Exists(fi => fi.Filename == dupName)
                 ? overwritePrompt([dupName])
@@ -450,7 +449,7 @@ class ApplicationState(string? openPath)
             }
 
             using var stream = await dst.OpenFile(name, progress, ct);
-            await FileHelper.Insert(
+            await FileTool.Insert(
                 folderStack,
                 new Dictionary<string, BinaryStream> { { dupName, stream } },
                 overwriteMode.Value,
@@ -475,13 +474,13 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (folderStack[^1].Value is PnaFile pna)
+            if (folderStack[^1].Folder is PnaFile pna)
             {
                 folderStack[^1] = folderStack[^1] with
                 {
-                    Value = await pna.AddEntry(progress, ct),
+                    Folder = await pna.AddEntry(progress, ct),
                 };
-                await FileHelper.PropagateModifications(folderStack, progress, ct);
+                await FileTool.PropagateModifications(folderStack, progress, ct);
                 await RefreshFolderInternal(ct);
                 OnStatus?.Invoke("Created new PNA entry.");
             }
@@ -502,17 +501,17 @@ class ApplicationState(string? openPath)
             }
             var filename1 = fileList[selectedIndices[0]].Filename;
             var filename2 = fileList[selectedIndices[1]].Filename;
-            if (folderStack[^1].Value is PnaFile pna)
+            if (folderStack[^1].Folder is PnaFile pna)
             {
                 folderStack[^1] = folderStack[^1] with
                 {
-                    Value = await pna.SwapEntry(
+                    Folder = await pna.SwapEntry(
                         filename1,
                         filename2,
                         progress,
                         ct),
                 };
-                await FileHelper.PropagateModifications(folderStack, progress, ct);
+                await FileTool.PropagateModifications(folderStack, progress, ct);
                 await RefreshFolderInternal(ct);
                 OnStatus?.Invoke($"Swapped PNA entries '{filename1}' <-> '{filename2}'.");
             }
@@ -556,14 +555,14 @@ class ApplicationState(string? openPath)
             using Process proc = Process.Start(editor, $"{args} \"{tempFilename}\"");
             await proc.WaitForExitAsync(ct);
 
-            using var newStream = await FileHelper.ReadFile(tempFilename, progress, ct);
+            using var newStream = await FileTool.ReadFile(tempFilename, progress, ct);
             if (BinaryStream.StreamEquals(oldStream, newStream))
             {
                 OnStatus?.Invoke("No changes made.");
                 return;
             }
 
-            await FileHelper.Insert(
+            await FileTool.Insert(
                 folderStack,
                 new Dictionary<string, BinaryStream> {
                     { selectedFileNonParent.Info.Filename, newStream },
@@ -601,7 +600,7 @@ class ApplicationState(string? openPath)
             }
             foreach (var (src, dst) in filenames.Zip(destinations))
             {
-                var stream = await folderStack[^1].Value
+                var stream = await folderStack[^1].Folder
                     .OpenFile(src, progress, ct);
                 await using var file = File.Create(dst);
                 await stream.CopyTo(file, dst, progress, ct);
@@ -690,7 +689,7 @@ class ApplicationState(string? openPath)
                 }
                 else
                 {
-                    var parts = FileHelper.SplitPath(newText);
+                    var parts = FileTool.SplitPath(newText);
                     if (parts.Count == 0)
                     {
                         return;
@@ -698,9 +697,8 @@ class ApplicationState(string? openPath)
                     pattern = parts[^1];
                     partialPath = Path.Combine([.. parts[..^1]]);
                 }
-                var folders = (await FileHelper.OpenFolderHierarchy(partialPath, progress, ct))
-                    .ToDisposingList();
-                var fileInfos = folders[^1].Value.ListFiles();
+                var folders = await FileTool.OpenFolderHierarchy(partialPath, progress, ct);
+                var fileInfos = folders[^1].Folder.ListFiles();
 
                 string? match = null;
                 foreach (var fileInfo in fileInfos)
@@ -717,9 +715,9 @@ class ApplicationState(string? openPath)
                     }
                     else
                     {
-                        using var file = await folders[^1].Value
+                        using var file = await folders[^1].Folder
                             .OpenFile(fileInfo.Filename, progress, ct)
-                            .ToDataFile(progress);
+                            .Decode(progress);
                         isMatch = file is IFolder;
                     }
                     if (!isMatch)
@@ -754,7 +752,7 @@ class ApplicationState(string? openPath)
     {
         ProtectSync(() =>
         {
-            if (folderStack[^1].Value is Directory gameFolder)
+            if (folderStack[^1].Folder is Directory gameFolder)
             {
                 var gamePath = Path.Combine(gameFolder.FullPath, "AdvHD.exe");
                 var leprocPath = Path.Combine(GetExeFolderPath()!, "LEProc.exe");
@@ -775,9 +773,9 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (folderStack[^1].Value is Directory dir)
+            if (folderStack[^1].Folder is Directory dir)
             {
-                await GameHelper.SetEntryPoint(
+                await GameTool.SetEntryPoint(
                     dir,
                     prompt,
                     progress,
@@ -795,13 +793,32 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (folderStack[^1].Value is Directory dir)
+            if (folderStack[^1].Folder is Directory dir)
             {
-                await GameHelper.ConvertLuacToText(
+                await GameTool.ConvertLuacToText(
                     dir,
                     progress,
                     ct);
                 await RefreshFolderInternal(ct);
+            }
+            else
+            {
+                throw new SilentError("Navigate to the game directory.");
+            }
+        });
+    }
+
+    public void GetChoices()
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            if (folderStack[^1].Folder is Directory dir)
+            {
+                var choices = await GameTool.GetChoices(
+                    dir,
+                    progress,
+                    ct);
+                OnChoiceList?.Invoke(choices);
             }
             else
             {
@@ -846,9 +863,9 @@ class ApplicationState(string? openPath)
             IFile? file = null;
             if (!fileInfo.IsDirectory)
             {
-                file = await folderStack[^1].Value
+                file = await folderStack[^1].Folder
                     .OpenFile(fileInfo.Filename, progress, ct)
-                    .ToDataFile(progress);
+                    .Decode(progress);
             }
             if (selectedFile is IDisposable disposable)
             {
@@ -930,7 +947,7 @@ class ApplicationState(string? openPath)
 
     private void UpdateFileListInternal()
     {
-        fileList = folderStack[^1].Value.ListFiles();
+        fileList = folderStack[^1].Folder.ListFiles();
 
         if (SortFileList != null)
         {
@@ -946,7 +963,7 @@ class ApplicationState(string? openPath)
                 IsDirectory = true,
             });
         }
-        if (!showEmptyPnaFiles && folderStack[^1].Value is PnaFile)
+        if (!showEmptyPnaFiles && folderStack[^1].Folder is PnaFile)
         {
             fileList = fileList
                 .Where(f => f.FileSize != 0)

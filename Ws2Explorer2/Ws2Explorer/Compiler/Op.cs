@@ -102,9 +102,9 @@ public readonly struct Choice
         get => jumpOp;
         init
         {
-            if (value.Code != 6 && value.Code != 7)
+            if (value.Code != Opcode.JUMP_06 && value.Code != Opcode.JUMP_FILE_07)
             {
-                throw new ArgumentException("jumpOp must be opcode 6 or 7.");
+                throw new ArgumentException($"jumpOp must be opcode {Opcode.JUMP_06} or {Opcode.JUMP_FILE_07}.");
             }
             jumpOp = value;
         }

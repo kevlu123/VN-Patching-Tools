@@ -214,7 +214,7 @@ public sealed class BinaryStream : IDisposable
         }
     }
 
-    public Task<T> ToDataFile<T>(IProgress<TaskProgressInfo>? progress = null, bool decRef = true)
+    public Task<T> Decode<T>(IProgress<TaskProgressInfo>? progress = null, bool decRef = true)
         where T : class, IFile<T>
     {
         return Task.Run(() =>
@@ -229,7 +229,7 @@ public sealed class BinaryStream : IDisposable
         });
     }
 
-    public Task<IFile> ToDataFile(IProgress<TaskProgressInfo>? progress = null, bool decRef = true)
+    public Task<IFile> Decode(IProgress<TaskProgressInfo>? progress = null, bool decRef = true)
     {
         return Task.Run(() =>
         {
@@ -314,20 +314,20 @@ public sealed class BinaryStream : IDisposable
 
 public static class BinaryStreamExtensions
 {
-    public static async Task<T> ToDataFile<T>(
+    public static async Task<T> Decode<T>(
         this Task<BinaryStream> self,
         IProgress<TaskProgressInfo>? progress = null,
         bool decRef = true)
         where T : class, IFile<T>
     {
-        return await (await self).ToDataFile<T>(progress, decRef);
+        return await (await self).Decode<T>(progress, decRef);
     }
 
-    public static async Task<IFile> ToDataFile(
+    public static async Task<IFile> Decode(
         this Task<BinaryStream> self,
         IProgress<TaskProgressInfo>? progress = null,
         bool decRef = true)
     {
-        return await (await self).ToDataFile(progress, decRef);
+        return await (await self).Decode(progress, decRef);
     }
 }

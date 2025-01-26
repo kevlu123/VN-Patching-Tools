@@ -1,91 +1,62 @@
-﻿using System.Diagnostics;
+﻿namespace Ws2Explorer.HighLevel;
 
-namespace Ws2Explorer;
-
-public static class FileHelper
+public static class FileTool
 {
-    public record class Named<T> : IDisposable
-    {
-        private bool disposedValue;
-
-        public required T Value { get; init; }
-        public required string Name { get; init; }
-
-        public void Dispose()
-        {
-            if (!disposedValue)
-            {
-                if (Value is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
-                disposedValue = true;
-            }
-            GC.SuppressFinalize(this);
-        }
-
-        ~Named()
-        {
-            Dispose();
-        }
-    }
-
-    public enum OverwriteMode
-    {
-        Throw,
-        Overwrite,
-        Rename,
-        Skip,
-    }
-
-    public static async Task<List<Named<IFolder>>> OpenFolderHierarchy(
+    public static async Task<DisposingList<NamedFolder>> OpenFolderHierarchy(
         string path,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
         var parts = SplitPath(path);
-        using var folders = new DisposingList<Named<IFolder>>();
-
-        int i = 1;
+        var folders = new DisposingList<NamedFolder>();
         try
         {
+            int i = 1;
+            try
+            {
+                for (; i <= parts.Count; i++)
+                {
+                    var partialPath = Path.Combine([.. parts[..i]]);
+                    folders.Add(new NamedFolder
+                    {
+                        Folder = new Directory(partialPath),
+                        Name = parts[i - 1],
+                    });
+                }
+            }
+            catch (DirectoryNotFoundException) { }
+
             for (; i <= parts.Count; i++)
             {
-                var partialPath = Path.Combine([.. parts[..i]]);
-                folders.Add(new Named<IFolder>
+                var child = await folders[^1].Folder
+                    .OpenFile(parts[i - 1], progress, ct)
+                    .Decode(progress);
+                if (child is IFolder subfolder)
                 {
-                    Value = new Directory(partialPath),
-                    Name = parts[i - 1],
-                });
+                    folders.Add(new NamedFolder
+                    {
+                        Folder = subfolder,
+                        Name = parts[i - 1],
+                    });
+                }
+                else
+                {
+                    child.Dispose();
+                    throw new IOException($"'{parts[i - 1]}' is not a folder.");
+                }
             }
-        }
-        catch (DirectoryNotFoundException) { }
 
-        for (; i <= parts.Count; i++)
+            return folders;
+        }
+        catch
         {
-            var child = await folders[^1].Value
-                .OpenFile(parts[i - 1], progress, ct)
-                .ToDataFile(progress);
-            if (child is IFolder subfolder)
-            {
-                folders.Add(new Named<IFolder>
-                {
-                    Value = subfolder,
-                    Name = parts[i - 1],
-                });
-            }
-            else
-            {
-                child.Dispose();
-                throw new IOException($"'{parts[i - 1]}' is not a folder.");
-            }
+            folders.Dispose();
+            throw;
         }
-
-        return [.. folders];
     }
 
     public static async Task PropagateModifications(
-        IList<Named<IFolder>> hierarchy,
+        IList<NamedFolder> hierarchy,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
@@ -93,8 +64,8 @@ public static class FileHelper
         {
             var child = hierarchy[i + 1];
             var parent = hierarchy[i];
-            var childStream = ((IFile)child.Value).Stream;
-            if (parent.Value is Directory directory)
+            var childStream = ((IFile)child.Folder).Stream;
+            if (parent.Folder is Directory directory)
             {
                 await directory.WriteFile(
                     child.Name,
@@ -105,13 +76,12 @@ public static class FileHelper
             }
             else
             {
-                using var contents = (await parent.Value.GetContents(progress, ct))
-                    .ToDisposingDictionary();
+                using var contents = await parent.Folder.GetContents(progress, ct);
                 var newContents = contents.ToDictionary();
                 newContents[child.Name] = childStream;
-                hierarchy[i] = new Named<IFolder>
+                hierarchy[i] = new NamedFolder
                 {
-                    Value = ((IArchive)parent.Value).Create(newContents),
+                    Folder = ((IArchive)parent.Folder).Create(newContents),
                     Name = parent.Name,
                 };
             }
@@ -125,12 +95,11 @@ public static class FileHelper
     {
         var parts = SplitPath(path);
         var folderPath = Path.Combine([.. parts[..^1]]);
-        using var folders = (await OpenFolderHierarchy(folderPath, progress, ct))
-            .ToDisposingList();
-        return await folders[^1].Value.OpenFile(parts[^1], progress, ct);
+        using var folders = await OpenFolderHierarchy(folderPath, progress, ct);
+        return await folders[^1].Folder.OpenFile(parts[^1], progress, ct);
     }
 
-    public static async Task<Dictionary<string, BinaryStream>> ReadFiles(
+    public static async Task<DisposingDictionary<string, BinaryStream>> ReadFiles(
         IEnumerable<string> paths,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
@@ -146,7 +115,7 @@ public static class FileHelper
                     filename,
                     await ReadFile(path, progress, ct));
             }
-            return streams.ToDictionary();
+            return streams;
         }
         catch
         {
@@ -165,10 +134,8 @@ public static class FileHelper
         var parts = SplitPath(path);
         var name = parts[^1];
         var folderPath = Path.Combine([.. parts[..^1]]);
-        using var folders = (await OpenFolderHierarchy(folderPath, progress, ct))
-            .ToDisposingList();
-        using var contents = (await folders[^1].Value.GetContents(progress, ct))
-            .ToDisposingDictionary();
+        using var folders = await OpenFolderHierarchy(folderPath, progress, ct);
+        using var contents = await folders[^1].Folder.GetContents(progress, ct);
         var newContents = contents.ToDictionary();
         var existing = newContents.Keys;
         switch (overwriteMode)
@@ -204,8 +171,7 @@ public static class FileHelper
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        var contents = (await folder.GetContents(progress, ct))
-            .ToDisposingDictionary();
+        var contents = await folder.GetContents(progress, ct);
         try
         {
             modify(contents);
@@ -240,13 +206,13 @@ public static class FileHelper
     }
 
     public static async Task Rename(
-        IList<Named<IFolder>> hierarchy,
+        IList<NamedFolder> hierarchy,
         string oldChildName,
         string newChildName,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        var dst = hierarchy[^1].Value;
+        var dst = hierarchy[^1].Folder;
         if (dst is Directory directory)
         {
             var fileInfo = directory.ListFiles()
@@ -278,7 +244,7 @@ public static class FileHelper
                 ct);
             hierarchy[^1] = hierarchy[^1] with
             {
-                Value = rebuilt,
+                Folder = rebuilt,
             };
             await PropagateModifications(hierarchy, progress, ct);
         }
@@ -303,12 +269,12 @@ public static class FileHelper
     }
 
     public static async Task Delete(
-        IList<Named<IFolder>> hierarchy,
+        IList<NamedFolder> hierarchy,
         IEnumerable<string> childNames,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        var dst = hierarchy[^1].Value;
+        var dst = hierarchy[^1].Folder;
         if (dst is Directory directory)
         {
             foreach (var childName in childNames)
@@ -337,7 +303,7 @@ public static class FileHelper
                 ct);
             hierarchy[^1] = hierarchy[^1] with
             {
-                Value = rebuilt,
+                Folder = rebuilt,
             };
             await PropagateModifications(hierarchy, progress, ct);
         }
@@ -384,13 +350,13 @@ public static class FileHelper
     }
 
     public static async Task Insert(
-        IList<Named<IFolder>> hierarchy,
+        IList<NamedFolder> hierarchy,
         IDictionary<string, BinaryStream> streams,
         OverwriteMode overwriteMode = OverwriteMode.Throw,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        var dst = hierarchy[^1].Value;
+        var dst = hierarchy[^1].Folder;
         if (dst is Directory directory)
         {
             var existing = directory
@@ -435,7 +401,7 @@ public static class FileHelper
                 ct);
             hierarchy[^1] = hierarchy[^1] with
             {
-                Value = rebuilt,
+                Folder = rebuilt,
             };
             await PropagateModifications(hierarchy, progress, ct);
         }

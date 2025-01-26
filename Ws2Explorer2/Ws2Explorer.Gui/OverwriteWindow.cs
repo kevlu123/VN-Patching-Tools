@@ -1,5 +1,6 @@
-﻿namespace Ws2Explorer.Gui;
-using OverwriteMode = FileHelper.OverwriteMode;
+﻿using Ws2Explorer.HighLevel;
+
+namespace Ws2Explorer.Gui;
 
 public partial class OverwriteWindow : Form
 {
@@ -30,19 +31,19 @@ public partial class OverwriteWindow : Form
 
     private void Overwrite_ButtonClicked(object sender, EventArgs e)
     {
-        OverwriteMode = FileHelper.OverwriteMode.Overwrite;
+        OverwriteMode = HighLevel.OverwriteMode.Overwrite;
         Close();
     }
 
     private void Rename_ButtonClicked(object sender, EventArgs e)
     {
-        OverwriteMode = FileHelper.OverwriteMode.Rename;
+        OverwriteMode = HighLevel.OverwriteMode.Rename;
         Close();
     }
 
     private void Skip_ButtonClicked(object sender, EventArgs e)
     {
-        OverwriteMode = FileHelper.OverwriteMode.Skip;
+        OverwriteMode = HighLevel.OverwriteMode.Skip;
         Close();
     }
 

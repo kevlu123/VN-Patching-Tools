@@ -16,7 +16,7 @@ public interface IFolder
         throw new FileNotFoundException("File not found.", name);
     }
 
-    async Task<Dictionary<string, BinaryStream>> GetContents(
+    async Task<DisposingDictionary<string, BinaryStream>> GetContents(
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
@@ -27,7 +27,7 @@ public interface IFolder
             {
                 contents[fileInfo.Filename] = await OpenFile(fileInfo.Filename, progress, ct);
             }
-            return contents.ToDictionary();
+            return contents;
         }
         catch
         {
@@ -36,7 +36,7 @@ public interface IFolder
         }
     }
 
-    async Task<Dictionary<string, IFile>> GetFiles(
+    async Task<DisposingDictionary<string, IFile>> GetFiles(
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
@@ -46,9 +46,9 @@ public interface IFolder
         {
             foreach (var (filename, stream) in contents)
             {
-                files.Add(filename, await stream.ToDataFile(progress, decRef: false));
+                files.Add(filename, await stream.Decode(progress, decRef: false));
             }
-            return files.ToDictionary();
+            return files;
         }
         catch
         {
@@ -57,7 +57,7 @@ public interface IFolder
         }
     }
 
-    async Task<Dictionary<string, T>> GetFiles<T>(
+    async Task<DisposingDictionary<string, T>> GetFiles<T>(
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
         where T : class, IFile<T>
@@ -70,11 +70,11 @@ public interface IFolder
             {
                 try
                 {
-                    files.Add(filename, await stream.ToDataFile<T>(progress, decRef: false));
+                    files.Add(filename, await stream.Decode<T>(progress, decRef: false));
                 }
                 catch (DecodeException) { }
             }
-            return files.ToDictionary();
+            return files;
         }
         catch
         {

@@ -34,7 +34,7 @@ public sealed class Ws2File : IArchive<Ws2File>
             if (name == OPS_FILENAME)
             {
                 var text = stream
-                    .ToDataFile<TextFile>(decRef: false).Result
+                    .Decode<TextFile>(decRef: false).Result
                     .Text;
                 Ops = [.. Ws2Compiler.FromJson(text)];
                 Stream = Ws2Compiler.Compile(Ops);

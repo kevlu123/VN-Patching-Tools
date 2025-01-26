@@ -101,8 +101,9 @@
             gameToolStripMenuItem = new ToolStripMenuItem();
             launchGame_MenuItem = new ToolStripMenuItem();
             setEntry_MenuItem = new ToolStripMenuItem();
-            back_Panel = new Panel();
             convertLuacToText_MenuItem = new ToolStripMenuItem();
+            back_Panel = new Panel();
+            showChoices_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -640,7 +641,7 @@
             // 
             // gameToolStripMenuItem
             // 
-            gameToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, setEntry_MenuItem, convertLuacToText_MenuItem });
+            gameToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, setEntry_MenuItem, convertLuacToText_MenuItem, showChoices_MenuItem });
             gameToolStripMenuItem.Name = "gameToolStripMenuItem";
             gameToolStripMenuItem.Size = new Size(50, 20);
             gameToolStripMenuItem.Text = "Game";
@@ -661,6 +662,14 @@
             setEntry_MenuItem.Text = "Set WS2 Entry Point...";
             setEntry_MenuItem.Click += SetEntry_MenuItemClicked;
             // 
+            // convertLuacToText_MenuItem
+            // 
+            convertLuacToText_MenuItem.Name = "convertLuacToText_MenuItem";
+            convertLuacToText_MenuItem.ShortcutKeys = Keys.F6;
+            convertLuacToText_MenuItem.Size = new Size(211, 22);
+            convertLuacToText_MenuItem.Text = "Convert Luac to Text";
+            convertLuacToText_MenuItem.Click += ConvertLuacToText_MenuItemClicked;
+            // 
             // back_Panel
             // 
             back_Panel.Controls.Add(panels_SplitContainer);
@@ -671,13 +680,13 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
-            // convertLuacToText_MenuItem
+            // showChoices_MenuItem
             // 
-            convertLuacToText_MenuItem.Name = "convertLuacToText_MenuItem";
-            convertLuacToText_MenuItem.ShortcutKeys = Keys.F6;
-            convertLuacToText_MenuItem.Size = new Size(211, 22);
-            convertLuacToText_MenuItem.Text = "Convert Luac to Text";
-            convertLuacToText_MenuItem.Click += ConvertLuacToText_MenuItemClicked;
+            showChoices_MenuItem.Name = "showChoices_MenuItem";
+            showChoices_MenuItem.ShortcutKeys = Keys.F7;
+            showChoices_MenuItem.Size = new Size(211, 22);
+            showChoices_MenuItem.Text = "Show Choices...";
+            showChoices_MenuItem.Click += ShowChoices_MenuItem;
             // 
             // MainWindow
             // 
@@ -783,5 +792,6 @@
         private ToolStripMenuItem setEntry_MenuItem;
         private ToolStripMenuItem launchGame_MenuItem;
         private ToolStripMenuItem convertLuacToText_MenuItem;
+        private ToolStripMenuItem showChoices_MenuItem;
     }
 }

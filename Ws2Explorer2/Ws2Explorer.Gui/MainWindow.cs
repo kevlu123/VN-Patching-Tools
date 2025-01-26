@@ -6,7 +6,7 @@ using System.Drawing.Text;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
-using static System.Net.WebRequestMethods;
+using Ws2Explorer.HighLevel;
 using FormTimer = System.Windows.Forms.Timer;
 
 namespace Ws2Explorer.Gui;
@@ -166,6 +166,7 @@ partial class MainWindow : Form
             OnFileList = OnFileList,
             OnPathText = OnPathText,
             OnFileCaption = OnFileCaption,
+            OnChoiceList = OnChoiceList,
             OnPreviewBinary = OnPreviewBinary,
             OnPreviewText = OnPreviewText,
             OnPreviewPng = OnPreviewPng,
@@ -350,6 +351,31 @@ partial class MainWindow : Form
             panels_SplitContainer.Panel2.Controls.Clear();
             panels_SplitContainer.Panel2.Controls.Add(fontPreview_Label);
         }
+    }
+
+    public void OnChoiceList(List<ChoiceInfo> choiceInfos)
+    {
+        var texts = new List<string>();
+        foreach (var choiceInfo in choiceInfos)
+        {
+            texts.Add($"{choiceInfo.Filename}");
+            foreach (var choice in choiceInfo.Choices)
+            {
+                if (choice.JumpOp.Code == 0x06)
+                {
+                    // Jump
+                    texts.Add($"  \"{choice.Text}\" -> Label {choice.JumpOp.Arguments[0].Label}");
+                }
+                else
+                {
+                    // Jump file
+                    texts.Add($"  \"{choice.Text}\" -> {choice.JumpOp.Arguments[0].String}");
+                }
+            }
+            texts.Add(string.Empty);
+        }
+        using var dialog = new InfoWindow("Choices", string.Join("\r\n", texts));
+        dialog.ShowDialog();
     }
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -625,7 +651,16 @@ partial class MainWindow : Form
 
     private void Cancel_ButtonClicked(object sender, EventArgs e)
     {
-        state.CancelTask();
+        var result = MessageBox.Show(
+            "Are you sure you want to cancel the current task?\nIf there is a write in progress, this may leave corrupted files.",
+            "Cancel Task",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question,
+            MessageBoxDefaultButton.Button2);
+        if (result == DialogResult.Yes)
+        {
+            state.CancelTask();
+        }
     }
 
     private void Files_ListViewDoubleClicked(object sender, EventArgs e)
@@ -1010,5 +1045,10 @@ partial class MainWindow : Form
         {
             state.ConvertLuacToText();
         }
+    }
+
+    private void ShowChoices_MenuItem(object sender, EventArgs e)
+    {
+        state.GetChoices();
     }
 }

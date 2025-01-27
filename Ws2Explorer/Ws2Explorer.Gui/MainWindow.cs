@@ -10,6 +10,8 @@ using System.Text.Json;
 using Ws2Explorer.HighLevel;
 using FormTimer = System.Windows.Forms.Timer;
 using Flowchart = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>;
+using static System.Windows.Forms.AxHost;
+using System.Text.RegularExpressions;
 
 namespace Ws2Explorer.Gui;
 
@@ -1119,5 +1121,29 @@ partial class MainWindow : Form
     private void ChangePath_MenuItemClicked(object sender, EventArgs e)
     {
         path_TextBox.Select();
+    }
+
+    private void RecursiveExtract_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.RecursiveExtract(() =>
+        {
+            openFileDialog.IsFolderPicker = true;
+            var extractLocation = openFileDialog.ShowDialog() == CommonFileDialogResult.Ok
+                ? openFileDialog.FileName
+                : null;
+            if (extractLocation == null)
+            {
+                return null;
+            }
+
+            using var dialog = new ExtractPatternWindow();
+            if (dialog.ShowDialog() != DialogResult.OK)
+            {
+                return null;
+            }
+            var regex = dialog.Pattern;
+
+            return (extractLocation, new Regex(regex));
+        });
     }
 }

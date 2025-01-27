@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Ws2Explorer.HighLevel;
 using Flowchart = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>;
 
@@ -724,7 +725,7 @@ class ApplicationState(string? openPath)
                     {
                         using var file = await folders[^1].Folder
                             .OpenFile(fileInfo.Filename, progress, ct)
-                            .Decode(progress);
+                            .DecodeWithHint(fileInfo.Filename, progress, ct);
                         isMatch = file is IFolder;
                     }
                     if (!isMatch)
@@ -869,6 +870,61 @@ class ApplicationState(string? openPath)
         });
     }
 
+    public void RecursiveExtract(Func<(string extractLocation, Regex pattern)?> extractPrompt)
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            var folderNames = GetFullSelectedFilenamesInternal();
+            if (folderNames.Count == 0)
+            {
+                throw new QuietError("Select folders to extract.");
+            }
+
+            var extractInfo = extractPrompt();
+            if (extractInfo == null)
+            {
+                return;
+            }
+            var (extractLocation, pattern) = extractInfo.Value;
+
+            using var streams = await FileTool.ReadFiles(folderNames, progress, ct);
+            var extracted = new HashSet<string>();
+            foreach (var (name, stream) in streams)
+            {
+                var file = await stream.DecodeWithHint(name, progress, ct, decRef: false);
+                if (file is IFolder folder)
+                {
+                    extracted.UnionWith(await FileTool.RecursiveExtract(
+                        folder,
+                        folderNames.Count == 1 ? extractLocation : Path.Combine(extractLocation, name),
+                        pattern,
+                        OverwriteMode.Overwrite,
+                        progress,
+                        ct));
+                }
+                else
+                {
+                    await FileTool.WriteFile(
+                        Path.Combine(extractLocation, name),
+                        file.Stream,
+                        OverwriteMode.Overwrite,
+                        progress,
+                        ct);
+                    extracted.Add(name);
+                }
+            }
+
+            if (extracted.Count == 1)
+            {
+                OnStatus?.Invoke("Extracted 1 file.");
+            }
+            else
+            {
+                OnStatus?.Invoke($"Extracted {extracted.Count} files.");
+            }
+        });
+    }
+
     private string GetCurrentFolderPathInternal()
     {
         return Path.Combine(
@@ -907,7 +963,7 @@ class ApplicationState(string? openPath)
             {
                 file = await folderStack[^1].Folder
                     .OpenFile(fileInfo.Filename, progress, ct)
-                    .Decode(progress);
+                    .DecodeWithHint(fileInfo.Filename, progress, ct);
             }
             if (selectedFile is IDisposable disposable)
             {

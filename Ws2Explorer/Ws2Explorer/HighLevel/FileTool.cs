@@ -1,4 +1,6 @@
-﻿namespace Ws2Explorer.HighLevel;
+﻿using System.Text.RegularExpressions;
+
+namespace Ws2Explorer.HighLevel;
 
 public static class FileTool
 {
@@ -132,37 +134,14 @@ public static class FileTool
         CancellationToken ct = default)
     {
         var parts = SplitPath(path);
-        var name = parts[^1];
         var folderPath = Path.Combine([.. parts[..^1]]);
         using var folders = await OpenFolderHierarchy(folderPath, progress, ct);
-        using var contents = await folders[^1].Folder.GetContents(progress, ct);
-        var newContents = contents.ToDictionary();
-        var existing = newContents.Keys;
-        switch (overwriteMode)
-        {
-            case OverwriteMode.Throw:
-                if (newContents.ContainsKey(name))
-                {
-                    throw new IOException($"File '{name}' already exists.");
-                }
-                newContents[name] = stream;
-                break;
-            case OverwriteMode.Overwrite:
-                newContents[name] = stream;
-                break;
-            case OverwriteMode.Rename:
-                newContents[AlternativeName(name, existing)] = stream;
-                break;
-            case OverwriteMode.Skip:
-                if (!newContents.ContainsKey(parts[^1]))
-                {
-                    newContents[name] = stream;
-                }
-                break;
-            default:
-                throw new ArgumentException("Invalid overwrite mode.", nameof(overwriteMode));
-        }
-        await PropagateModifications(folders, progress, ct);
+        await Insert(
+            folders,
+            new Dictionary<string, BinaryStream> { { parts[^1], stream } },
+            overwriteMode,
+            progress,
+            ct);
     }
 
     public static async Task<IArchive> ModifyFolder(
@@ -416,6 +395,50 @@ public static class FileTool
     {
         using var stream = await ReadFile(src, progress, ct);
         await WriteFile(dst, stream, overwriteMode, progress, ct);
+    }
+
+    public static async Task<HashSet<string>> RecursiveExtract(
+        IFolder folder,
+        string dst,
+        Regex pattern,
+        OverwriteMode overwriteMode = OverwriteMode.Throw,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        var extracted = new HashSet<string>();
+        System.IO.Directory.CreateDirectory(dst);
+        foreach (var fileInfo in folder.ListFiles())
+        {
+            using var file = await folder.OpenFile(fileInfo.Filename, progress, ct)
+                .DecodeWithHint(
+                    fileInfo.Filename,
+                    progress,
+                    ct,
+                    requiredHintConfidence: DecodeConfidence.Low); // Speed things up
+            if (file is IFolder subfolder)
+            {
+                var subextracted = await RecursiveExtract(
+                    subfolder,
+                    Path.Combine(dst, fileInfo.Filename),
+                    pattern,
+                    overwriteMode,
+                    progress,
+                    ct);
+                extracted.UnionWith(subextracted
+                    .Select(f => Path.Combine(fileInfo.Filename, f)));
+            }
+            else if (pattern.IsMatch(fileInfo.Filename))
+            {
+                await WriteFile(
+                    Path.Combine(dst, fileInfo.Filename),
+                    file.Stream,
+                    overwriteMode,
+                    progress,
+                    ct);
+                extracted.Add(fileInfo.Filename);
+            }
+        }
+        return extracted;
     }
 
     public static List<string> SplitPath(string path)

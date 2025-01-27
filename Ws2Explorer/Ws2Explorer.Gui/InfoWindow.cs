@@ -7,7 +7,7 @@ partial class InfoWindow : Form
     private const int MAX_WIDTH = 800;
     private const int MAX_HEIGHT = 600;
 
-    private int padding;
+    private readonly int padding;
 
     public InfoWindow(string caption, string message)
     {

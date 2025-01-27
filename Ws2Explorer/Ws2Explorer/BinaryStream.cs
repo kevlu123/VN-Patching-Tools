@@ -248,23 +248,24 @@ public sealed class BinaryStream : IDisposable
         string filename,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default,
-        bool decRef = true)
+        bool decRef = true,
+        DecodeConfidence requiredHintConfidence = DecodeConfidence.High)
     {
         var ext = Path.GetExtension(filename).ToLowerInvariant();
         return ext switch
         {
-            ".png" => DecodeWithHint<PngFile>(progress, ct, decRef: decRef),
-            ".pna" => DecodeWithHint<PnaFile>(progress, ct, decRef: decRef),
-            ".lua" => DecodeWithHint<LuacFile>(progress, ct, decRef: decRef),
-            ".ogg" => DecodeWithHint<OggFile>(progress, ct, decRef: decRef),
-            ".dat" => DecodeWithHint<VideoFile>(progress, ct, decRef: decRef),
-            ".pan" => DecodeWithHint<PanFile>(progress, ct, decRef: decRef),
-            ".ttf" => DecodeWithHint<TtfFile>(progress, ct, decRef: decRef),
-            ".otf" => DecodeWithHint<OtfFile>(progress, ct, decRef: decRef),
-            ".arc" => DecodeWithHint<ArcFile>(progress, ct, decRef: decRef),
-            ".ws2" => DecodeWithHint<Ws2File>(progress, ct, decRef: decRef),
-            ".ptf" => DecodeWithHint<PtfFile>(progress, ct, decRef: decRef),
-            ".txt" => DecodeWithHint<TextFile>(progress, ct, decRef: decRef),
+            ".png" => DecodeWithHint<PngFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".pna" or ".mos" => DecodeWithHint<PnaFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".lua" => DecodeWithHint<LuacFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".ogg" => DecodeWithHint<OggFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".dat" => DecodeWithHint<VideoFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".pan" => DecodeWithHint<PanFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".ttf" => DecodeWithHint<TtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".otf" => DecodeWithHint<OtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".arc" => DecodeWithHint<ArcFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".ws2" => DecodeWithHint<Ws2File>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".ptf" => DecodeWithHint<PtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".txt" or ".json" => DecodeWithHint<TextFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             _ => Decode(progress, ct, decRef: decRef),
         };
     }
@@ -272,12 +273,13 @@ public sealed class BinaryStream : IDisposable
     public Task<IFile> DecodeWithHint<Hint>(
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default,
-        bool decRef = true)
+        bool decRef = true,
+        DecodeConfidence requiredHintConfidence = DecodeConfidence.High)
         where Hint : class, IFile<Hint>
     {
         return Task.Run(() =>
         {
-            using var pr = new ProgressReporter("Decoding file", progress, 14);
+            using var pr = new ProgressReporter("Decoding file", progress, 15);
 
             if (Length == 0)
             {
@@ -292,7 +294,7 @@ public sealed class BinaryStream : IDisposable
             try
             {
                 var ret = Hint.Decode(this, out var confidence);
-                if (confidence == DecodeConfidence.High)
+                if ((int)confidence >= (int)requiredHintConfidence)
                 {
                     if (decRef)
                     {
@@ -315,10 +317,6 @@ public sealed class BinaryStream : IDisposable
             bool TryType<T>()
                 where T : class, IFile<T>
             {
-                if (typeof(T) == typeof(Hint))
-                {
-                    return false;
-                }
                 if (ct.IsCancellationRequested)
                 {
                     return true; // Short circuit further down
@@ -439,10 +437,15 @@ public static class BinaryStreamExtensions
         this Task<BinaryStream> self,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default,
-        bool decRef = true)
+        bool decRef = true,
+        DecodeConfidence requiredHintConfidence = DecodeConfidence.High)
         where Hint : class, IFile<Hint>
     {
-        return await (await self).DecodeWithHint<Hint>(progress, ct, decRef: decRef);
+        return await (await self).DecodeWithHint<Hint>(
+            progress,
+            ct,
+            decRef: decRef,
+            requiredHintConfidence: requiredHintConfidence);
     }
 
     public static async Task<IFile> DecodeWithHint(
@@ -450,9 +453,15 @@ public static class BinaryStreamExtensions
         string filename,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default,
-        bool decRef = true)
+        bool decRef = true,
+        DecodeConfidence requiredHintConfidence = DecodeConfidence.High)
     {
-        return await (await self).DecodeWithHint(filename, progress, ct, decRef: decRef);
+        return await (await self).DecodeWithHint(
+            filename,
+            progress,
+            ct,
+            decRef: decRef,
+            requiredHintConfidence: requiredHintConfidence);
     }
 #pragma warning restore CA1068 // CancellationToken parameters must come last
 }

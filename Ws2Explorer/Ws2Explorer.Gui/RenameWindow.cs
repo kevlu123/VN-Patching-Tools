@@ -7,7 +7,6 @@ partial class RenameWindow : Form
     public RenameWindow(string oldName)
     {
         InitializeComponent();
-        StartPosition = FormStartPosition.CenterParent;
         Filename = oldName;
         filename_TextBox.Text = oldName;
 

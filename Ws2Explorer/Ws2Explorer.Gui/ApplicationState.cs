@@ -1015,7 +1015,8 @@ class ApplicationState(string? openPath)
     {
         return file switch
         {
-            ArcFile => "(ARC) Archive file",
+            ArcFile arc => "(ARC) Archive file\n\n"
+                        + $"File count: {arc.ListFiles().Count}",
             BinFile => "Generic binary file",
             LuacFile luac => "(LUAC) Compiled Lua file\n\n"
                          + $"Lua version: {luac.LuaVersion:X2}",

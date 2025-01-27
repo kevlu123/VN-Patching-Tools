@@ -248,8 +248,6 @@ public sealed class PnaFile : IArchive<PnaFile>
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        using var pr = new ProgressReporter($"Opening {filename}", progress);
-
         filename = filename.ToLowerInvariant();
         if (filename == HEADER_FILENAME)
         {

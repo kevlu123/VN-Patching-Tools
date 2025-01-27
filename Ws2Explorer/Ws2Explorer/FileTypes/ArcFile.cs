@@ -161,7 +161,6 @@ public sealed class ArcFile : IArchive<ArcFile>
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        using var pr = new ProgressReporter($"Opening {filename}", progress);
         if (!subHeaders.TryGetValue(filename.ToLowerInvariant(), out var subHeader))
         {
             throw new FileNotFoundException(filename);

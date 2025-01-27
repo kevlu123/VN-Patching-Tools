@@ -20,6 +20,16 @@ public readonly struct NameString
         FullString = prefix + str;
     }
 
+    public NameString WithPrefix(string prefix)
+    {
+        return new NameString(prefix, String);
+    }
+
+    public NameString WithString(string str)
+    {
+        return new NameString(Prefix, str);
+    }
+
     private int GetPrefixLength()
     {
         int i = 0;
@@ -61,6 +71,16 @@ public readonly struct MessageString
     public MessageString(string str, string suffix)
     {
         FullString = str + suffix;
+    }
+
+    public MessageString WithString(string str)
+    {
+        return new MessageString(str, Suffix);
+    }
+
+    public MessageString WithSuffix(string suffix)
+    {
+        return new MessageString(String, suffix);
     }
 
     private int GetSuffixLength()

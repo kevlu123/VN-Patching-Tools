@@ -51,4 +51,15 @@ public partial class OverwriteWindow : Form
     {
         Close();
     }
+
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        if (keyData == Keys.Escape)
+        {
+            Cancel_ButtonClicked(this, EventArgs.Empty);
+            return true;
+        }
+
+        return base.ProcessCmdKey(ref msg, keyData);
+    }
 }

@@ -45,7 +45,7 @@ public static class GameTool
 
     public static async Task SetEntryPoint(
         Directory gameFolder,
-        Func<string, string[], string> setEntry,
+        Func<string, IEnumerable<string>, string> setEntryPrompt,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
@@ -77,7 +77,7 @@ public static class GameTool
                 .Where(f => f.EndsWith(".ws2")))
             .ToArray();
 
-        var newEntry = setEntry(currentEntry, options);
+        var newEntry = setEntryPrompt(currentEntry, options);
         if (newEntry == currentEntry)
         {
             return;
@@ -210,5 +210,88 @@ end
             }
         }
         return graph;
+    }
+
+    public static async Task ModifyNames(
+        Directory gameFolder,
+        Func<IEnumerable<string>, Dictionary<string, string>> modifyNamesPrompt,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        using var rioArcs = new DisposingDictionary<string, IFolder>();
+        foreach (var rioFilename in GetRioFilenames(gameFolder))
+        {
+            var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
+                .Decode<ArcFile>();
+            rioArcs.Add(rioFilename, arc);
+        }
+
+        using var arcChildren = new DisposingDictionary<string, DisposingDictionary<string, IFile>>();
+        foreach (var (name, rioArc) in rioArcs)
+        {
+            arcChildren.Add(name, await rioArc.GetFiles(progress, ct));
+        }
+
+        var names = new HashSet<string>();
+        foreach (var children in arcChildren.Values)
+        {
+            foreach (var child in children.Values)
+            {
+                if (child is Ws2File ws2)
+                {
+                    names.UnionWith(ws2.Ops
+                        .Where(op => op.Code == Opcode.DISPLAY_NAME_15)
+                        .Select(op => op.Arguments[0].NameString.String));
+                }
+            }
+        }
+        names.Remove(string.Empty);
+
+        var nameMapping = modifyNamesPrompt(names)
+            .Where(kv => kv.Key != kv.Value)
+            .ToDictionary(kv => kv.Key, kv => kv.Value);
+        if (nameMapping.Count == 0)
+        {
+            return;
+        }
+        else if (nameMapping.ContainsValue(string.Empty))
+        {
+            throw new Exception("Cannot map names to empty strings.");
+        }
+
+        foreach (var (arcName, children) in arcChildren)
+        {
+            using var streams = new DisposingDictionary<string, BinaryStream>();
+            foreach (var (childName, child) in children)
+            {
+                if (child is not Ws2File ws2)
+                {
+                    streams.Add(childName, child.Stream);
+                    continue;
+                }
+
+                var newOps = new List<Op>();
+                foreach (var op in ws2.Ops)
+                {
+                    if (op.Code == Opcode.DISPLAY_NAME_15)
+                    {
+                        var oldNameString = op.Arguments[0].NameString;
+                        var oldName = oldNameString.String;
+                        var newName = nameMapping.GetValueOrDefault(oldName, oldName);
+                        var newOp = op.WithArgument(
+                            0,
+                            Argument.NewNameString(oldNameString.WithString(newName)));
+                        newOps.Add(newOp);
+                    }
+                    else
+                    {
+                        newOps.Add(op);
+                    }
+                }
+                streams.Add(childName, Ws2Compiler.Compile(newOps));
+            }
+            using var newArc = ArcFile.Create(streams);
+            await gameFolder.WriteFile(arcName, newArc.Stream, progress, ct);
+        }
     }
 }

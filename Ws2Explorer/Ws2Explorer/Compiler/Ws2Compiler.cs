@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 
 namespace Ws2Explorer.Compiler;
@@ -122,18 +123,14 @@ public static class Ws2Compiler
             case 'H':
                 {
                     var len = reader.ReadUInt8();
-                    ushort[] arr = Enumerable.Range(0, len)
-                        .Select(_ => reader.ReadUInt16())
-                        .ToArray();
-                    return Argument.NewUInt16Array(arr);
+                    return Argument.NewUInt16Array(Enumerable.Range(0, len)
+                        .Select(_ => reader.ReadUInt16()));
                 }
             case 'S':
                 {
                     var len = reader.ReadUInt8();
-                    string[] arr = Enumerable.Range(0, len)
-                        .Select(_ => reader.ReadSjisString())
-                        .ToArray();
-                    return Argument.NewStringArray(arr);
+                    return Argument.NewStringArray(Enumerable.Range(0, len)
+                        .Select(_ => reader.ReadSjisString()));
                 }
             case 'C':
                 {
@@ -265,21 +262,21 @@ public static class Ws2Compiler
             case MessageString s:
                 writer.WriteSjisString(s.FullString);
                 break;
-            case string[] arr:
+            case ImmutableArray<string> arr:
                 writer.WriteUInt8(checked((byte)arr.Length));
                 foreach (var elem in arr)
                 {
                     writer.WriteSjisString(elem);
                 }
                 break;
-            case ushort[] arr:
+            case ImmutableArray<ushort> arr:
                 writer.WriteUInt8(checked((byte)arr.Length));
                 foreach (var elem in arr)
                 {
                     writer.WriteUInt16(elem);
                 }
                 break;
-            case Choice[] arr:
+            case ImmutableArray<Choice> arr:
                 writer.WriteUInt8(checked((byte)arr.Length));
                 foreach (var elem in arr)
                 {

@@ -185,7 +185,7 @@ class ApplicationState(string? openPath)
             await SetSelectedFileInternal(index, ct);
             if (selectedFile == null)
             {
-                throw new SilentError("No folder selected.");
+                throw new QuietError("No folder selected.");
             }
             var name = selectedFile.Info.Filename;
             if (name == "..")
@@ -213,7 +213,7 @@ class ApplicationState(string? openPath)
             }
             else
             {
-                throw new SilentError($"'{name}' is not a folder.");
+                throw new QuietError($"'{name}' is not a folder.");
             }
             UpdateFileListInternal();
             PushHistoryInternal();
@@ -228,7 +228,7 @@ class ApplicationState(string? openPath)
             await SetSelectedFileInternal(index, ct);
             if (selectedFileNonParent?.File == null)
             {
-                throw new SilentError("No folder selected.");
+                throw new QuietError("No folder selected.");
             }
 
             var folder = await selectedFileNonParent.File.Stream
@@ -285,7 +285,7 @@ class ApplicationState(string? openPath)
         {
             if (folderStack.Count <= 1)
             {
-                throw new SilentError("Already at root directory.");
+                throw new QuietError("Already at root directory.");
             }
             folderStack.Pop();
             UpdateFileListInternal();
@@ -318,6 +318,10 @@ class ApplicationState(string? openPath)
                     OnInfo?.Invoke("Directory");
                 }
             }
+            else
+            {
+                throw new QuietError("No file selected.");
+            }
         });
     }
 
@@ -328,13 +332,13 @@ class ApplicationState(string? openPath)
             var selectedFilenames = GetSelectedFilenamesInternal();
             if (selectedFilenames.Count != 1)
             {
-                throw new SilentError("Select exactly one file to rename.");
+                throw new QuietError("Select exactly one file to rename.");
             }
             var oldName = selectedFilenames[0];
             var newName = renamePrompt(oldName);
             if (newName == oldName)
             {
-                throw new SilentError("Cancelled rename.");
+                throw new QuietError("Cancelled rename.");
             }
             await FileTool.Rename(
                 folderStack,
@@ -354,7 +358,7 @@ class ApplicationState(string? openPath)
             var paths = GetSelectedFilenamesInternal();
             if (paths.Count == 0)
             {
-                throw new SilentError("No files selected.");
+                throw new QuietError("No files selected.");
             }
             if (deletePrompt(paths))
             {
@@ -392,7 +396,7 @@ class ApplicationState(string? openPath)
             var paths = Clipboard.GetFileDropList();
             if (paths.Count == 0)
             {
-                throw new SilentError("No files to paste.");
+                throw new QuietError("No files to paste.");
             }
             await InsertFilesInternal([.. paths], overwritePrompt, ct);
         });
@@ -437,7 +441,7 @@ class ApplicationState(string? openPath)
         {
             if (selectedFileNonParent == null)
             {
-                throw new SilentError("No file selected.");
+                throw new QuietError("No file selected.");
             }
             var name = selectedFileNonParent.Info.Filename;
             var dupName = $"{name}.bak";
@@ -500,7 +504,7 @@ class ApplicationState(string? openPath)
         {
             if (selectedIndices.Count != 2)
             {
-                throw new SilentError("Select exactly two files to swap.");
+                throw new QuietError("Select exactly two files to swap.");
             }
             var filename1 = fileList[selectedIndices[0]].Filename;
             var filename2 = fileList[selectedIndices[1]].Filename;
@@ -525,13 +529,13 @@ class ApplicationState(string? openPath)
         });
     }
 
-    public void EditSelectedFileInApp(Func<EditorType, (string, string)> getEditor)
+    public void EditSelectedFileInApp(Func<EditorType, (string editor, string args)> getEditor)
     {
         Protect(interruptable: false, async ct =>
         {
             if (selectedFileNonParent?.File == null)
             {
-                throw new SilentError("Select exactly one file to edit.");
+                throw new QuietError("Select exactly one file to edit.");
             }
 
             var tempFilename = Path.Combine(
@@ -585,18 +589,18 @@ class ApplicationState(string? openPath)
             var filenames = GetFullSelectedFilenamesInternal();
             if (filenames.Count == 0)
             {
-                throw new SilentError("Select at least one file.");
+                throw new QuietError("Select at least one file.");
             }
             Process.Start("explorer.exe", $"/select, \"{filenames[0]}\"");
         });
     }
 
-    public void ExportSelectedFile(Func<string[], string[]?> saveDialog)
+    public void ExportSelectedFile(Func<IEnumerable<string>, IEnumerable<string>?> pathPickerPrompt)
     {
         Protect(interruptable: false, async ct =>
         {
             var filenames = GetSelectedFilenamesInternal();
-            var destinations = saveDialog([.. filenames]);
+            var destinations = pathPickerPrompt(filenames)?.ToArray();
             if (destinations == null)
             {
                 return;
@@ -626,7 +630,7 @@ class ApplicationState(string? openPath)
             // Must contain a current and previous entry
             if (backHistory.Count < 2)
             {
-                throw new SilentError("Cannot go back.");
+                throw new QuietError("Cannot go back.");
             }
 
             backHistory.Pop();
@@ -663,7 +667,7 @@ class ApplicationState(string? openPath)
             }
             else
             {
-                throw new SilentError("Cannot go forward.");
+                throw new QuietError("Cannot go forward.");
             }
         });
     }
@@ -773,23 +777,23 @@ class ApplicationState(string? openPath)
             }
             else
             {
-                throw new SilentError("Navigate to the game directory.");
+                throw new QuietError("Navigate to the game directory.");
             }
         });
     }
 
-    public void SetEntry(Func<string, string[], string> prompt)
+    public void SetEntry(Func<string, IEnumerable<string>, string> setEntryPrompt)
     {
         Protect(interruptable: false, async ct =>
         {
             if (folderStack[^1].Folder is Directory dir)
             {
-                await GameTool.SetEntryPoint(dir, prompt, progress, ct);
+                await GameTool.SetEntryPoint(dir, setEntryPrompt, progress, ct);
                 await RefreshFolderInternal(ct);
             }
             else
             {
-                throw new SilentError("Navigate to the game directory.");
+                throw new QuietError("Navigate to the game directory.");
             }
         });
     }
@@ -805,7 +809,7 @@ class ApplicationState(string? openPath)
             }
             else
             {
-                throw new SilentError("Navigate to the game directory.");
+                throw new QuietError("Navigate to the game directory.");
             }
         });
     }
@@ -821,7 +825,7 @@ class ApplicationState(string? openPath)
             }
             else
             {
-                throw new SilentError("Navigate to the game directory.");
+                throw new QuietError("Navigate to the game directory.");
             }
         });
     }
@@ -845,8 +849,24 @@ class ApplicationState(string? openPath)
         }
         else
         {
-            throw new SilentError("Navigate to the game directory.");
+            throw new QuietError("Navigate to the game directory.");
         }
+    }
+
+    public void ModifyNames(Func<IEnumerable<string>, Dictionary<string, string>> modifyNamesPrompt)
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            if (folderStack[^1].Folder is Directory dir)
+            {
+                await GameTool.ModifyNames(dir, modifyNamesPrompt, progress, ct);
+                await RefreshFolderInternal(ct);
+            }
+            else
+            {
+                throw new QuietError("Navigate to the game directory.");
+            }
+        });
     }
 
     private string GetCurrentFolderPathInternal()
@@ -1032,7 +1052,7 @@ class ApplicationState(string? openPath)
         catch (OperationCanceledException)
         {
         }
-        catch (SilentError ex)
+        catch (QuietError ex)
         {
             OnStatus?.Invoke(ex.Message);
         }
@@ -1043,11 +1063,11 @@ class ApplicationState(string? openPath)
     }
 }
 
-class SilentError : Exception
+class QuietError : Exception
 {
-    public SilentError() { }
-    public SilentError(string message) : base(message) { }
-    public SilentError(string? message, Exception? innerException) : base(message, innerException) { }
+    public QuietError() { }
+    public QuietError(string message) : base(message) { }
+    public QuietError(string? message, Exception? innerException) : base(message, innerException) { }
 }
 
 class SelectedFile

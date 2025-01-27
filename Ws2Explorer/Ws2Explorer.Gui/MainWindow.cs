@@ -233,6 +233,10 @@ partial class MainWindow : Form
 
     private void OnProgress(TaskProgressInfo info)
     {
+        if (IsDisposed)
+        {
+            return;
+        }
         Invoke(() =>
         {
             int v = (int)(info.Value * 100);
@@ -387,7 +391,7 @@ partial class MainWindow : Form
         var sb = new StringBuilder();
         sb.AppendLine("{");
         var i = 0;
-        foreach (var (src, dsts) in flowchart)
+        foreach (var (src, dsts) in flowchart.OrderBy(kvp => kvp.Key == "start" ? 0 : 1))
         {
             sb.Append($"  \"{src}\": ");
             sb.Append(JsonSerializer.Serialize(dsts));
@@ -407,7 +411,7 @@ partial class MainWindow : Form
     {
         var sb = new StringBuilder();
         sb.AppendLine("graph TD;");
-        foreach (var (src, dsts) in flowchart)
+        foreach (var (src, dsts) in flowchart.OrderBy(kvp => kvp.Key == "start" ? 0 : 1))
         {
             foreach (var dst in dsts)
             {
@@ -497,9 +501,9 @@ partial class MainWindow : Form
     {
         state.ExportSelectedFile(filenames =>
         {
-            if (filenames.Length == 1)
+            if (filenames.Count() == 1)
             {
-                var filename = filenames[0];
+                var filename = filenames.First();
                 var ext = Path.GetExtension(filename);
                 var filter = string.IsNullOrEmpty(ext)
                     ? new CommonFileDialogFilter("All files", "*")
@@ -1100,5 +1104,20 @@ partial class MainWindow : Form
     private void MermaidFlowchart_MenuItemClicked(object sender, EventArgs e)
     {
         state.GetMermaidFlowchart();
+    }
+
+    private void ModifyNames_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.ModifyNames(names =>
+        {
+            using var dialog = new ModifyNamesWindow(names);
+            dialog.ShowDialog();
+            return dialog.NameMapping;
+        });
+    }
+
+    private void ChangePath_MenuItemClicked(object sender, EventArgs e)
+    {
+        path_TextBox.Select();
     }
 }

@@ -44,6 +44,7 @@
             // 
             // ok_Button
             // 
+            ok_Button.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             ok_Button.Location = new Point(713, 415);
             ok_Button.Name = "ok_Button";
             ok_Button.Size = new Size(75, 23);
@@ -71,10 +72,9 @@
             Controls.Add(message_TextBox);
             Controls.Add(ok_Button);
             Controls.Add(dummy_Label);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            MaximizeBox = false;
             MinimizeBox = false;
             Name = "InfoWindow";
+            ClientSizeChanged += InfoForm_ClientSizeChanged;
             ResumeLayout(false);
             PerformLayout();
         }

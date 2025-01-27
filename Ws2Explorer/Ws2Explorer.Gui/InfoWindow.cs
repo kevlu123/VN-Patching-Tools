@@ -2,8 +2,12 @@
 
 partial class InfoWindow : Form
 {
+    private const int MIN_WIDTH = 100;
+    private const int MIN_HEIGHT = 100;
     private const int MAX_WIDTH = 800;
     private const int MAX_HEIGHT = 600;
+
+    private int padding;
 
     public InfoWindow(string caption, string message)
     {
@@ -13,18 +17,12 @@ partial class InfoWindow : Form
         dummy_Label.Text = message;
         message_TextBox.Text = message;
 
-        int padding = message_TextBox.Left;
-
-        message_TextBox.Size = new Size(
-            Math.Min(dummy_Label.Width + 30, MAX_WIDTH),
-            Math.Min(dummy_Label.Height + 30, MAX_HEIGHT));
+        padding = message_TextBox.Left;
         ClientSize = new Size(
-            message_TextBox.Width + (2 * padding),
-            message_TextBox.Height + (3 * padding) + ok_Button.Height);
+            Math.Clamp(dummy_Label.Width + 30, MIN_WIDTH, MAX_WIDTH) + (2 * padding),
+            Math.Clamp(dummy_Label.Height + 30, MIN_HEIGHT, MAX_HEIGHT) + (3 * padding) + ok_Button.Height);
 
-        ok_Button.Location = new Point(
-            message_TextBox.Right - ok_Button.Width,
-            message_TextBox.Bottom + padding);
+        InfoForm_ClientSizeChanged(this, EventArgs.Empty);
 
         StartPosition = FormStartPosition.CenterParent;
     }
@@ -32,5 +30,23 @@ partial class InfoWindow : Form
     private void OK_ButtonClicked(object sender, EventArgs e)
     {
         Close();
+    }
+
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        if (keyData == Keys.Enter || keyData == Keys.Escape)
+        {
+            OK_ButtonClicked(this, EventArgs.Empty);
+            return true;
+        }
+
+        return base.ProcessCmdKey(ref msg, keyData);
+    }
+
+    private void InfoForm_ClientSizeChanged(object sender, EventArgs e)
+    {
+        message_TextBox.Size = new Size(
+            ClientSize.Width - (2 * padding),
+            ClientSize.Height - (3 * padding) - ok_Button.Height);
     }
 }

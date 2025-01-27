@@ -110,7 +110,7 @@ public class BinaryReader(BinaryStream stream)
 
     public string ReadSjisString()
     {
-        var bytes = new List<byte>();
+        var bytes = new List<byte>(16);
         while (true)
         {
             var b = ReadUInt8();

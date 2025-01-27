@@ -9,7 +9,7 @@ public sealed class BinaryStream : IDisposable
 {
     private sealed class Allocation
     {
-        private bool freed;
+        private int freed;
         private int refCount = 1;
 
         public unsafe byte* Pointer { get; }
@@ -40,15 +40,15 @@ public sealed class BinaryStream : IDisposable
 
         public void IncRef()
         {
-            ObjectDisposedException.ThrowIf(freed, this);
-            refCount++;
+            var newRef = Interlocked.Increment(ref refCount);
+            ObjectDisposedException.ThrowIf(newRef == 1, this);
         }
 
         public void DecRef()
         {
-            ObjectDisposedException.ThrowIf(refCount <= 0, this);
-            refCount--;
-            if (refCount == 0)
+            int newRef = Interlocked.Decrement(ref refCount);
+            ObjectDisposedException.ThrowIf(newRef < 0, this);
+            if (newRef == 0)
             {
                 Free();
             }
@@ -56,13 +56,12 @@ public sealed class BinaryStream : IDisposable
 
         private void Free()
         {
-            if (!freed)
+            if (Interlocked.Exchange(ref freed, 1) == 0)
             {
                 unsafe
                 {
                     NativeMemory.Free(Pointer);
                 }
-                freed = true;
             }
         }
 
@@ -222,20 +221,59 @@ public sealed class BinaryStream : IDisposable
     {
         return Task.Run(() =>
         {
-            var file = T.Decode(this, out _);
-            if (decRef)
+            try
             {
-                DecRef();
+                return T.Decode(this, out _);
             }
-            return file;
+            finally
+            {
+                if (decRef)
+                {
+                    DecRef();
+                }
+            }
         });
     }
 
-    [SuppressMessage("Design", "CA1068:CancellationToken parameters must come last", Justification = "decRef should only be used as a named argument.")]
+#pragma warning disable CA1068 // CancellationToken parameters must come last
     public Task<IFile> Decode(
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default,
         bool decRef = true)
+    {
+        return DecodeWithHint<PngFile>(progress, ct, decRef: decRef);
+    }
+
+    public Task<IFile> DecodeWithHint(
+        string filename,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default,
+        bool decRef = true)
+    {
+        var ext = Path.GetExtension(filename).ToLowerInvariant();
+        return ext switch
+        {
+            ".png" => DecodeWithHint<PngFile>(progress, ct, decRef: decRef),
+            ".pna" => DecodeWithHint<PnaFile>(progress, ct, decRef: decRef),
+            ".lua" => DecodeWithHint<LuacFile>(progress, ct, decRef: decRef),
+            ".ogg" => DecodeWithHint<OggFile>(progress, ct, decRef: decRef),
+            ".dat" => DecodeWithHint<VideoFile>(progress, ct, decRef: decRef),
+            ".pan" => DecodeWithHint<PanFile>(progress, ct, decRef: decRef),
+            ".ttf" => DecodeWithHint<TtfFile>(progress, ct, decRef: decRef),
+            ".otf" => DecodeWithHint<OtfFile>(progress, ct, decRef: decRef),
+            ".arc" => DecodeWithHint<ArcFile>(progress, ct, decRef: decRef),
+            ".ws2" => DecodeWithHint<Ws2File>(progress, ct, decRef: decRef),
+            ".ptf" => DecodeWithHint<PtfFile>(progress, ct, decRef: decRef),
+            ".txt" => DecodeWithHint<TextFile>(progress, ct, decRef: decRef),
+            _ => Decode(progress, ct, decRef: decRef),
+        };
+    }
+
+    public Task<IFile> DecodeWithHint<Hint>(
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default,
+        bool decRef = true)
+        where Hint : class, IFile<Hint>
     {
         return Task.Run(() =>
         {
@@ -243,13 +281,44 @@ public sealed class BinaryStream : IDisposable
 
             if (Length == 0)
             {
-                return TextFile.Decode(this, out _);
+                var ret = TextFile.Decode(this, out _);
+                if (decRef)
+                {
+                    DecRef();
+                }
+                return ret;
+            }
+
+            try
+            {
+                var ret = Hint.Decode(this, out var confidence);
+                if (confidence == DecodeConfidence.High)
+                {
+                    if (decRef)
+                    {
+                        DecRef();
+                    }
+                    return ret;
+                }
+                else
+                {
+                    ret.Dispose();
+                }
+            }
+            catch (DecodeException) { }
+            finally
+            {
+                pr.Step();
             }
 
             var candidates = new List<IFile>();
             bool TryType<T>()
                 where T : class, IFile<T>
             {
+                if (typeof(T) == typeof(Hint))
+                {
+                    return false;
+                }
                 if (ct.IsCancellationRequested)
                 {
                     return true; // Short circuit further down
@@ -258,12 +327,26 @@ public sealed class BinaryStream : IDisposable
                 {
                     var file = T.Decode(this, out var confidence);
                     candidates!.Add(file);
-                    pr.Step();
                     return confidence == DecodeConfidence.High;
                 }
                 catch
                 {
                     return false;
+                }
+                finally
+                {
+                    pr.Step();
+                }
+            }
+
+            void DisposeCandidates(IFile? except)
+            {
+                foreach (var candidate in candidates!)
+                {
+                    if (candidate != except)
+                    {
+                        candidate.Dispose();
+                    }
                 }
             }
 
@@ -286,18 +369,19 @@ public sealed class BinaryStream : IDisposable
                 TryType<BinFile>();
             if (decRef)
             {
-                for (var i = 0; i < candidates.Count - 1; i++)
-                {
-                    DecRef();
-                }
+                DecRef();
             }
             if (ct.IsCancellationRequested)
             {
+                DisposeCandidates(null);
                 throw new TaskCanceledException();
             }
-            return highConfidence ? candidates[^1] : candidates[0];
+            var result = highConfidence ? candidates[^1] : candidates[0];
+            DisposeCandidates(result);
+            return result;
         });
     }
+#pragma warning restore CA1068 // CancellationToken parameters must come last
 
     public static bool StreamEquals(BinaryStream lhs, BinaryStream rhs)
     {
@@ -339,6 +423,7 @@ public static class BinaryStreamExtensions
         return await (await self).Decode<T>(decRef: decRef);
     }
 
+#pragma warning disable CA1068 // CancellationToken parameters must come last
     [SuppressMessage("Design", "CA1068:CancellationToken parameters must come last", Justification = "decRef should only be used as a named argument.")]
     public static async Task<IFile> Decode(
         this Task<BinaryStream> self,
@@ -348,4 +433,26 @@ public static class BinaryStreamExtensions
     {
         return await (await self).Decode(progress, ct, decRef: decRef);
     }
+
+    [SuppressMessage("Design", "CA1068:CancellationToken parameters must come last", Justification = "decRef should only be used as a named argument.")]
+    public static async Task<IFile> DecodeWithHint<Hint>(
+        this Task<BinaryStream> self,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default,
+        bool decRef = true)
+        where Hint : class, IFile<Hint>
+    {
+        return await (await self).DecodeWithHint<Hint>(progress, ct, decRef: decRef);
+    }
+
+    public static async Task<IFile> DecodeWithHint(
+        this Task<BinaryStream> self,
+        string filename,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default,
+        bool decRef = true)
+    {
+        return await (await self).DecodeWithHint(filename, progress, ct, decRef: decRef);
+    }
+#pragma warning restore CA1068 // CancellationToken parameters must come last
 }

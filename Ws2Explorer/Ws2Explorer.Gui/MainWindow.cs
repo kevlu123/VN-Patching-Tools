@@ -10,7 +10,6 @@ using System.Text.Json;
 using Ws2Explorer.HighLevel;
 using FormTimer = System.Windows.Forms.Timer;
 using Flowchart = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>;
-using static System.Windows.Forms.AxHost;
 using System.Text.RegularExpressions;
 
 namespace Ws2Explorer.Gui;
@@ -483,19 +482,17 @@ partial class MainWindow : Form
 
     private void Open_MenuItemClicked(object sender, EventArgs e)
     {
-        openFileDialog.IsFolderPicker = false;
-        if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+        if (ShowOpenFileDialog("Open Archive", out var pickedFile))
         {
-            state.OpenPath(openFileDialog.FileName);
+            state.OpenPath(pickedFile);
         }
     }
 
     private void OpenFolder_MenuItemClicked(object sender, EventArgs e)
     {
-        openFileDialog.IsFolderPicker = true;
-        if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+        if (ShowOpenFolderDialog("Open Folder", out var pickedFolder))
         {
-            state.OpenPath(openFileDialog.FileName);
+            state.OpenPath(pickedFolder);
         }
     }
 
@@ -505,33 +502,84 @@ partial class MainWindow : Form
         {
             if (filenames.Count() == 1)
             {
-                var filename = filenames.First();
-                var ext = Path.GetExtension(filename);
-                var filter = string.IsNullOrEmpty(ext)
-                    ? new CommonFileDialogFilter("All files", "*")
-                    : new CommonFileDialogFilter($"{ext} file", $"*{ext}");
-                using var saveFileDialog = new CommonSaveFileDialog();
-                saveFileDialog.Filters.Add(filter);
-                saveFileDialog.DefaultFileName = "file";
-                if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+                if (ShowSaveFileDialog("Export", filenames.First(), out var pickedFile))
                 {
-                    var dst = saveFileDialog.FileName;
-                    return [dst.EndsWith(".*") ? dst[..^2] : dst];
+                    return [pickedFile];
                 }
                 return null;
             }
             else
             {
-                openFileDialog.IsFolderPicker = true;
-                if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+                if (ShowOpenFolderDialog("Export", out var pickedFolder))
                 {
                     return filenames
-                        .Select(f => Path.Combine(openFileDialog.FileName, f))
+                        .Select(f => Path.Combine(pickedFolder, f))
                         .ToArray();
                 }
                 return null;
             }
         });
+    }
+
+    private bool ShowSaveFileDialog(string title, string fileToSave, out string pickedFile)
+    {
+        var ext = Path.GetExtension(fileToSave);
+        var filter = string.IsNullOrEmpty(ext)
+            ? new CommonFileDialogFilter("All files", "*")
+            : new CommonFileDialogFilter($"{ext} file", $"*{ext}");
+        using var saveFileDialog = new CommonSaveFileDialog();
+        saveFileDialog.Filters.Add(filter);
+        saveFileDialog.DefaultFileName = fileToSave;
+        saveFileDialog.Title = title;
+        if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+        {
+            var dst = saveFileDialog.FileName;
+            pickedFile = dst.EndsWith(".*") ? dst[..^2] : dst;
+            return true;
+        }
+        pickedFile = string.Empty;
+        return false;
+    }
+
+    private bool ShowOpenFileDialog(string title, out string pickedFile)
+    {
+        openFileDialog.IsFolderPicker = false;
+        openFileDialog.Multiselect = false;
+        openFileDialog.Title = title;
+        if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+        {
+            pickedFile = openFileDialog.FileName;
+            return true;
+        }
+        pickedFile = string.Empty;
+        return false;
+    }
+
+    private bool ShowMultiOpenFileDialog(string title, out string[] pickedFiles)
+    {
+        openFileDialog.IsFolderPicker = false;
+        openFileDialog.Multiselect = true;
+        openFileDialog.Title = title;
+        if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+        {
+            pickedFiles = openFileDialog.FileNames.ToArray();
+            return true;
+        }
+        pickedFiles = [];
+        return false;
+    }
+
+    private bool ShowOpenFolderDialog(string title, out string pickedFolder)
+    {
+        openFileDialog.IsFolderPicker = true;
+        openFileDialog.Multiselect = false;
+        if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+        {
+            pickedFolder = openFileDialog.FileName;
+            return true;
+        }
+        pickedFolder = string.Empty;
+        return false;
     }
 
     private void Reveal_MenuItemClicked(object sender, EventArgs e)
@@ -1127,11 +1175,7 @@ partial class MainWindow : Form
     {
         state.RecursiveExtract(() =>
         {
-            openFileDialog.IsFolderPicker = true;
-            var extractLocation = openFileDialog.ShowDialog() == CommonFileDialogResult.Ok
-                ? openFileDialog.FileName
-                : null;
-            if (extractLocation == null)
+            if (!ShowOpenFileDialog("Extract", out var extractLocation))
             {
                 return null;
             }
@@ -1145,5 +1189,23 @@ partial class MainWindow : Form
 
             return (extractLocation, new Regex(regex));
         });
+    }
+
+    private void DiffNewFiles_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (ShowMultiOpenFileDialog("Select Diff Base", out var oldArchives)
+            && ShowSaveFileDialog("Save Diff", "diff_new.arc", out var savePath))
+        {
+            state.DiffNewFiles(oldArchives, savePath);
+        }
+    }
+
+    private void DiffChangedFiles_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (ShowMultiOpenFileDialog("Select Diff Base", out var oldArchives)
+            && ShowSaveFileDialog("Save Diff", "diff_changed.arc", out var savePath))
+        {
+            state.DiffChangedFiles(oldArchives, savePath);
+        }
     }
 }

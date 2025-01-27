@@ -25,7 +25,10 @@ public interface IFolder
         {
             foreach (var fileInfo in ListFiles())
             {
-                contents[fileInfo.Filename] = await OpenFile(fileInfo.Filename, progress, ct);
+                if (!fileInfo.IsDirectory)
+                {
+                    contents[fileInfo.Filename] = await OpenFile(fileInfo.Filename, progress, ct);
+                }
             }
             return contents;
         }

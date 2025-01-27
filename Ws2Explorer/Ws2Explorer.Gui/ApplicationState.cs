@@ -925,6 +925,60 @@ class ApplicationState(string? openPath)
         });
     }
 
+    public void DiffNewFiles(IEnumerable<string> oldArchives, string savePath)
+    {
+        Protect(interruptable: false, async ct =>
+            await DiffFilesInternal(oldArchives, savePath, true, ct));
+    }
+
+    public void DiffChangedFiles(IEnumerable<string> oldArchives, string savePath)
+    {
+        Protect(interruptable: false, async ct =>
+            await DiffFilesInternal(oldArchives, savePath, false, ct));
+    }
+
+    private async Task DiffFilesInternal(
+        IEnumerable<string> oldArchiveNames,
+        string savePath,
+        bool newOnly,
+        CancellationToken ct)
+    {
+        var newArchiveNames = GetFullSelectedFilenamesInternal();
+
+        using var newArchiveStreams = await FileTool.ReadFiles(newArchiveNames, progress, ct);
+        using var newArchives = new DisposingList<IFolder>();
+        foreach (var (name, stream) in newArchiveStreams)
+        {
+            var file = await stream.DecodeWithHint(name, progress, ct, decRef: false);
+            if (file is not IFolder folder)
+            {
+                throw new InvalidOperationException("Can only diff folders.");
+            }
+            newArchives.Add(folder);
+        }
+
+        using var oldArchiveStreams = await FileTool.ReadFiles(oldArchiveNames, progress, ct);
+        using var oldArchive = new DisposingList<IFolder>();
+        foreach (var (name, stream) in oldArchiveStreams)
+        {
+            var file = await stream.DecodeWithHint(name, progress, ct, decRef: false);
+            if (file is not IFolder folder)
+            {
+                throw new InvalidOperationException("Can only diff folders.");
+            }
+            oldArchive.Add(folder);
+        }
+
+        var (newFiles, changedFiles) = await FileTool.Diff(
+            newArchives,
+            oldArchive,
+            progress,
+            ct);
+
+        using var arc = newOnly ? ArcFile.Create(newFiles) : ArcFile.Create(changedFiles);
+        await FileTool.WriteFile(savePath, arc.Stream, OverwriteMode.Overwrite, progress, ct);
+    }
+
     private string GetCurrentFolderPathInternal()
     {
         return Path.Combine(

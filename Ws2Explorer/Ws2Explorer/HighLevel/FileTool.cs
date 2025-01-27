@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace Ws2Explorer.HighLevel;
 
@@ -439,6 +440,65 @@ public static class FileTool
             }
         }
         return extracted;
+    }
+
+    public static async Task<(
+        DisposingDictionary<string, BinaryStream> newFiles,
+        DisposingDictionary<string, BinaryStream> changedFiles)>
+    Diff(
+        IEnumerable<IFolder> originalArchives,
+        IEnumerable<IFolder> newArchives,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        static string Hash(BinaryStream stream)
+        {
+            return Convert.ToHexString(SHA1.HashData(stream.Span));
+        }
+
+        var seen = new Dictionary<string, string>();
+
+        foreach (var originalArchive in originalArchives)
+        {
+            using var contents = await originalArchive.GetContents(progress, ct);
+            foreach (var (name, content) in contents)
+            {
+                seen[name] = Hash(content);
+            }
+        }
+
+        var newFiles = new DisposingDictionary<string, BinaryStream>();
+        var changedFiles = new DisposingDictionary<string, BinaryStream>();
+        try
+        {
+            foreach (var newArchive in newArchives)
+            {
+                using var contents = await newArchive.GetContents(progress, ct);
+                foreach (var (name, content) in contents)
+                {
+                    if (seen.TryGetValue(name, out var hash))
+                    {
+                        if (Hash(content) != hash)
+                        {
+                            content.IncRef();
+                            changedFiles.Add(name, content);
+                        }
+                    }
+                    else
+                    {
+                        content.IncRef();
+                        newFiles.Add(name, content);
+                    }
+                }
+            }
+            return (newFiles, changedFiles);
+        }
+        catch
+        {
+            newFiles.Dispose();
+            changedFiles.Dispose();
+            throw;
+        }
     }
 
     public static List<string> SplitPath(string path)

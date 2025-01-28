@@ -39,7 +39,7 @@ class Config
     private string json;
 
     [JsonConstructor]
-    private Config()
+    public Config()
     {
         savePath = "";
         json = "";

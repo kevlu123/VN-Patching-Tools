@@ -52,7 +52,8 @@ partial class MainWindow : Form
 
         InitializeComponent();
 
-        config = Config.Load(GetConfigPath());
+        this.config = new Config();
+        var config = Config.Load(GetConfigPath());
 
         // Create status clear timer
         statusClear_Timer = new FormTimer();
@@ -204,6 +205,7 @@ partial class MainWindow : Form
             OnError(ex);
             config = new Config(GetConfigPath());
         }
+        this.config = config;
     }
 
     private static string GetConfigPath()

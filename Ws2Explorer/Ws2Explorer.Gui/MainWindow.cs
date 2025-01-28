@@ -573,6 +573,7 @@ partial class MainWindow : Form
     {
         openFileDialog.IsFolderPicker = true;
         openFileDialog.Multiselect = false;
+        openFileDialog.Title = title;
         if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
         {
             pickedFolder = openFileDialog.FileName;
@@ -1175,7 +1176,7 @@ partial class MainWindow : Form
     {
         state.RecursiveExtract(() =>
         {
-            if (!ShowOpenFileDialog("Extract", out var extractLocation))
+            if (!ShowOpenFolderDialog("Extract", out var extractLocation))
             {
                 return null;
             }

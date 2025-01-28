@@ -122,7 +122,7 @@ public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
 
 public static class DisposingDictionaryExtensions
 {
-    public static DisposingDictionary<K, V> ToDisposingDictionary<K, V>(this IDictionary<K, V> source)
+    public static DisposingDictionary<K, V> ToDisposingDictionary<K, V>(this IEnumerable<KeyValuePair<K, V>> source)
         where K : notnull
         where V : class
     {

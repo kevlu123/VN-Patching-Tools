@@ -51,6 +51,7 @@
             toolStripSeparator1 = new ToolStripSeparator();
             export_MenuItem = new ToolStripMenuItem();
             recursiveExtract_MenuItem = new ToolStripMenuItem();
+            diff_MenuItem = new ToolStripMenuItem();
             toolStripSeparator12 = new ToolStripSeparator();
             createArchive_MenuItem = new ToolStripMenuItem();
             createArc_MenuItem = new ToolStripMenuItem();
@@ -112,9 +113,6 @@
             mermaidFlowchart_MenuItem = new ToolStripMenuItem();
             jsonFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
-            diff_MenuItem = new ToolStripMenuItem();
-            diffNewFiles_MenuItem = new ToolStripMenuItem();
-            diffChangedFiles_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -302,6 +300,14 @@
             recursiveExtract_MenuItem.Text = "Recursive Extract...";
             recursiveExtract_MenuItem.Click += RecursiveExtract_MenuItemClicked;
             // 
+            // diff_MenuItem
+            // 
+            diff_MenuItem.Name = "diff_MenuItem";
+            diff_MenuItem.ShortcutKeys = Keys.F3;
+            diff_MenuItem.Size = new Size(244, 22);
+            diff_MenuItem.Text = "Diff...";
+            diff_MenuItem.Click += Diff_MenuItemClicked;
+            // 
             // toolStripSeparator12
             // 
             toolStripSeparator12.Name = "toolStripSeparator12";
@@ -318,7 +324,7 @@
             // 
             createArc_MenuItem.Name = "createArc_MenuItem";
             createArc_MenuItem.ShortcutKeys = Keys.Control | Keys.F1;
-            createArc_MenuItem.Size = new Size(180, 22);
+            createArc_MenuItem.Size = new Size(144, 22);
             createArc_MenuItem.Text = "ARC";
             createArc_MenuItem.Click += CreateArc_MenuItemClicked;
             // 
@@ -326,7 +332,7 @@
             // 
             createPna_MenuItem.Name = "createPna_MenuItem";
             createPna_MenuItem.ShortcutKeys = Keys.Control | Keys.F2;
-            createPna_MenuItem.Size = new Size(180, 22);
+            createPna_MenuItem.Size = new Size(144, 22);
             createPna_MenuItem.Text = "PNA";
             createPna_MenuItem.Click += CreatePna_MenuItemClicked;
             // 
@@ -334,7 +340,7 @@
             // 
             createPan_MenuItem.Name = "createPan_MenuItem";
             createPan_MenuItem.ShortcutKeys = Keys.Control | Keys.F3;
-            createPan_MenuItem.Size = new Size(180, 22);
+            createPan_MenuItem.Size = new Size(144, 22);
             createPan_MenuItem.Text = "PAN";
             createPan_MenuItem.Click += CreatePan_MenuItemClicked;
             // 
@@ -342,7 +348,7 @@
             // 
             createPtf_MenuItem.Name = "createPtf_MenuItem";
             createPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.F4;
-            createPtf_MenuItem.Size = new Size(180, 22);
+            createPtf_MenuItem.Size = new Size(144, 22);
             createPtf_MenuItem.Text = "PTF";
             createPtf_MenuItem.Click += CreatePtf_MenuItemClicked;
             // 
@@ -350,7 +356,7 @@
             // 
             createWs2_MenuItem.Name = "createWs2_MenuItem";
             createWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.F5;
-            createWs2_MenuItem.Size = new Size(180, 22);
+            createWs2_MenuItem.Size = new Size(144, 22);
             createWs2_MenuItem.Text = "WS2";
             createWs2_MenuItem.Click += CreateWs2_MenuItemClicked;
             // 
@@ -365,7 +371,7 @@
             // 
             openAsArc_MenuItem.Name = "openAsArc_MenuItem";
             openAsArc_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F1;
-            openAsArc_MenuItem.Size = new Size(180, 22);
+            openAsArc_MenuItem.Size = new Size(176, 22);
             openAsArc_MenuItem.Text = "ARC";
             openAsArc_MenuItem.Click += OpenAsArc_MenuItemClicked;
             // 
@@ -373,7 +379,7 @@
             // 
             openAsPna_MenuItem.Name = "openAsPna_MenuItem";
             openAsPna_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F2;
-            openAsPna_MenuItem.Size = new Size(180, 22);
+            openAsPna_MenuItem.Size = new Size(176, 22);
             openAsPna_MenuItem.Text = "PNA";
             openAsPna_MenuItem.Click += OpenAsPna_MenuItemClicked;
             // 
@@ -381,7 +387,7 @@
             // 
             openAsPan_MenuItem.Name = "openAsPan_MenuItem";
             openAsPan_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F3;
-            openAsPan_MenuItem.Size = new Size(180, 22);
+            openAsPan_MenuItem.Size = new Size(176, 22);
             openAsPan_MenuItem.Text = "PAN";
             openAsPan_MenuItem.Click += OpenAsPan_MenuItemClicked;
             // 
@@ -389,7 +395,7 @@
             // 
             openAsPtf_MenuItem.Name = "openAsPtf_MenuItem";
             openAsPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F4;
-            openAsPtf_MenuItem.Size = new Size(180, 22);
+            openAsPtf_MenuItem.Size = new Size(176, 22);
             openAsPtf_MenuItem.Text = "PTF";
             openAsPtf_MenuItem.Click += OpenAsPtf_MenuItemClicked;
             // 
@@ -397,7 +403,7 @@
             // 
             openAsWs2_MenuItem.Name = "openAsWs2_MenuItem";
             openAsWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F5;
-            openAsWs2_MenuItem.Size = new Size(180, 22);
+            openAsWs2_MenuItem.Size = new Size(176, 22);
             openAsWs2_MenuItem.Text = "WS2";
             openAsWs2_MenuItem.Click += OpenAsWs2_MenuItemClicked;
             // 
@@ -470,7 +476,7 @@
             // 
             editAsText_MenuItem.Name = "editAsText_MenuItem";
             editAsText_MenuItem.ShortcutKeys = Keys.Control | Keys.D1;
-            editAsText_MenuItem.Size = new Size(180, 22);
+            editAsText_MenuItem.Size = new Size(156, 22);
             editAsText_MenuItem.Text = "Text...";
             editAsText_MenuItem.Click += EditAsText_MenuItemClicked;
             // 
@@ -478,7 +484,7 @@
             // 
             editAsImage_MenuItem.Name = "editAsImage_MenuItem";
             editAsImage_MenuItem.ShortcutKeys = Keys.Control | Keys.D2;
-            editAsImage_MenuItem.Size = new Size(180, 22);
+            editAsImage_MenuItem.Size = new Size(156, 22);
             editAsImage_MenuItem.Text = "Image...";
             editAsImage_MenuItem.Click += EditAsImage_MenuItemClicked;
             // 
@@ -486,7 +492,7 @@
             // 
             editAsHex_MenuItem.Name = "editAsHex_MenuItem";
             editAsHex_MenuItem.ShortcutKeys = Keys.Control | Keys.D3;
-            editAsHex_MenuItem.Size = new Size(180, 22);
+            editAsHex_MenuItem.Size = new Size(156, 22);
             editAsHex_MenuItem.Text = "Hex...";
             editAsHex_MenuItem.Click += EditAsHex_MenuItemClicked;
             // 
@@ -754,29 +760,6 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
-            // diff_MenuItem
-            // 
-            diff_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { diffNewFiles_MenuItem, diffChangedFiles_MenuItem });
-            diff_MenuItem.Name = "diff_MenuItem";
-            diff_MenuItem.Size = new Size(244, 22);
-            diff_MenuItem.Text = "Diff";
-            // 
-            // diffNewFiles_MenuItem
-            // 
-            diffNewFiles_MenuItem.Name = "diffNewFiles_MenuItem";
-            diffNewFiles_MenuItem.ShortcutKeys = Keys.F3;
-            diffNewFiles_MenuItem.Size = new Size(236, 22);
-            diffNewFiles_MenuItem.Text = "New Files Only...";
-            diffNewFiles_MenuItem.Click += DiffNewFiles_MenuItemClicked;
-            // 
-            // diffChangedFiles_MenuItem
-            // 
-            diffChangedFiles_MenuItem.Name = "diffChangedFiles_MenuItem";
-            diffChangedFiles_MenuItem.ShortcutKeys = Keys.Shift | Keys.F3;
-            diffChangedFiles_MenuItem.Size = new Size(236, 22);
-            diffChangedFiles_MenuItem.Text = "Changed Files Only...";
-            diffChangedFiles_MenuItem.Click += DiffChangedFiles_MenuItemClicked;
-            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -891,7 +874,5 @@
         private ToolStripSeparator toolStripSeparator13;
         private ToolStripMenuItem recursiveExtract_MenuItem;
         private ToolStripMenuItem diff_MenuItem;
-        private ToolStripMenuItem diffNewFiles_MenuItem;
-        private ToolStripMenuItem diffChangedFiles_MenuItem;
     }
 }

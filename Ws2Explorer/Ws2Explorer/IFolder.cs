@@ -6,6 +6,11 @@ public interface IFolder
 
     List<FileInfo> ListFiles();
 
+    bool ContainsFile(string filename)
+    {
+        return ListFiles().Any(f => f.Filename == filename);
+    }
+
     Task<BinaryStream> OpenFile(
         string filename,
         IProgress<TaskProgressInfo>? progress = null,

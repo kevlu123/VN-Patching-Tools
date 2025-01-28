@@ -442,12 +442,10 @@ public static class FileTool
         return extracted;
     }
 
-    public static async Task<(
-        DisposingDictionary<string, BinaryStream> newFiles,
-        DisposingDictionary<string, BinaryStream> changedFiles)>
-    Diff(
-        IEnumerable<IFolder> originalArchives,
+    public static async Task<DisposingDictionary<string, BinaryStream>> Diff(
+        IEnumerable<IFolder> oldArchives,
         IEnumerable<IFolder> newArchives,
+        DiffPartitionMode partitionMode,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
@@ -456,49 +454,76 @@ public static class FileTool
             return Convert.ToHexString(SHA1.HashData(stream.Span));
         }
 
-        var seen = new Dictionary<string, string>();
-
-        foreach (var originalArchive in originalArchives)
+        var oldSeen = new Dictionary<string, string>();
+        foreach (var oldArchive in oldArchives)
         {
-            using var contents = await originalArchive.GetContents(progress, ct);
+            using var contents = await oldArchive.GetContents(progress, ct);
             foreach (var (name, content) in contents)
             {
-                seen[name] = Hash(content);
+                oldSeen[name] = Hash(content);
             }
         }
 
-        var newFiles = new DisposingDictionary<string, BinaryStream>();
-        var changedFiles = new DisposingDictionary<string, BinaryStream>();
-        try
+        var newSeen = new HashSet<string>();
+        using var @new = new DisposingDictionary<string, BinaryStream>();
+        using var old = new DisposingDictionary<string, BinaryStream>();
+        using var common = new DisposingDictionary<string, BinaryStream>();
+        using var changed = new DisposingDictionary<string, BinaryStream>();
+        foreach (var newArchive in newArchives)
         {
-            foreach (var newArchive in newArchives)
+            using var contents = await newArchive.GetContents(progress, ct);
+            foreach (var (name, content) in contents)
             {
-                using var contents = await newArchive.GetContents(progress, ct);
-                foreach (var (name, content) in contents)
+                newSeen.Add(name);
+                if (oldSeen.TryGetValue(name, out var oldHash))
                 {
-                    if (seen.TryGetValue(name, out var hash))
+                    if (Hash(content) == oldHash)
                     {
-                        if (Hash(content) != hash)
+                        if (partitionMode.HasFlag(DiffPartitionMode.Common))
                         {
                             content.IncRef();
-                            changedFiles.Add(name, content);
+                            common[name] = content;
                         }
                     }
-                    else
+                    else if (partitionMode.HasFlag(DiffPartitionMode.Changed))
                     {
                         content.IncRef();
-                        newFiles.Add(name, content);
+                        changed[name] = content;
                     }
                 }
+                else if (partitionMode.HasFlag(DiffPartitionMode.New))
+                {
+                    content.IncRef();
+                    @new[name] = content;
+                }
             }
-            return (newFiles, changedFiles);
         }
-        catch
+
+        if (partitionMode.HasFlag(DiffPartitionMode.Old))
         {
-            newFiles.Dispose();
-            changedFiles.Dispose();
-            throw;
+            foreach (var (name, oldHash) in oldSeen)
+            {
+                if (!newSeen.Contains(name))
+                {
+                    foreach (var oldArchive in oldArchives)
+                    {
+                        if (oldArchive.ContainsFile(name))
+                        {
+                            var content = await oldArchive.OpenFile(name, progress, ct);
+                            content.IncRef();
+                            old[name] = content;
+                            goto next;
+                        }
+                    }
+                    throw new InvalidOperationException("IFolder.ListFiles has changed.");
+                next:;
+                }
+            }
         }
+
+        return new[] { @new, old, common, changed }
+            .SelectMany(x => x)
+            .ToDisposingDictionary();
     }
 
     public static List<string> SplitPath(string path)
@@ -525,4 +550,15 @@ public static class FileTool
         }
         return name;
     }
+}
+
+
+[Flags]
+public enum DiffPartitionMode
+{
+    None = 0,
+    New = 1 << 0,
+    Old = 1 << 1,
+    Common = 1 << 2,
+    Changed = 1 << 3,
 }

@@ -23,7 +23,7 @@ public sealed class Ws2File : IArchive<Ws2File>
         Stream = stream;
         stream.Freeze();
         stream.IncRef();
-        confidence = (Ops.Length > 1 && Ops[1].Code != 0)
+        confidence = ((ReadOnlySpan<byte>)stream.Span).ContainsAnyExcept<byte>(0)
             ? DecodeConfidence.High
             : DecodeConfidence.Low;
     }

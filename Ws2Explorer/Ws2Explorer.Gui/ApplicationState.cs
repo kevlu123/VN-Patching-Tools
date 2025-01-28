@@ -925,58 +925,74 @@ class ApplicationState(string? openPath)
         });
     }
 
-    public void DiffNewFiles(IEnumerable<string> oldArchives, string savePath)
+    public void DiffFiles(Func<
+        IEnumerable<string>,
+        (
+            string[] oldFilenames,
+            string[] newFilenames,
+            string dst,
+            DiffPartitionMode mode
+        )?> fileListPrompt)
     {
         Protect(interruptable: false, async ct =>
-            await DiffFilesInternal(oldArchives, savePath, true, ct));
-    }
-
-    public void DiffChangedFiles(IEnumerable<string> oldArchives, string savePath)
-    {
-        Protect(interruptable: false, async ct =>
-            await DiffFilesInternal(oldArchives, savePath, false, ct));
-    }
-
-    private async Task DiffFilesInternal(
-        IEnumerable<string> oldArchiveNames,
-        string savePath,
-        bool newOnly,
-        CancellationToken ct)
-    {
-        var newArchiveNames = GetFullSelectedFilenamesInternal();
-
-        using var newArchiveStreams = await FileTool.ReadFiles(newArchiveNames, progress, ct);
-        using var newArchives = new DisposingList<IFolder>();
-        foreach (var (name, stream) in newArchiveStreams)
         {
-            var file = await stream.DecodeWithHint(name, progress, ct, decRef: false);
-            if (file is not IFolder folder)
+            var newArchiveNames = GetFullSelectedFilenamesInternal();
+
+            var pathInfo = fileListPrompt(newArchiveNames);
+            if (pathInfo == null)
             {
-                throw new InvalidOperationException("Can only diff folders.");
+                return;
             }
-            newArchives.Add(folder);
-        }
+            var (oldFilenames, newFilenames, dst, mode) = pathInfo.Value;
 
-        using var oldArchiveStreams = await FileTool.ReadFiles(oldArchiveNames, progress, ct);
-        using var oldArchive = new DisposingList<IFolder>();
-        foreach (var (name, stream) in oldArchiveStreams)
-        {
-            var file = await stream.DecodeWithHint(name, progress, ct, decRef: false);
-            if (file is not IFolder folder)
+            using var newArchiveStreams = await FileTool.ReadFiles(newFilenames, progress, ct);
+            using var newArchives = new DisposingList<IFolder>();
+            foreach (var (name, stream) in newArchiveStreams)
             {
-                throw new InvalidOperationException("Can only diff folders.");
+                var file = await stream.DecodeWithHint(name, progress, ct, decRef: false);
+                if (file is not IFolder folder)
+                {
+                    throw new InvalidOperationException("Can only diff folders.");
+                }
+                newArchives.Add(folder);
             }
-            oldArchive.Add(folder);
-        }
 
-        var (newFiles, changedFiles) = await FileTool.Diff(
-            newArchives,
-            oldArchive,
-            progress,
-            ct);
+            using var oldArchiveStreams = await FileTool.ReadFiles(oldFilenames, progress, ct);
+            using var oldArchive = new DisposingList<IFolder>();
+            foreach (var (name, stream) in oldArchiveStreams)
+            {
+                var file = await stream.DecodeWithHint(name, progress, ct, decRef: false);
+                if (file is not IFolder folder)
+                {
+                    throw new InvalidOperationException("Can only diff folders.");
+                }
+                oldArchive.Add(folder);
+            }
 
-        using var arc = newOnly ? ArcFile.Create(newFiles) : ArcFile.Create(changedFiles);
-        await FileTool.WriteFile(savePath, arc.Stream, OverwriteMode.Overwrite, progress, ct);
+            using var diff = await FileTool.Diff(
+                oldArchive,
+                newArchives,
+                mode,
+                progress,
+                ct);
+            if (diff.Count == 0)
+            {
+                OnStatus?.Invoke("No files to write.");
+                return;
+            }
+
+            using var arc = ArcFile.Create(diff);
+            await FileTool.WriteFile(dst, arc.Stream, OverwriteMode.Overwrite, progress, ct);
+            await RefreshFolderInternal(ct);
+            if (diff.Count == 1)
+            {
+                OnStatus?.Invoke("Wrote 1 file to {dst}.");
+            }
+            else
+            {
+                OnStatus?.Invoke($"Wrote {diff.Count} files to {dst}.");
+            }
+        });
     }
 
     private string GetCurrentFolderPathInternal()

@@ -472,7 +472,7 @@ partial class MainWindow : Form
 
     private void NewFile_MenuItemClicked(object sender, EventArgs e)
     {
-        using var dialog = new NewFileWindow();
+        using var dialog = new NewFileWindow("New File");
         if (dialog.ShowDialog() == DialogResult.OK)
         {
             state.CreateNewFile(dialog.Filename);
@@ -1138,5 +1138,14 @@ partial class MainWindow : Form
                 ? (dialog.OldFilenames, dialog.NewFilenames, dialog.Destination, dialog.DiffPartitionMode)
                 : null;
         });
+    }
+
+    private void NewDirectory_MenuItemClicked(object sender, EventArgs e)
+    {
+        using var dialog = new NewFileWindow("New Directory");
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            state.CreateNewDirectory(dialog.Filename);
+        }
     }
 }

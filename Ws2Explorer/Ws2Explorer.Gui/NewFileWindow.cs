@@ -4,9 +4,10 @@ partial class NewFileWindow : Form
 {
     public string Filename { get; private set; } = string.Empty;
 
-    public NewFileWindow()
+    public NewFileWindow(string title)
     {
         InitializeComponent();
+        Text = title;
         StartPosition = FormStartPosition.CenterParent;
     }
 

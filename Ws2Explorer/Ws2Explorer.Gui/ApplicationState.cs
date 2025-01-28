@@ -280,6 +280,21 @@ class ApplicationState(string? openPath)
         });
     }
 
+    public void CreateNewDirectory(string filename)
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            if (folderStack[^1].Folder is not Directory directory)
+            {
+                OnInfo?.Invoke("Cannot create directory in an archive.");
+                return;
+            }
+            var path = Path.Combine(directory.FullPath, filename);
+            System.IO.Directory.CreateDirectory(path);
+            await RefreshFolderInternal(ct);
+        });
+    }
+
     public void OpenParentFolder()
     {
         ProtectSync(() =>

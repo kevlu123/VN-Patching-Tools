@@ -113,6 +113,7 @@
             mermaidFlowchart_MenuItem = new ToolStripMenuItem();
             jsonFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
+            newDirectory_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -250,7 +251,7 @@
             // 
             // file_MenuItem
             // 
-            file_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { newFile_MenuItem, open_MenuItem, openFolder_MenuItem, toolStripSeparator1, export_MenuItem, recursiveExtract_MenuItem, diff_MenuItem, toolStripSeparator12, createArchive_MenuItem, openArchiveAs_MenuItem, toolStripSeparator2, reveal_MenuItem, setEditors_MenuItem, toolStripSeparator3, about_MenuItem, exit_MenuItem });
+            file_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { newFile_MenuItem, newDirectory_MenuItem, open_MenuItem, openFolder_MenuItem, toolStripSeparator1, export_MenuItem, recursiveExtract_MenuItem, diff_MenuItem, toolStripSeparator12, createArchive_MenuItem, openArchiveAs_MenuItem, toolStripSeparator2, reveal_MenuItem, setEditors_MenuItem, toolStripSeparator3, about_MenuItem, exit_MenuItem });
             file_MenuItem.Name = "file_MenuItem";
             file_MenuItem.Size = new Size(37, 20);
             file_MenuItem.Text = "File";
@@ -574,8 +575,8 @@
             // pnaAddEntry_MenuItem
             // 
             pnaAddEntry_MenuItem.Name = "pnaAddEntry_MenuItem";
-            pnaAddEntry_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.N;
-            pnaAddEntry_MenuItem.Size = new Size(201, 22);
+            pnaAddEntry_MenuItem.ShortcutKeys = Keys.Control | Keys.H;
+            pnaAddEntry_MenuItem.Size = new Size(182, 22);
             pnaAddEntry_MenuItem.Text = "Add Entry";
             pnaAddEntry_MenuItem.Click += PnaAddEntry_MenuItemClicked;
             // 
@@ -760,6 +761,14 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
+            // newDirectory_MenuItem
+            // 
+            newDirectory_MenuItem.Name = "newDirectory_MenuItem";
+            newDirectory_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.N;
+            newDirectory_MenuItem.Size = new Size(244, 22);
+            newDirectory_MenuItem.Text = "New Directory...";
+            newDirectory_MenuItem.Click += NewDirectory_MenuItemClicked;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -874,5 +883,6 @@
         private ToolStripSeparator toolStripSeparator13;
         private ToolStripMenuItem recursiveExtract_MenuItem;
         private ToolStripMenuItem diff_MenuItem;
+        private ToolStripMenuItem newDirectory_MenuItem;
     }
 }

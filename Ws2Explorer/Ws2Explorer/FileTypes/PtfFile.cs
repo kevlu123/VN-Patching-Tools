@@ -33,6 +33,7 @@ If the index is 0, the end of the data is reached and the
 reference is not used.
  */
 
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Ws2Explorer;
@@ -208,8 +209,7 @@ public sealed class PtfFile : IArchive<PtfFile>
     {
         var reader = new BinaryReader(stream);
         var outputLen = reader.ReadInt32();
-        var outputBuffer = new byte[outputLen];
-        var outputIndex = 0;
+        var outputBuffer = new List<byte>();
 
         var history = new byte[0x1000];
         var historyWriteIndex = 1;
@@ -219,9 +219,9 @@ public sealed class PtfFile : IArchive<PtfFile>
 
         void CheckXorKey()
         {
-            if (!key.HasValue && outputIndex >= 4)
+            if (!key.HasValue && outputBuffer.Count >= 4)
             {
-                key = InferXorKey(outputBuffer, out ft);
+                key = InferXorKey(CollectionsMarshal.AsSpan(outputBuffer), out ft);
                 if (!key.HasValue)
                 {
                     throw new InvalidDataException("Invalid signature. Decompressed data is neither TTF nor OTF format.");
@@ -237,7 +237,7 @@ public sealed class PtfFile : IArchive<PtfFile>
                 if ((formatBits & 1) == 1)
                 {
                     var input = reader.ReadUInt8();
-                    outputBuffer[outputIndex++] = input;
+                    outputBuffer.Add(input);
                     history[historyWriteIndex] = input;
                     historyWriteIndex = (historyWriteIndex + 1) & 0xFFF;
                 }
@@ -255,7 +255,7 @@ public sealed class PtfFile : IArchive<PtfFile>
                     for (int j = 0; j < length; j++)
                     {
                         var input = history[historyReadIndex];
-                        outputBuffer[outputIndex++] = input;
+                        outputBuffer.Add(input);
                         history[historyWriteIndex] = input;
                         historyWriteIndex = (historyWriteIndex + 1) & 0xFFF;
                         historyReadIndex = (historyReadIndex + 1) & 0xFFF;
@@ -273,18 +273,18 @@ public sealed class PtfFile : IArchive<PtfFile>
         {
             throw new InvalidDataException("Data is too short.");
         }
-        else if (outputIndex < outputLen)
+        else if (outputBuffer.Count < outputLen)
         {
             throw new InvalidDataException("Output length field does not match actual output length.");
         }
         fontType = ft;
         xorKey = key.Value;
-        for (int j = 0; j < outputBuffer.Length; j++)
+        for (int j = 0; j < outputBuffer.Count; j++)
         {
             outputBuffer[j] ^= xorKey;
         }
 
-        return new BinaryStream(outputBuffer);
+        return new BinaryStream(outputBuffer.ToArray());
     }
 
     public static BinaryStream Compress(BinaryStream data, byte xorKey)

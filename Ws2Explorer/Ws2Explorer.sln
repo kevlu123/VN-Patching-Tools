@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ws2Explorer.Gui", "Ws2Explo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LEProc", "LocaleEmulator\LEProc.csproj", "{543FF7D4-B25C-4BBB-9B3C-A97AC4896F53}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ws2Explorer.Dokan", "Ws2Explorer.Dokan\Ws2Explorer.Dokan.csproj", "{1073CB98-7DF3-4043-BA67-48DDA18B0A53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{543FF7D4-B25C-4BBB-9B3C-A97AC4896F53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{543FF7D4-B25C-4BBB-9B3C-A97AC4896F53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{543FF7D4-B25C-4BBB-9B3C-A97AC4896F53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1073CB98-7DF3-4043-BA67-48DDA18B0A53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1073CB98-7DF3-4043-BA67-48DDA18B0A53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1073CB98-7DF3-4043-BA67-48DDA18B0A53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1073CB98-7DF3-4043-BA67-48DDA18B0A53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

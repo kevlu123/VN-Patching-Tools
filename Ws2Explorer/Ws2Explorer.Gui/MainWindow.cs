@@ -164,7 +164,7 @@ partial class MainWindow : Form
             Progress = new Progress<TaskProgressInfo>(OnProgress),
             SortFileList = AlphabeticalFileSort,
             OnError = OnError,
-            OnInfo = OnInfo,
+            OnMetadataInfo = OnMetadataInfo,
             OnStatus = OnStatus,
             OnFileList = OnFileList,
             OnPathText = OnPathText,
@@ -221,9 +221,9 @@ partial class MainWindow : Form
         dialog.ShowDialog();
     }
 
-    private static void OnInfo(string message)
+    private static void OnMetadataInfo(string message)
     {
-        MessageBox.Show(message);
+        MessageBox.Show(message, "Metadata");
     }
 
     private void OnStatus(string message)

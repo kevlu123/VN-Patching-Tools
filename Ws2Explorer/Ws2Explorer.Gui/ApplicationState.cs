@@ -23,7 +23,7 @@ class ApplicationState(string? openPath)
 
     public IProgress<TaskProgressInfo>? Progress { get; set; }
     public Action<Exception>? OnError { get; set; }
-    public Action<string>? OnInfo { get; set; }
+    public Action<string>? OnMetadataInfo { get; set; }
     public Action<string>? OnStatus { get; set; }
     public Action<ReadOnlyCollection<FileInfo>>? OnFileList { get; set; }
     public Action<string>? OnPathText { get; set; }
@@ -286,8 +286,7 @@ class ApplicationState(string? openPath)
         {
             if (folderStack[^1].Folder is not Directory directory)
             {
-                OnInfo?.Invoke("Cannot create directory in an archive.");
-                return;
+                throw new QuietError("Cannot create directory in an archive.");
             }
             var path = Path.Combine(directory.FullPath, filename);
             System.IO.Directory.CreateDirectory(path);
@@ -327,11 +326,11 @@ class ApplicationState(string? openPath)
             {
                 if (selectedFile.File != null)
                 {
-                    OnInfo?.Invoke(GetFileLongDescriptionInternal(selectedFile.File));
+                    OnMetadataInfo?.Invoke(GetFileLongDescriptionInternal(selectedFile.File));
                 }
                 else
                 {
-                    OnInfo?.Invoke("Directory");
+                    OnMetadataInfo?.Invoke("Directory");
                 }
             }
             else

@@ -530,7 +530,8 @@ static void MyMain(string[] args)
             FileTool.WriteFile(
                 Path.Combine(outputPath, name),
                 arc.Stream,
-                OverwriteMode.Overwrite).Wait();
+                OverwriteMode.Overwrite,
+                Progress.I).Wait();
         }
     }
 
@@ -539,7 +540,8 @@ static void MyMain(string[] args)
         FileTool.WriteFile(
             Path.Combine(outputPath, name),
             stream,
-            OverwriteMode.Overwrite).Wait();
+            OverwriteMode.Overwrite,
+            Progress.I).Wait();
     }
 
     ArcFile OpenArc(string folder, string name)

@@ -466,11 +466,11 @@ partial class MainWindow : Form
                     return true;
             }
         }
-        else if (path_TextBox.SelectionStart == path_TextBox.Text.Length)
+        else
         {
             switch (keyData)
             {
-                case Keys.Tab:
+                case Keys.Tab when path_TextBox.SelectionStart == path_TextBox.Text.Length:
                     state.AutoCompletePath(path_TextBox.Text);
                     return true;
                 case Keys.Enter:

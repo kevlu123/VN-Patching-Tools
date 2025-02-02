@@ -1,1 +1,0 @@
--- This code has been moved to VariableSize.lua.

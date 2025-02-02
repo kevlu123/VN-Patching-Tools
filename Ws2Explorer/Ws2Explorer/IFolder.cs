@@ -6,11 +6,6 @@ public interface IFolder
 
     List<FileInfo> ListFiles();
 
-    bool ContainsFile(string filename)
-    {
-        return ListFiles().Any(f => f.Filename == filename);
-    }
-
     Task<BinaryStream> OpenFile(
         string filename,
         IProgress<TaskProgressInfo>? progress = null,
@@ -20,19 +15,29 @@ public interface IFolder
     {
         throw new FileNotFoundException("File not found.", name);
     }
+}
 
-    async Task<DisposingDictionary<string, BinaryStream>> GetContents(
+public static class IFolderExtensions
+{
+    public static bool ContainsFile(this IFolder self, string filename)
+    {
+        // TODO: case sensitivity
+        return self.ListFiles().Any(f => f.Filename == filename);
+    }
+
+    public static async Task<DisposingDictionary<string, BinaryStream>> LoadAllStreams(
+        this IFolder self,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
         var contents = new DisposingDictionary<string, BinaryStream>();
         try
         {
-            foreach (var fileInfo in ListFiles())
+            foreach (var fileInfo in self.ListFiles())
             {
                 if (!fileInfo.IsDirectory)
                 {
-                    contents[fileInfo.Filename] = await OpenFile(fileInfo.Filename, progress, ct);
+                    contents[fileInfo.Filename] = await self.OpenFile(fileInfo.Filename, progress, ct);
                 }
             }
             return contents;
@@ -44,11 +49,12 @@ public interface IFolder
         }
     }
 
-    async Task<DisposingDictionary<string, IFile>> GetFiles(
+    public static async Task<DisposingDictionary<string, IFile>> LoadAllFiles(
+        this IFolder self,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        using var contents = await GetContents(progress, ct);
+        using var contents = await self.LoadAllStreams(progress, ct);
         var fileTasks = contents.Select(async kvp => new
         {
             Name = kvp.Key,
@@ -75,12 +81,13 @@ public interface IFolder
             .ToDisposingDictionary();
     }
 
-    async Task<DisposingDictionary<string, T>> GetFiles<T>(
+    public static async Task<DisposingDictionary<string, T>> LoadAllFiles<T>(
+        this IFolder self,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
         where T : class, IFile<T>
     {
-        using var contents = await GetContents(progress, ct);
+        using var contents = await self.LoadAllStreams(progress, ct);
         var fileTasks = contents.Select(async kvp => new
         {
             Name = kvp.Key,
@@ -89,6 +96,7 @@ public interface IFolder
 
         try
         {
+            // TODO: Check this works as expected
             await Task.WhenAll(fileTasks);
         }
         catch { }

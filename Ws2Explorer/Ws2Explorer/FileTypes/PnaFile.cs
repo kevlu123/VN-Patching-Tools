@@ -281,7 +281,7 @@ public sealed class PnaFile : IArchive<PnaFile>
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        var content = await ((IArchive)this).GetContents(progress, ct);
+        var content = await ((IArchive)this).LoadAllStreams(progress, ct);
         var header = Header with { FileCount = Header.FileCount + 1 };
         var meta = new PnaImageMetadata
         {
@@ -311,7 +311,7 @@ public sealed class PnaFile : IArchive<PnaFile>
     {
         int index1 = ImageIndex(filename1) ?? MetaIndex(filename1) ?? throw new FileNotFoundException(filename1);
         int index2 = ImageIndex(filename2) ?? MetaIndex(filename2) ?? throw new FileNotFoundException(filename2);
-        var content = await ((IArchive)this).GetContents(progress, ct);
+        var content = await ((IArchive)this).LoadAllStreams(progress, ct);
         if (index1 != index2 || index1 < Header.FileCount)
         {
             var meta1 = MetaName(index1);

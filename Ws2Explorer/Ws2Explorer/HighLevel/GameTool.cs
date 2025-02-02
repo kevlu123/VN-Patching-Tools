@@ -117,7 +117,7 @@ public static class GameTool
             "Multiple 'script.arc' found.");
         using var scriptArc = await gameFolder.OpenFile(scriptFilename.Filename, progress, ct)
             .Decode<ArcFile>();
-        using var contents = await ((IFolder)scriptArc).GetContents(progress, ct);
+        using var contents = await ((IFolder)scriptArc).LoadAllStreams(progress, ct);
         foreach (var filename in contents.Keys.ToArray())
         {
             try
@@ -183,31 +183,49 @@ end
         {
             using var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
                 .Decode<ArcFile>();
-            var ws2Filenames = arc.ListFiles()
-                .Select(fi => fi.Filename)
-                .Where(f => f.EndsWith(".ws2", StringComparison.OrdinalIgnoreCase));
-
-            foreach (var ws2Filename in ws2Filenames)
+            foreach (var (src, dsts) in await GetFlowchart(arc, progress, ct))
             {
-                var nameNoExt = ws2Filename[..^4];
-                if (!graph.ContainsKey(ws2Filename))
+                if (!graph.TryGetValue(src, out var value))
                 {
-                    graph[nameNoExt] = [];
+                    value = [];
+                    graph[src] = value;
                 }
-
-                using var ws2 = await arc.OpenFile(ws2Filename, progress, ct)
-                    .Decode<Ws2File>();
-                var jumpOps = ws2.Ops
-                    .Where(op => op.Code == Opcode.JUMP_FILE_07)
-                    .Select(op => op.Arguments[0].String.ToLowerInvariant());
-                var choiceOps = ws2.Ops
-                    .Where(op => op.Code == Opcode.SHOW_CHOICE_0F)
-                    .SelectMany(op => op.Arguments[0].ChoiceArray
-                        .Where(j => j.JumpOp.Code == Opcode.JUMP_FILE_07)
-                        .Select(j => j.JumpOp.Arguments[0].String.ToLowerInvariant()));
-                graph[nameNoExt].AddRange(jumpOps);
-                graph[nameNoExt].AddRange(choiceOps);
+                value.AddRange(dsts);
             }
+        }
+        return graph;
+    }
+
+    public static async Task<Dictionary<string, List<string>>> GetFlowchart(
+        ArcFile arc,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        var graph = new Dictionary<string, List<string>>(StringComparer.InvariantCultureIgnoreCase);
+        var ws2Filenames = arc.ListFiles()
+            .Select(fi => fi.Filename)
+            .Where(f => f.EndsWith(".ws2", StringComparison.OrdinalIgnoreCase));
+        foreach (var ws2Filename in ws2Filenames)
+        {
+            var nameNoExt = ws2Filename[..^4];
+            if (!graph.TryGetValue(nameNoExt, out var value))
+            {
+                value = [];
+                graph[nameNoExt] = value;
+            }
+
+            using var ws2 = await arc.OpenFile(ws2Filename, progress, ct)
+                .Decode<Ws2File>();
+            var jumpOps = ws2.Ops
+                .Where(op => op.Code == Opcode.JUMP_FILE_07)
+                .Select(op => op.Arguments[0].String.ToLowerInvariant());
+            var choiceOps = ws2.Ops
+                .Where(op => op.Code == Opcode.SHOW_CHOICE_0F)
+                .SelectMany(op => op.Arguments[0].ChoiceArray
+                    .Where(j => j.JumpOp.Code == Opcode.JUMP_FILE_07)
+                    .Select(j => j.JumpOp.Arguments[0].String.ToLowerInvariant()));
+            value.AddRange(jumpOps);
+            value.AddRange(choiceOps);
         }
         return graph;
     }
@@ -229,7 +247,7 @@ end
         using var arcChildren = new DisposingDictionary<string, DisposingDictionary<string, IFile>>();
         foreach (var (name, rioArc) in rioArcs)
         {
-            arcChildren.Add(name, await rioArc.GetFiles(progress, ct));
+            arcChildren.Add(name, await rioArc.LoadAllFiles(progress, ct));
         }
 
         var names = new HashSet<string>();

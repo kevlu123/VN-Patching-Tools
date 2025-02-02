@@ -243,10 +243,6 @@ public readonly struct Argument
 
 public readonly struct Op
 {
-    public const int EPILOGUE_CODE = -1;
-    public const int LABEL_CODE = -2;
-    public const int VERSION_CODE = -3;
-
     internal const int EPILOGUE_SIZE = 8;
 
     private readonly int code;
@@ -264,13 +260,18 @@ public readonly struct Op
 
     public string? Description => Code switch
     {
-        EPILOGUE_CODE => "<Epilogue>",
-        LABEL_CODE => "<Label>",
-        VERSION_CODE => "<Version>",
+        Opcode.EPILOGUE => "<Epilogue>",
+        Opcode.LABEL => "<Label>",
+        Opcode.VERSION => "<Version>",
         _ => OpFormat.Formats[Code].Description,
     };
 
-    public ImmutableArray<Argument> Arguments { get; init; }
+    private readonly ImmutableArray<Argument> arguments;
+    public ImmutableArray<Argument> Arguments
+    {
+        get => arguments.IsDefault ? [] : arguments;
+        init => arguments = value;
+    }
 
     public IEnumerable<int> Labels
     {
@@ -298,9 +299,9 @@ public readonly struct Op
 
     public int Size => Code switch
     {
-        EPILOGUE_CODE => EPILOGUE_SIZE,
-        LABEL_CODE => 0,
-        VERSION_CODE => 0,
+        Opcode.EPILOGUE => EPILOGUE_SIZE,
+        Opcode.LABEL => 0,
+        Opcode.VERSION => 0,
         _ => 1 + Arguments.Sum(a => a.Size),
     };
 
@@ -314,9 +315,9 @@ public readonly struct Op
     {
         return Code switch
         {
-            EPILOGUE_CODE => "<Epilogue>",
-            LABEL_CODE => "<Label>",
-            VERSION_CODE => "<Version>",
+            Opcode.EPILOGUE => "<Epilogue>",
+            Opcode.LABEL => "<Label>",
+            Opcode.VERSION => "<Version>",
             _ when Description != null => $"{Code:X2} ({Description})",
             _ => $"{Code:X2}",
         };
@@ -327,11 +328,11 @@ public readonly struct Op
         switch (name)
         {
             case "<Epilogue>":
-                return EPILOGUE_CODE;
+                return Opcode.EPILOGUE;
             case "<Label>":
-                return LABEL_CODE;
+                return Opcode.LABEL;
             case "<Version>":
-                return VERSION_CODE;
+                return Opcode.VERSION;
             default:
                 try
                 {
@@ -385,9 +386,9 @@ public readonly struct Op
         {
             string format = code switch
             {
-                EPILOGUE_CODE => "bbbbbbbb",
-                LABEL_CODE => "a",
-                VERSION_CODE => "s",
+                Opcode.EPILOGUE => "bbbbbbbb",
+                Opcode.LABEL => "a",
+                Opcode.VERSION => "s",
                 _ => OpFormat.Formats[code].VersionFormats[(int)version]
                     ?? throw new InvalidDataException($"Op code {code:X2} is not supported in version {version}"),
             };

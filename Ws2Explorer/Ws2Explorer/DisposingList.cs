@@ -5,6 +5,7 @@ namespace Ws2Explorer;
 public sealed class DisposingList<T> : IList<T>, IDisposable
     where T : class
 {
+    private readonly Action<T> dispose;
     private readonly List<T> list = [];
     private bool disposedValue;
 
@@ -19,10 +20,15 @@ public sealed class DisposingList<T> : IList<T>, IDisposable
         {
             if (list[index] != value)
             {
-                DisposeItem(list[index]);
+                dispose(list[index]);
                 list[index] = value;
             }
         }
+    }
+
+    public DisposingList(Action<T>? dispose = null)
+    {
+        this.dispose = dispose ?? (item => (item as IDisposable)?.Dispose());
     }
 
     public void Add(T item)
@@ -37,13 +43,13 @@ public sealed class DisposingList<T> : IList<T>, IDisposable
 
     public void RemoveAt(int index)
     {
-        DisposeItem(list[index]);
+        dispose(list[index]);
         list.RemoveAt(index);
     }
 
     public void Pop()
     {
-        DisposeItem(list[^1]);
+        dispose(list[^1]);
         list.RemoveAt(list.Count - 1);
     }
 
@@ -51,7 +57,7 @@ public sealed class DisposingList<T> : IList<T>, IDisposable
     {
         foreach (var item in list)
         {
-            DisposeItem(item);
+            dispose(item);
         }
         list.Clear();
     }
@@ -80,18 +86,10 @@ public sealed class DisposingList<T> : IList<T>, IDisposable
     {
         if (list.Remove(item))
         {
-            DisposeItem(item);
+            dispose(item);
             return true;
         }
         return false;
-    }
-
-    private static void DisposeItem(T item)
-    {
-        if (item is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
     }
 
     public IEnumerator<T> GetEnumerator()
@@ -110,7 +108,7 @@ public sealed class DisposingList<T> : IList<T>, IDisposable
         {
             foreach (var item in list)
             {
-                DisposeItem(item);
+                dispose(item);
             }
             list.Clear();
             disposedValue = true;
@@ -120,10 +118,10 @@ public sealed class DisposingList<T> : IList<T>, IDisposable
 
 public static class DisposingListExtensions
 {
-    public static DisposingList<T> ToDisposingList<T>(this IEnumerable<T> source)
+    public static DisposingList<T> ToDisposingList<T>(this IEnumerable<T> source, Action<T>? dispose = null)
         where T : class
     {
-        var list = new DisposingList<T>();
+        var list = new DisposingList<T>(dispose);
         try
         {
             // If iterating source throws inside AddRange, the elements added

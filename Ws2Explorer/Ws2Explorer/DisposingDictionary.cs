@@ -7,6 +7,7 @@ public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
     where K : notnull
     where V : class
 {
+    private readonly Action<V> dispose;
     private readonly Dictionary<K, V> dictionary = [];
     private bool disposedValue;
 
@@ -17,7 +18,7 @@ public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
         {
             if (dictionary.TryGetValue(key, out var oldValue) && oldValue != value)
             {
-                DisposeItem(oldValue);
+                dispose(oldValue);
             }
             dictionary[key] = value;
         }
@@ -30,6 +31,11 @@ public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
     public int Count => dictionary.Count;
 
     public bool IsReadOnly => ((ICollection<KeyValuePair<K, V>>)dictionary).IsReadOnly;
+
+    public DisposingDictionary(Action<V>? dispose = null)
+    {
+        this.dispose = dispose ?? (item => (item as IDisposable)?.Dispose());
+    }
 
     public void Add(K key, V value)
     {
@@ -45,7 +51,7 @@ public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
     {
         foreach (var item in dictionary.Values)
         {
-            DisposeItem(item);
+            dispose(item);
         }
         dictionary.Clear();
     }
@@ -74,7 +80,7 @@ public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
     {
         if (dictionary.TryGetValue(key, out var value))
         {
-            DisposeItem(value);
+            dispose(value);
         }
         return dictionary.Remove(key);
     }
@@ -83,7 +89,7 @@ public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
     {
         if (dictionary.TryGetValue(item.Key, out var value))
         {
-            DisposeItem(value);
+            dispose(value);
         }
         return dictionary.Remove(item.Key);
     }
@@ -98,21 +104,13 @@ public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
         return dictionary.GetEnumerator();
     }
 
-    private static void DisposeItem(V item)
-    {
-        if (item is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
-    }
-
     public void Dispose()
     {
         if (!disposedValue)
         {
             foreach (var item in dictionary.Values)
             {
-                DisposeItem(item);
+                dispose(item);
             }
             dictionary.Clear();
             disposedValue = true;
@@ -122,11 +120,13 @@ public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
 
 public static class DisposingDictionaryExtensions
 {
-    public static DisposingDictionary<K, V> ToDisposingDictionary<K, V>(this IEnumerable<KeyValuePair<K, V>> source)
+    public static DisposingDictionary<K, V> ToDisposingDictionary<K, V>(
+        this IEnumerable<KeyValuePair<K, V>> source,
+        Action<V>? dispose = null)
         where K : notnull
         where V : class
     {
-        var dictionary = new DisposingDictionary<K, V>();
+        var dictionary = new DisposingDictionary<K, V>(dispose);
         try
         {
             foreach (var item in source)

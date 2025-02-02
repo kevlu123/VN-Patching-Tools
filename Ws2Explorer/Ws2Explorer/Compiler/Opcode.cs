@@ -2,6 +2,10 @@
 
 public static class Opcode
 {
+    public const int EPILOGUE = -1;
+    public const int LABEL = -2;
+    public const int VERSION = -3;
+
     public const byte NULL_00 = 0;
     public const byte CONDITIONAL_JUMP_01 = 1;
     public const byte JUMP_02 = 2;

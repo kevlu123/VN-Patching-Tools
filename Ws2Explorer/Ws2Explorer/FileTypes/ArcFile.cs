@@ -47,7 +47,7 @@ public sealed class ArcFile : IArchive<ArcFile>
             {
                 DataLen = reader.ReadNonnegativeInt32(),
                 DataOffset = reader.ReadNonnegativeInt32(),
-                Filename = reader.ReadUTF16String().ToLowerInvariant(),
+                Filename = reader.ReadUTF16String(),
             };
             subHeaders.Add(subHeader.Filename, subHeader);
             checked
@@ -82,7 +82,7 @@ public sealed class ArcFile : IArchive<ArcFile>
     {
         // Create subheaders
         var position = 0;
-        subHeaders = [];
+        subHeaders = new SortedDictionary<string, ArcSubHeader>(StringComparer.InvariantCultureIgnoreCase);
         foreach (var (filename, stream) in contents.OrderBy(kv => kv.Key))
         {
             subHeaders.Add(filename, new ArcSubHeader
@@ -160,7 +160,7 @@ public sealed class ArcFile : IArchive<ArcFile>
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        if (!subHeaders.TryGetValue(filename.ToLowerInvariant(), out var subHeader))
+        if (!subHeaders.TryGetValue(filename, out var subHeader))
         {
             throw new FileNotFoundException(filename);
         }

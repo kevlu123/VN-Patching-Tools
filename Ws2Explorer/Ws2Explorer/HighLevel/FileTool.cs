@@ -79,7 +79,7 @@ public static class FileTool
             }
             else
             {
-                using var contents = await parent.Folder.GetContents(progress, ct);
+                using var contents = await parent.Folder.LoadAllStreams(progress, ct);
                 var newContents = contents.ToDictionary();
                 newContents[child.Name] = childStream;
                 hierarchy[i] = new NamedFolder
@@ -151,7 +151,7 @@ public static class FileTool
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        var contents = await folder.GetContents(progress, ct);
+        var contents = await folder.LoadAllStreams(progress, ct);
         try
         {
             modify(contents);
@@ -443,6 +443,21 @@ public static class FileTool
     }
 
     public static async Task<DisposingDictionary<string, BinaryStream>> Diff(
+        IFolder oldArchive,
+        IFolder newArchive,
+        DiffPartitionMode partitionMode,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        return await Diff(
+            [oldArchive],
+            [newArchive],
+            partitionMode,
+            progress,
+            ct);
+    }
+
+    public static async Task<DisposingDictionary<string, BinaryStream>> Diff(
         IEnumerable<IFolder> oldArchives,
         IEnumerable<IFolder> newArchives,
         DiffPartitionMode partitionMode,
@@ -457,7 +472,7 @@ public static class FileTool
         var oldSeen = new Dictionary<string, string>();
         foreach (var oldArchive in oldArchives)
         {
-            using var contents = await oldArchive.GetContents(progress, ct);
+            using var contents = await oldArchive.LoadAllStreams(progress, ct);
             foreach (var (name, content) in contents)
             {
                 oldSeen[name] = Hash(content);
@@ -471,7 +486,7 @@ public static class FileTool
         using var changed = new DisposingDictionary<string, BinaryStream>();
         foreach (var newArchive in newArchives)
         {
-            using var contents = await newArchive.GetContents(progress, ct);
+            using var contents = await newArchive.LoadAllStreams(progress, ct);
             foreach (var (name, content) in contents)
             {
                 newSeen.Add(name);

@@ -16,6 +16,13 @@ public sealed class Ws2File : IArchive<Ws2File>
 
     public Ws2Version Version => Enum.Parse<Ws2Version>(Ops[0].Arguments[0].String);
 
+    public Ws2File(IEnumerable<Op> ops)
+    {
+        // TODO: Validate ops
+        Ops = ops.ToImmutableArray();
+        Stream = Ws2Compiler.Compile(ops);
+    }
+
     private Ws2File(BinaryStream stream, out DecodeConfidence confidence)
     {
         Ops = [.. Ws2Compiler.Decompile(stream, out _)];
@@ -36,6 +43,7 @@ public sealed class Ws2File : IArchive<Ws2File>
             {
                 using var textFile = stream
                     .Decode<TextFile>(decRef: false).Result;
+                // TODO: Validate ops
                 Ops = [.. Ws2Compiler.FromJson(textFile.Text)];
                 Stream = Ws2Compiler.Compile(Ops);
                 return;

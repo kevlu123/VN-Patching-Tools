@@ -53,7 +53,7 @@ public static class Ws2Compiler
         var reader = new BinaryReader(data);
         var ops = new List<(Op op, int offset)>()
         {
-            (new() { Code = Op.VERSION_CODE, Arguments = [Argument.NewString(version.ToString())] }, 0),
+            (new() { Code = Opcode.VERSION, Arguments = [Argument.NewString(version.ToString())] }, 0),
         };
         var labels = new HashSet<int>();
         while (reader.Position + Op.EPILOGUE_SIZE < reader.Length)
@@ -67,7 +67,7 @@ public static class Ws2Compiler
         var epilogueOffset = reader.Position;
         ops.Add((new Op
         {
-            Code = Op.EPILOGUE_CODE,
+            Code = Opcode.EPILOGUE,
             Arguments = [.. Enumerable.Range(0, Op.EPILOGUE_SIZE)
                 .Select(_ => Argument.NewUInt8(reader.ReadUInt8()))],
         }, epilogueOffset));
@@ -77,7 +77,7 @@ public static class Ws2Compiler
         {
             if (labels.Contains(offset))
             {
-                finalOps.Add(new() { Code = Op.LABEL_CODE, Arguments = [Argument.NewLabel(offset)] });
+                finalOps.Add(new() { Code = Opcode.LABEL, Arguments = [Argument.NewLabel(offset)] });
                 labels.Remove(offset);
             }
             finalOps.Add(op);
@@ -161,7 +161,7 @@ public static class Ws2Compiler
         var labelMap = new Dictionary<int, int>();
         foreach (var op in ops)
         {
-            if (op.Code == Op.LABEL_CODE)
+            if (op.Code == Opcode.LABEL)
             {
                 var label = op.Arguments[0].Label;
                 labelMap.Add(label, len);
@@ -176,7 +176,7 @@ public static class Ws2Compiler
         var writer = new BinaryWriter(data);
 
         var versionOp = ops.First();
-        if (versionOp.Code != Op.VERSION_CODE)
+        if (versionOp.Code != Opcode.VERSION)
         {
             throw new InvalidDataException($"First op must be version, got {versionOp.Code}.");
         }
@@ -186,9 +186,9 @@ public static class Ws2Compiler
         {
             switch (op.Code)
             {
-                case Op.LABEL_CODE:
+                case Opcode.LABEL:
                     break;
-                case Op.EPILOGUE_CODE:
+                case Opcode.EPILOGUE:
                     foreach (var arg in op.Arguments)
                     {
                         writer.WriteUInt8(arg.UInt8);
@@ -203,7 +203,7 @@ public static class Ws2Compiler
         }
 
         var epilogueOp = ops.Last();
-        if (epilogueOp.Code != Op.EPILOGUE_CODE)
+        if (epilogueOp.Code != Opcode.EPILOGUE)
         {
             throw new InvalidDataException($"Last op must be epilogue, got {epilogueOp.Code}");
         }

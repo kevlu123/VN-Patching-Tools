@@ -10,7 +10,10 @@ Very little testing has been done. Alert me of any issues.
 
 ## Download
 
-TODO
+- <https://github.com/kevlu123/VN-Patching-Tools/releases/download/A-Sky-Full-of-Stars-v1.1/A-Sky-Full-of-Stars-Part1.zip>
+- <https://github.com/kevlu123/VN-Patching-Tools/releases/download/A-Sky-Full-of-Stars-v1.1/A-Sky-Full-of-Stars-Part2.zip>
+- <https://github.com/kevlu123/VN-Patching-Tools/releases/download/A-Sky-Full-of-Stars-v1.1/A-Sky-Full-of-Stars-Part3.zip>
+- <https://github.com/kevlu123/VN-Patching-Tools/releases/download/A-Sky-Full-of-Stars-v1.1/A-Sky-Full-of-Stars-Part4.zip>
 
 ## Developers
 

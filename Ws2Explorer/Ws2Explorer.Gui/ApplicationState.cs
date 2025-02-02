@@ -72,7 +72,11 @@ class ApplicationState(string? openPath)
             {
                 continue;
             }
-            await OpenPathInternal(path, CancellationToken.None);
+            try
+            {
+                await OpenPathInternal(path, CancellationToken.None);
+            }
+            catch { }
             if (folderStack.Count > 0)
             {
                 goto success;

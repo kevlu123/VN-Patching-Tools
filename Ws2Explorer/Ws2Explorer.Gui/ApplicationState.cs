@@ -24,6 +24,7 @@ class ApplicationState(string? openPath)
     public IProgress<TaskProgressInfo>? Progress { get; set; }
     public Action<Exception>? OnError { get; set; }
     public Action<string>? OnMetadataInfo { get; set; }
+    public Action<IEnumerable<FileInfo>>? OnListFilesInFolder { get; set; }
     public Action<string>? OnStatus { get; set; }
     public Action<ReadOnlyCollection<FileInfo>>? OnFileList { get; set; }
     public Action<string>? OnPathText { get; set; }
@@ -1007,6 +1008,11 @@ class ApplicationState(string? openPath)
                 OnStatus?.Invoke($"Wrote {diff.Count} files to {dst}.");
             }
         });
+    }
+
+    public void ListFilesInFolder()
+    {
+        ProtectSync(() => OnListFilesInFolder?.Invoke(folderStack[^1].Folder.ListFiles()));
     }
 
     private string GetCurrentFolderPathInternal()

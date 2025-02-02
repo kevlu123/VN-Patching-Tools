@@ -36,9 +36,10 @@
             // dummy_Label
             // 
             dummy_Label.AutoSize = true;
+            dummy_Label.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             dummy_Label.Location = new Point(12, 9);
             dummy_Label.Name = "dummy_Label";
-            dummy_Label.Size = new Size(0, 15);
+            dummy_Label.Size = new Size(0, 14);
             dummy_Label.TabIndex = 0;
             dummy_Label.Visible = false;
             // 
@@ -55,6 +56,7 @@
             // 
             // message_TextBox
             // 
+            message_TextBox.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             message_TextBox.Location = new Point(12, 12);
             message_TextBox.Multiline = true;
             message_TextBox.Name = "message_TextBox";

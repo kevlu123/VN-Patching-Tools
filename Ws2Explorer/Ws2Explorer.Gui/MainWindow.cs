@@ -165,6 +165,7 @@ partial class MainWindow : Form
             SortFileList = AlphabeticalFileSort,
             OnError = OnError,
             OnMetadataInfo = OnMetadataInfo,
+            OnListFilesInFolder = OnListFilesInFolder,
             OnStatus = OnStatus,
             OnFileList = OnFileList,
             OnPathText = OnPathText,
@@ -224,6 +225,14 @@ partial class MainWindow : Form
     private static void OnMetadataInfo(string message)
     {
         MessageBox.Show(message, "Metadata");
+    }
+
+    private void OnListFilesInFolder(IEnumerable<FileInfo> fileInfos)
+    {
+        var entries = fileInfos.Select(fi => $"{fi.Filename,-30} {fi.FileSize?.ToString() ?? "-",10}");
+        var text = string.Join("\r\n", entries);
+        using var dialog = new InfoWindow("Files", text);
+        dialog.ShowDialog();
     }
 
     private void OnStatus(string message)
@@ -1149,5 +1158,10 @@ partial class MainWindow : Form
         {
             state.CreateNewDirectory(dialog.Filename);
         }
+    }
+
+    private void ListFiles_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.ListFilesInFolder();
     }
 }

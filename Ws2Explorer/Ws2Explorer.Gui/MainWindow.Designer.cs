@@ -100,6 +100,7 @@
             toolStripSeparator8 = new ToolStripSeparator();
             wordWrap_MenuItem = new ToolStripMenuItem();
             toolStripSeparator9 = new ToolStripSeparator();
+            listFiles_MenuItem = new ToolStripMenuItem();
             viewMetadata_MenuItem = new ToolStripMenuItem();
             viewPna_MenuItem = new ToolStripMenuItem();
             pnaShowEmpty_MenuItem = new ToolStripMenuItem();
@@ -110,11 +111,11 @@
             modifyNames_MenuItem = new ToolStripMenuItem();
             convertLuacToText_MenuItem = new ToolStripMenuItem();
             toolStripSeparator10 = new ToolStripSeparator();
+            findReferences_MenuItem = new ToolStripMenuItem();
             showChoices_MenuItem = new ToolStripMenuItem();
             mermaidFlowchart_MenuItem = new ToolStripMenuItem();
             jsonFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
-            listFiles_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -334,7 +335,7 @@
             // 
             createArc_MenuItem.Name = "createArc_MenuItem";
             createArc_MenuItem.ShortcutKeys = Keys.Control | Keys.F1;
-            createArc_MenuItem.Size = new Size(180, 22);
+            createArc_MenuItem.Size = new Size(144, 22);
             createArc_MenuItem.Text = "ARC";
             createArc_MenuItem.Click += CreateArc_MenuItemClicked;
             // 
@@ -342,7 +343,7 @@
             // 
             createPna_MenuItem.Name = "createPna_MenuItem";
             createPna_MenuItem.ShortcutKeys = Keys.Control | Keys.F2;
-            createPna_MenuItem.Size = new Size(180, 22);
+            createPna_MenuItem.Size = new Size(144, 22);
             createPna_MenuItem.Text = "PNA";
             createPna_MenuItem.Click += CreatePna_MenuItemClicked;
             // 
@@ -350,7 +351,7 @@
             // 
             createPan_MenuItem.Name = "createPan_MenuItem";
             createPan_MenuItem.ShortcutKeys = Keys.Control | Keys.F3;
-            createPan_MenuItem.Size = new Size(180, 22);
+            createPan_MenuItem.Size = new Size(144, 22);
             createPan_MenuItem.Text = "PAN";
             createPan_MenuItem.Click += CreatePan_MenuItemClicked;
             // 
@@ -358,7 +359,7 @@
             // 
             createPtf_MenuItem.Name = "createPtf_MenuItem";
             createPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.F4;
-            createPtf_MenuItem.Size = new Size(180, 22);
+            createPtf_MenuItem.Size = new Size(144, 22);
             createPtf_MenuItem.Text = "PTF";
             createPtf_MenuItem.Click += CreatePtf_MenuItemClicked;
             // 
@@ -366,7 +367,7 @@
             // 
             createWs2_MenuItem.Name = "createWs2_MenuItem";
             createWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.F5;
-            createWs2_MenuItem.Size = new Size(180, 22);
+            createWs2_MenuItem.Size = new Size(144, 22);
             createWs2_MenuItem.Text = "WS2";
             createWs2_MenuItem.Click += CreateWs2_MenuItemClicked;
             // 
@@ -381,7 +382,7 @@
             // 
             openAsArc_MenuItem.Name = "openAsArc_MenuItem";
             openAsArc_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F1;
-            openAsArc_MenuItem.Size = new Size(180, 22);
+            openAsArc_MenuItem.Size = new Size(176, 22);
             openAsArc_MenuItem.Text = "ARC";
             openAsArc_MenuItem.Click += OpenAsArc_MenuItemClicked;
             // 
@@ -389,7 +390,7 @@
             // 
             openAsPna_MenuItem.Name = "openAsPna_MenuItem";
             openAsPna_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F2;
-            openAsPna_MenuItem.Size = new Size(180, 22);
+            openAsPna_MenuItem.Size = new Size(176, 22);
             openAsPna_MenuItem.Text = "PNA";
             openAsPna_MenuItem.Click += OpenAsPna_MenuItemClicked;
             // 
@@ -397,7 +398,7 @@
             // 
             openAsPan_MenuItem.Name = "openAsPan_MenuItem";
             openAsPan_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F3;
-            openAsPan_MenuItem.Size = new Size(180, 22);
+            openAsPan_MenuItem.Size = new Size(176, 22);
             openAsPan_MenuItem.Text = "PAN";
             openAsPan_MenuItem.Click += OpenAsPan_MenuItemClicked;
             // 
@@ -405,7 +406,7 @@
             // 
             openAsPtf_MenuItem.Name = "openAsPtf_MenuItem";
             openAsPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F4;
-            openAsPtf_MenuItem.Size = new Size(180, 22);
+            openAsPtf_MenuItem.Size = new Size(176, 22);
             openAsPtf_MenuItem.Text = "PTF";
             openAsPtf_MenuItem.Click += OpenAsPtf_MenuItemClicked;
             // 
@@ -413,7 +414,7 @@
             // 
             openAsWs2_MenuItem.Name = "openAsWs2_MenuItem";
             openAsWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F5;
-            openAsWs2_MenuItem.Size = new Size(180, 22);
+            openAsWs2_MenuItem.Size = new Size(176, 22);
             openAsWs2_MenuItem.Text = "WS2";
             openAsWs2_MenuItem.Click += OpenAsWs2_MenuItemClicked;
             // 
@@ -486,7 +487,7 @@
             // 
             editAsText_MenuItem.Name = "editAsText_MenuItem";
             editAsText_MenuItem.ShortcutKeys = Keys.Control | Keys.D1;
-            editAsText_MenuItem.Size = new Size(180, 22);
+            editAsText_MenuItem.Size = new Size(156, 22);
             editAsText_MenuItem.Text = "Text...";
             editAsText_MenuItem.Click += EditAsText_MenuItemClicked;
             // 
@@ -494,7 +495,7 @@
             // 
             editAsImage_MenuItem.Name = "editAsImage_MenuItem";
             editAsImage_MenuItem.ShortcutKeys = Keys.Control | Keys.D2;
-            editAsImage_MenuItem.Size = new Size(180, 22);
+            editAsImage_MenuItem.Size = new Size(156, 22);
             editAsImage_MenuItem.Text = "Image...";
             editAsImage_MenuItem.Click += EditAsImage_MenuItemClicked;
             // 
@@ -502,7 +503,7 @@
             // 
             editAsHex_MenuItem.Name = "editAsHex_MenuItem";
             editAsHex_MenuItem.ShortcutKeys = Keys.Control | Keys.D3;
-            editAsHex_MenuItem.Size = new Size(180, 22);
+            editAsHex_MenuItem.Size = new Size(156, 22);
             editAsHex_MenuItem.Text = "Hex...";
             editAsHex_MenuItem.Click += EditAsHex_MenuItemClicked;
             // 
@@ -660,6 +661,14 @@
             toolStripSeparator9.Name = "toolStripSeparator9";
             toolStripSeparator9.Size = new Size(199, 6);
             // 
+            // listFiles_MenuItem
+            // 
+            listFiles_MenuItem.Name = "listFiles_MenuItem";
+            listFiles_MenuItem.ShortcutKeys = Keys.F1;
+            listFiles_MenuItem.Size = new Size(202, 22);
+            listFiles_MenuItem.Text = "List Files...";
+            listFiles_MenuItem.Click += ListFiles_MenuItemClicked;
+            // 
             // viewMetadata_MenuItem
             // 
             viewMetadata_MenuItem.Name = "viewMetadata_MenuItem";
@@ -689,7 +698,7 @@
             // 
             // game_MenuItem
             // 
-            game_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, toolStripSeparator11, setEntry_MenuItem, modifyNames_MenuItem, convertLuacToText_MenuItem, toolStripSeparator10, showChoices_MenuItem, mermaidFlowchart_MenuItem, jsonFlowchart_MenuItem });
+            game_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, toolStripSeparator11, setEntry_MenuItem, modifyNames_MenuItem, convertLuacToText_MenuItem, toolStripSeparator10, findReferences_MenuItem, showChoices_MenuItem, mermaidFlowchart_MenuItem, jsonFlowchart_MenuItem });
             game_MenuItem.Name = "game_MenuItem";
             game_MenuItem.Size = new Size(50, 20);
             game_MenuItem.Text = "Game";
@@ -697,7 +706,7 @@
             // launchGame_MenuItem
             // 
             launchGame_MenuItem.Name = "launchGame_MenuItem";
-            launchGame_MenuItem.ShortcutKeys = Keys.F12;
+            launchGame_MenuItem.ShortcutKeys = Keys.F10;
             launchGame_MenuItem.Size = new Size(249, 22);
             launchGame_MenuItem.Text = "Launch Game";
             launchGame_MenuItem.Click += LaunchGame_MenuItemClicked;
@@ -718,7 +727,7 @@
             // modifyNames_MenuItem
             // 
             modifyNames_MenuItem.Name = "modifyNames_MenuItem";
-            modifyNames_MenuItem.ShortcutKeys = Keys.F10;
+            modifyNames_MenuItem.ShortcutKeys = Keys.F12;
             modifyNames_MenuItem.Size = new Size(249, 22);
             modifyNames_MenuItem.Text = "Modify Names...";
             modifyNames_MenuItem.Click += ModifyNames_MenuItemClicked;
@@ -735,6 +744,14 @@
             // 
             toolStripSeparator10.Name = "toolStripSeparator10";
             toolStripSeparator10.Size = new Size(246, 6);
+            // 
+            // findReferences_MenuItem
+            // 
+            findReferences_MenuItem.Name = "findReferences_MenuItem";
+            findReferences_MenuItem.ShortcutKeys = Keys.Control | Keys.F;
+            findReferences_MenuItem.Size = new Size(249, 22);
+            findReferences_MenuItem.Text = "Find String References...";
+            findReferences_MenuItem.Click += FindReferences_MenuItemClicked;
             // 
             // showChoices_MenuItem
             // 
@@ -769,14 +786,6 @@
             back_Panel.Name = "back_Panel";
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
-            // 
-            // listFiles_MenuItem
-            // 
-            listFiles_MenuItem.Name = "listFiles_MenuItem";
-            listFiles_MenuItem.ShortcutKeys = Keys.F1;
-            listFiles_MenuItem.Size = new Size(202, 22);
-            listFiles_MenuItem.Text = "List Files...";
-            listFiles_MenuItem.Click += ListFiles_MenuItemClicked;
             // 
             // MainWindow
             // 
@@ -894,5 +903,6 @@
         private ToolStripMenuItem diff_MenuItem;
         private ToolStripMenuItem newDirectory_MenuItem;
         private ToolStripMenuItem listFiles_MenuItem;
+        private ToolStripMenuItem findReferences_MenuItem;
     }
 }

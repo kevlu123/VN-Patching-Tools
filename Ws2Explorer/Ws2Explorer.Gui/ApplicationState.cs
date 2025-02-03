@@ -23,15 +23,10 @@ class ApplicationState(string? openPath)
 
     public IProgress<TaskProgressInfo>? Progress { get; set; }
     public Action<Exception>? OnError { get; set; }
-    public Action<string>? OnMetadataInfo { get; set; }
-    public Action<IEnumerable<FileInfo>>? OnListFilesInFolder { get; set; }
     public Action<string>? OnStatus { get; set; }
     public Action<ReadOnlyCollection<FileInfo>>? OnFileList { get; set; }
     public Action<string>? OnPathText { get; set; }
     public Action<string>? OnFileCaption { get; set; }
-    public Action<List<ChoiceInfo>>? OnChoiceList { get; set; }
-    public Action<Flowchart>? OnJsonFlowchart { get; set; }
-    public Action<Flowchart>? OnMermaidFlowchart { get; set; }
     public Action<BinaryStream>? OnPreviewBinary { get; set; }
     public Action<BinaryStream>? OnPreviewPng { get; set; }
     public Action<BinaryStream>? OnPreviewOgg { get; set; }
@@ -328,7 +323,7 @@ class ApplicationState(string? openPath)
         }
     }
 
-    public void ShowFileMetadata()
+    public void ShowFileMetadata(Action<string> onResult)
     {
         ProtectSync(() =>
         {
@@ -336,11 +331,11 @@ class ApplicationState(string? openPath)
             {
                 if (selectedFile.File != null)
                 {
-                    OnMetadataInfo?.Invoke(GetFileLongDescriptionInternal(selectedFile.File));
+                    onResult(GetFileLongDescriptionInternal(selectedFile.File));
                 }
                 else
                 {
-                    OnMetadataInfo?.Invoke("Directory");
+                    onResult("Directory");
                 }
             }
             else
@@ -784,7 +779,7 @@ class ApplicationState(string? openPath)
     {
         ProtectSync(() =>
         {
-            if (folderStack[^1].Folder is Directory gameFolder)
+            if (GetGameFolderOrCurrentInternal() is Directory gameFolder)
             {
                 var gamePath = Path.Combine(gameFolder.FullPath, "AdvHD.exe");
                 var leprocPath = Path.Combine(GetExeFolderPath()!, "LEProc.exe");
@@ -809,8 +804,7 @@ class ApplicationState(string? openPath)
 
     private IFolder GetGameFolderOrCurrentInternal()
     {
-        return GameTool.FindGameFolder(folderStack.Select(x => x.Folder).ToList())
-            ?? folderStack[^1].Folder;
+        return GameTool.FindGameFolder(folderStack) ?? folderStack[^1].Folder;
     }
 
     public void SetEntry(Func<string, IEnumerable<string>, string> setEntryPrompt)
@@ -845,14 +839,14 @@ class ApplicationState(string? openPath)
         });
     }
 
-    public void GetChoices()
+    public void GetChoices(Action<List<ChoiceInfo>> onResult)
     {
         Protect(interruptable: false, async ct =>
         {
             if (GetGameFolderOrCurrentInternal() is Directory dir)
             {
                 var choices = await GameTool.GetChoices(dir, progress, ct);
-                OnChoiceList?.Invoke(choices);
+                onResult(choices);
             }
             else
             {
@@ -861,22 +855,21 @@ class ApplicationState(string? openPath)
         });
     }
 
-    public void GetJsonFlowchart()
+    public void GetJsonFlowchart(Action<Flowchart> onResult)
     {
-        Protect(interruptable: false, async ct => await GetFlowChartInternal(OnJsonFlowchart, ct));
+        Protect(interruptable: false, async ct => await GetFlowChartInternal(onResult, ct));
     }
 
-    public void GetMermaidFlowchart()
+    public void GetMermaidFlowchart(Action<Flowchart> onResult)
     {
-        Protect(interruptable: false, async ct => await GetFlowChartInternal(OnMermaidFlowchart, ct));
+        Protect(interruptable: false, async ct => await GetFlowChartInternal(onResult, ct));
     }
 
-    private async Task GetFlowChartInternal(Action<Flowchart>? callback, CancellationToken ct)
+    private async Task GetFlowChartInternal(Action<Flowchart> onResult, CancellationToken ct)
     {
         if (GetGameFolderOrCurrentInternal() is Directory dir)
         {
-            var flowchart = await GameTool.GetFlowchart(dir, progress, ct);
-            callback?.Invoke(flowchart);
+            onResult(await GameTool.GetFlowchart(dir, progress, ct));
         }
         else
         {
@@ -1025,9 +1018,38 @@ class ApplicationState(string? openPath)
         });
     }
 
-    public void ListFilesInFolder()
+    public void ListFilesInFolder(Action<IEnumerable<FileInfo>> onResult)
     {
-        ProtectSync(() => OnListFilesInFolder?.Invoke(folderStack[^1].Folder.ListFiles()));
+        ProtectSync(() => onResult(folderStack[^1].Folder.ListFiles()));
+    }
+
+    public void FindReferences(
+        Func<(string text, bool caseSensitive)?> searchTextPrompt,
+        Action<IDictionary<string, int>> onResult)
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            if (GetGameFolderOrCurrentInternal() is Directory dir)
+            {
+                var search = searchTextPrompt();
+                if (search == null)
+                {
+                    return;
+                }
+                onResult(await GameTool.FindReferences(
+                    dir,
+                    search.Value.text,
+                    search.Value.caseSensitive
+                        ? StringComparison.InvariantCulture
+                        : StringComparison.InvariantCultureIgnoreCase,
+                    progress,
+                    ct));
+            }
+            else
+            {
+                throw new QuietError("Navigate to the game directory.");
+            }
+        });
     }
 
     private string GetCurrentFolderPathInternal()

@@ -81,7 +81,7 @@ public static class IFolderExtensions
             .ToDisposingDictionary();
     }
 
-    public static async Task<DisposingDictionary<string, T>> LoadAllFiles<T>(
+    public static async Task<DisposingDictionary<string, T>> LoadAllFilesOfType<T>(
         this IFolder self,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
@@ -96,15 +96,9 @@ public static class IFolderExtensions
 
         try
         {
-            // TODO: Check this works as expected
             await Task.WhenAll(fileTasks);
         }
         catch { }
-
-        foreach (var fileTask in fileTasks.Where(t => t.IsFaulted))
-        {
-            fileTask.Result.File.Dispose();
-        }
 
         return fileTasks.Where(t => !t.IsFaulted)
             .ToDictionary(

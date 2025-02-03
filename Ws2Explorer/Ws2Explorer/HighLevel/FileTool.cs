@@ -567,7 +567,6 @@ public static class FileTool
     }
 }
 
-
 [Flags]
 public enum DiffPartitionMode
 {

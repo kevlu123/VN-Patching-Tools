@@ -43,11 +43,11 @@ public static class GameTool
         return result!;
     }
 
-    public static Directory? FindGameFolder(IList<IFolder> hierarchy)
+    public static Directory? FindGameFolder(IList<NamedFolder> hierarchy)
     {
         for (int i = hierarchy.Count - 1; i >= 0; i--)
         {
-            if (hierarchy[i] is Directory dir && dir.ContainsFile("AdvHD.exe"))
+            if (hierarchy[i].Folder is Directory dir && dir.ContainsFile("AdvHD.exe"))
             {
                 return dir;
             }
@@ -55,14 +55,14 @@ public static class GameTool
         return null;
     }
 
-    public static async Task<List<string>> FindReferences(
+    public static async Task<Dictionary<string, int>> FindReferences(
         Directory gameFolder,
         string str,
         StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        var refs = new List<string>();
+        var refs = new Dictionary<string, int>();
         foreach (var rioFilename in GetRioFilenames(gameFolder))
         {
             using var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
@@ -78,13 +78,13 @@ public static class GameTool
                             (arg.Value is NameString n && n.String.Equals(str, comparisonType)) ||
                             (arg.Value is MessageString m && m.String.Equals(str, comparisonType)))
                         {
-                            refs.Add(name);
+                            refs[name] = refs.GetValueOrDefault(name, 0) + 1;
                         }
                     }
                 }
             }
         }
-        return refs.Distinct().ToList();
+        return refs;
     }
 
     public static async Task SetEntryPoint(

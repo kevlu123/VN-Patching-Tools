@@ -165,15 +165,10 @@ partial class MainWindow : Form
             Progress = new Progress<TaskProgressInfo>(OnProgress),
             SortFileList = AlphabeticalFileSort,
             OnError = OnError,
-            OnMetadataInfo = OnMetadataInfo,
-            OnListFilesInFolder = OnListFilesInFolder,
             OnStatus = OnStatus,
             OnFileList = OnFileList,
             OnPathText = OnPathText,
             OnFileCaption = OnFileCaption,
-            OnChoiceList = OnChoiceList,
-            OnJsonFlowchart = OnJsonFlowchart,
-            OnMermaidFlowchart = OnMermaidFlowchart,
             OnPreviewBinary = OnPreviewBinary,
             OnPreviewText = OnPreviewText,
             OnPreviewPng = OnPreviewPng,
@@ -220,19 +215,6 @@ partial class MainWindow : Form
     private void OnError(Exception ex)
     {
         using var dialog = new InfoWindow("Error", GetDetailedErrorMessage(ex));
-        dialog.ShowDialog();
-    }
-
-    private static void OnMetadataInfo(string message)
-    {
-        MessageBox.Show(message, "Metadata");
-    }
-
-    private void OnListFilesInFolder(IEnumerable<FileInfo> fileInfos)
-    {
-        var entries = fileInfos.Select(fi => $"{fi.Filename,-30} {fi.FileSize?.ToString() ?? "-",10}");
-        var text = string.Join("\r\n", entries);
-        using var dialog = new InfoWindow("Files", text);
         dialog.ShowDialog();
     }
 
@@ -371,67 +353,6 @@ partial class MainWindow : Form
             panels_SplitContainer.Panel2.Controls.Clear();
             panels_SplitContainer.Panel2.Controls.Add(fontPreview_Label);
         }
-    }
-
-    private void OnChoiceList(List<ChoiceInfo> choiceInfos)
-    {
-        var texts = new List<string>();
-        foreach (var choiceInfo in choiceInfos)
-        {
-            texts.Add($"{choiceInfo.Filename}");
-            foreach (var choice in choiceInfo.Choices)
-            {
-                if (choice.JumpOp.Code == 0x06)
-                {
-                    // Jump
-                    texts.Add($"  \"{choice.Text}\" -> Label {choice.JumpOp.Arguments[0].Label}");
-                }
-                else
-                {
-                    // Jump file
-                    texts.Add($"  \"{choice.Text}\" -> {choice.JumpOp.Arguments[0].String}");
-                }
-            }
-            texts.Add(string.Empty);
-        }
-        using var dialog = new InfoWindow("Choices", string.Join("\r\n", texts));
-        dialog.ShowDialog();
-    }
-
-    private void OnJsonFlowchart(Flowchart flowchart)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine("{");
-        var i = 0;
-        foreach (var (src, dsts) in flowchart.OrderBy(kvp => kvp.Key == "start" ? 0 : 1))
-        {
-            sb.Append($"  \"{src}\": ");
-            sb.Append(JsonSerializer.Serialize(dsts));
-            if (i < flowchart.Count - 1)
-            {
-                sb.Append(',');
-            }
-            sb.AppendLine();
-            i++;
-        }
-        sb.AppendLine("]");
-        using var dialog = new InfoWindow("Flowchart", sb.ToString());
-        dialog.ShowDialog();
-    }
-
-    private void OnMermaidFlowchart(Flowchart flowchart)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine("graph TD;");
-        foreach (var (src, dsts) in flowchart.OrderBy(kvp => kvp.Key == "start" ? 0 : 1))
-        {
-            foreach (var dst in dsts)
-            {
-                sb.AppendLine($"  {src}-->{dst}");
-            }
-        }
-        using var dialog = new InfoWindow("Flowchart", sb.ToString());
-        dialog.ShowDialog();
     }
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -684,7 +605,7 @@ partial class MainWindow : Form
 
     private void ViewMetadata_MenuItemClicked(object sender, EventArgs e)
     {
-        state.ShowFileMetadata();
+        state.ShowFileMetadata(message => MessageBox.Show(message, "Metadata"));
     }
 
     private void PnaShowEmpty_MenuItemCheckChanged(object sender, EventArgs e)
@@ -1093,17 +1014,72 @@ partial class MainWindow : Form
 
     private void ShowChoices_MenuItem(object sender, EventArgs e)
     {
-        state.GetChoices();
+        state.GetChoices(choiceInfos =>
+        {
+            var texts = new List<string>();
+            foreach (var choiceInfo in choiceInfos)
+            {
+                texts.Add($"{choiceInfo.Filename}");
+                foreach (var choice in choiceInfo.Choices)
+                {
+                    if (choice.JumpOp.Code == 0x06)
+                    {
+                        // Jump
+                        texts.Add($"  \"{choice.Text}\" -> Label {choice.JumpOp.Arguments[0].Label}");
+                    }
+                    else
+                    {
+                        // Jump file
+                        texts.Add($"  \"{choice.Text}\" -> {choice.JumpOp.Arguments[0].String}");
+                    }
+                }
+                texts.Add(string.Empty);
+            }
+            using var dialog = new InfoWindow("Choices", string.Join("\r\n", texts));
+            dialog.ShowDialog();
+        });
     }
 
     private void JsonFlowchart_MenuItemClicked(object sender, EventArgs e)
     {
-        state.GetJsonFlowchart();
+        state.GetJsonFlowchart(flowchart =>
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("{");
+            var i = 0;
+            foreach (var (src, dsts) in flowchart.OrderBy(kvp => kvp.Key == "start" ? 0 : 1))
+            {
+                sb.Append($"  \"{src}\": ");
+                sb.Append(JsonSerializer.Serialize(dsts));
+                if (i < flowchart.Count - 1)
+                {
+                    sb.Append(',');
+                }
+                sb.AppendLine();
+                i++;
+            }
+            sb.AppendLine("]");
+            using var dialog = new InfoWindow("Flowchart", sb.ToString());
+            dialog.ShowDialog();
+        });
     }
 
     private void MermaidFlowchart_MenuItemClicked(object sender, EventArgs e)
     {
-        state.GetMermaidFlowchart();
+        state.GetMermaidFlowchart(flowchart =>
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("graph TD;");
+            foreach (var (src, dsts) in flowchart.OrderBy(kvp => kvp.Key == "start" ? 0 : 1))
+            {
+                foreach (var dst in dsts)
+                {
+                    sb.AppendLine($"  {src}-->{dst}");
+                }
+            }
+            using var dialog = new InfoWindow("Flowchart", sb.ToString());
+            dialog.ShowDialog();
+        });
     }
 
     private void ModifyNames_MenuItemClicked(object sender, EventArgs e)
@@ -1163,6 +1139,33 @@ partial class MainWindow : Form
 
     private void ListFiles_MenuItemClicked(object sender, EventArgs e)
     {
-        state.ListFilesInFolder();
+        state.ListFilesInFolder(fileInfos =>
+        {
+            var entries = fileInfos.Select(fi => $"{fi.Filename,-30} {fi.FileSize?.ToString() ?? "-",10}");
+            var text = string.Join("\r\n", entries);
+            using var dialog = new InfoWindow("Files", text);
+            dialog.ShowDialog();
+        });
+    }
+
+    private void FindReferences_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.FindReferences(
+            () =>
+            {
+                using var dialog = new FindReferencesWindow();
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    return (dialog.SearchText, dialog.CaseSensitive);
+                }
+                return null;
+            },
+            refs =>
+            {
+                using var dialog = new InfoWindow(
+                    "References",
+                    string.Join("\r\n", refs.Select(r => $"({r.Value}) {r.Key}")));
+                dialog.ShowDialog();
+            });
     }
 }

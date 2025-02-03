@@ -68,6 +68,7 @@ partial class MainWindow : Form
         saveConfig_Timer = new FormTimer();
         saveConfig_Timer.Tick += (sender, e) => config?.Save();
         saveConfig_Timer.Interval = 30000;
+        saveConfig_Timer.Start();
 
         // Add version to title
         if (Application.ProductVersion.Contains('+'))

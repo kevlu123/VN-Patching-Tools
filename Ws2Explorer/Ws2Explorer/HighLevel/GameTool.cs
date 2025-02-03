@@ -118,12 +118,12 @@ public static class GameTool
             "Multiple 'script.arc' found.");
         using var scriptArc = await gameFolder.OpenFile(scriptFilename.Filename, progress, ct)
             .Decode<ArcFile>();
-        using var contents = await ((IFolder)scriptArc).LoadAllStreams(progress, ct);
+        using var contents = await scriptArc.LoadAllStreams(progress, ct);
         foreach (var filename in contents.Keys.ToArray())
         {
             try
             {
-                using var luac = await contents[filename].Decode<LuacFile>();
+                using var luac = await contents[filename].Decode<LuacFile>(decRef: false);
                 var lua = string.Format("""
 hex_source = "{0}"
 function hex_to_array(str)

@@ -320,7 +320,12 @@ class ApplicationState(string? openPath)
 
     private async Task RefreshFolderInternal(CancellationToken ct)
     {
+        var index = fileList.IndexOf(selectedFile?.Info!);
         await OpenPathInternal(GetCurrentFolderPathInternal(), ct);
+        if (index != -1)
+        {
+            await SelectSingleFileInternal(index, ct);
+        }
     }
 
     public void ShowFileMetadata()

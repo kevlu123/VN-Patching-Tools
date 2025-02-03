@@ -43,6 +43,50 @@ public static class GameTool
         return result!;
     }
 
+    public static Directory? FindGameFolder(IList<IFolder> hierarchy)
+    {
+        for (int i = hierarchy.Count - 1; i >= 0; i--)
+        {
+            if (hierarchy[i] is Directory dir && dir.ContainsFile("AdvHD.exe"))
+            {
+                return dir;
+            }
+        }
+        return null;
+    }
+
+    public static async Task<List<string>> FindReferences(
+        Directory gameFolder,
+        string str,
+        StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        var refs = new List<string>();
+        foreach (var rioFilename in GetRioFilenames(gameFolder))
+        {
+            using var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
+                .Decode<ArcFile>();
+            using var ws2Files = await arc.LoadAllFilesOfType<Ws2File>(progress, ct);
+            foreach (var (name, ws2) in ws2Files)
+            {
+                foreach (var op in ws2.Ops)
+                {
+                    foreach (var arg in op.Arguments)
+                    {
+                        if ((arg.Value is string s && s.Equals(str, comparisonType)) ||
+                            (arg.Value is NameString n && n.String.Equals(str, comparisonType)) ||
+                            (arg.Value is MessageString m && m.String.Equals(str, comparisonType)))
+                        {
+                            refs.Add(name);
+                        }
+                    }
+                }
+            }
+        }
+        return refs.Distinct().ToList();
+    }
+
     public static async Task SetEntryPoint(
         Directory gameFolder,
         Func<string, IEnumerable<string>, string> setEntryPrompt,

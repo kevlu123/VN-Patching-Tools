@@ -807,11 +807,17 @@ class ApplicationState(string? openPath)
         });
     }
 
+    private IFolder GetGameFolderOrCurrentInternal()
+    {
+        return GameTool.FindGameFolder(folderStack.Select(x => x.Folder).ToList())
+            ?? folderStack[^1].Folder;
+    }
+
     public void SetEntry(Func<string, IEnumerable<string>, string> setEntryPrompt)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (folderStack[^1].Folder is Directory dir)
+            if (GetGameFolderOrCurrentInternal() is Directory dir)
             {
                 await GameTool.SetEntryPoint(dir, setEntryPrompt, progress, ct);
                 await RefreshFolderInternal(ct);
@@ -827,7 +833,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (folderStack[^1].Folder is Directory dir)
+            if (GetGameFolderOrCurrentInternal() is Directory dir)
             {
                 await GameTool.ConvertLuacToText(dir, progress, ct);
                 await RefreshFolderInternal(ct);
@@ -843,7 +849,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (folderStack[^1].Folder is Directory dir)
+            if (GetGameFolderOrCurrentInternal() is Directory dir)
             {
                 var choices = await GameTool.GetChoices(dir, progress, ct);
                 OnChoiceList?.Invoke(choices);
@@ -867,7 +873,7 @@ class ApplicationState(string? openPath)
 
     private async Task GetFlowChartInternal(Action<Flowchart>? callback, CancellationToken ct)
     {
-        if (folderStack[^1].Folder is Directory dir)
+        if (GetGameFolderOrCurrentInternal() is Directory dir)
         {
             var flowchart = await GameTool.GetFlowchart(dir, progress, ct);
             callback?.Invoke(flowchart);
@@ -882,7 +888,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (folderStack[^1].Folder is Directory dir)
+            if (GetGameFolderOrCurrentInternal() is Directory dir)
             {
                 await GameTool.ModifyNames(dir, modifyNamesPrompt, progress, ct);
                 await RefreshFolderInternal(ct);

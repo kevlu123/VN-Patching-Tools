@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - 'Ws2Explorer*'
+      - 'Ws2Explorer-*'
 
 name: Create Ws2Explorer release
 
@@ -13,17 +13,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Setup .NET 7
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '7'
+          dotnet-version: '8'
 
       - name: Build
         shell: pwsh
         run: |
           cd Ws2Explorer/Ws2Explorer.Gui
-          dotnet publish -c Release
-          mv bin/Release/net7.0-windows/publish ${{ github.ref_name }}
+          $version = "${{ github.ref_name }}".Substring("Ws2Explorer-v".Length)
+          dotnet publish -c Release /p:Version=$version
+          mv bin/Release/net8.0-windows/publish ${{ github.ref_name }}
           Compress-Archive -Path ${{ github.ref_name }} -DestinationPath ${{ github.ref_name }}.zip
         
       - name: Create release

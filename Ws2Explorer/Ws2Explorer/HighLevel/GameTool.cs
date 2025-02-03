@@ -75,6 +75,7 @@ public static class GameTool
             .SelectMany(rio => rio.Folder.ListFiles()
                 .Select(fi => fi.Filename)
                 .Where(f => f.EndsWith(".ws2")))
+            .Select(f => f[..^4].ToUpperInvariant())
             .ToArray();
 
         var newEntry = setEntryPrompt(currentEntry, options);

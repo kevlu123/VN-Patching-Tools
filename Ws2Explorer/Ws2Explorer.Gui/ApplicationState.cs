@@ -1133,7 +1133,9 @@ class ApplicationState(string? openPath)
             TextFile txt => $"TXT ({txt.Encoding.GetPrettyEncodingName()})",
             TtfFile => "TTF",
             VideoFile => "VIDEO",
-            Ws2File ws2 => $"WS2 ({ws2.Version})",
+            Ws2File ws2 => ws2.HasUnresolvedLabels
+                ? $"WS2 ({ws2.Version}; WARNING UNRESOLVED LABELS)"
+                : $"WS2 ({ws2.Version})",
             _ => "UNKNOWN",
         };
     }
@@ -1166,7 +1168,8 @@ class ApplicationState(string? openPath)
                           + $"Encoding: {txt.Encoding.GetPrettyEncodingName()}",
             VideoFile => "(WMV) Windows media player video file",
             Ws2File ws2 => "(WS2) Script file\n\n"
-                         + $"Version: {ws2.Version}",
+                         + $"Version: {ws2.Version}\n"
+                         + $"Has unresolved labels: {ws2.HasUnresolvedLabels}",
             _ => "Unknown file type",
         };
     }

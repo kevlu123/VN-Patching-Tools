@@ -214,7 +214,7 @@ partial class MainWindow : Form
 
     private void OnError(Exception ex)
     {
-        using var dialog = new InfoWindow("Error", GetDetailedErrorMessage(ex));
+        using var dialog = new InfoWindow("Error", ex.ToString());
         dialog.ShowDialog();
     }
 
@@ -930,31 +930,6 @@ partial class MainWindow : Form
             sb.AppendLine("...");
         }
         return sb.ToString();
-    }
-
-    private static string GetDetailedErrorMessage(Exception exception)
-    {
-        var message = new StringBuilder();
-        message.AppendLine($"[{exception.GetType().FullName}]");
-        message.AppendLine(exception.Message);
-        if (exception is AggregateException aggregateException)
-        {
-            foreach (var innerException in aggregateException.InnerExceptions)
-            {
-                message.AppendLine(GetDetailedErrorMessage(innerException));
-            }
-        }
-        else if (exception.InnerException != null)
-        {
-            message.AppendLine();
-            message.AppendLine("======== Caused by ========");
-            message.AppendLine(GetDetailedErrorMessage(exception.InnerException));
-        }
-        else
-        {
-            message.AppendLine(exception.StackTrace);
-        }
-        return message.ToString();
     }
 
     private static int AlphabeticalFileSort(FileInfo lhs, FileInfo rhs)

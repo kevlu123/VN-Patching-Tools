@@ -14,18 +14,21 @@ public sealed class Ws2File : IArchive<Ws2File>
 
     public ImmutableArray<Op> Ops { get; }
 
+    private readonly bool hasUnresolvedLabels;
+    public bool HasUnresolvedLabels => hasUnresolvedLabels;
+
     public Ws2Version Version => Enum.Parse<Ws2Version>(Ops[0].Arguments[0].String);
 
     public Ws2File(IEnumerable<Op> ops)
     {
         // TODO: Validate ops
         Ops = ops.ToImmutableArray();
-        Stream = Ws2Compiler.Compile(ops);
+        Stream = Ws2Compiler.Compile(ops, out hasUnresolvedLabels);
     }
 
     private Ws2File(BinaryStream stream, out DecodeConfidence confidence)
     {
-        Ops = [.. Ws2Compiler.Decompile(stream, out _)];
+        Ops = [.. Ws2Compiler.Decompile(stream, out _, out hasUnresolvedLabels)];
 
         Stream = stream;
         stream.Freeze();
@@ -45,7 +48,7 @@ public sealed class Ws2File : IArchive<Ws2File>
                     .Decode<TextFile>(decRef: false).Result;
                 // TODO: Validate ops
                 Ops = [.. Ws2Compiler.FromJson(textFile.Text)];
-                Stream = Ws2Compiler.Compile(Ops);
+                Stream = Ws2Compiler.Compile(Ops, out hasUnresolvedLabels);
                 return;
             }
         }

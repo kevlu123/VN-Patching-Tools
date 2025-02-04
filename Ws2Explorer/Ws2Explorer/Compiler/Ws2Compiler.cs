@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Reflection.Emit;
 using System.Text.Json.Nodes;
 
 namespace Ws2Explorer.Compiler;
@@ -14,7 +15,17 @@ public enum Ws2Version
 
 public static class Ws2Compiler
 {
-    public static List<Op> Decompile(BinaryStream stream, out Ws2Version version)
+    public static List<Op> Decompile(BinaryStream stream, out Ws2Version version, out bool hasUnresolvedLabels)
+    {
+        return Decompile(stream, false, out version, out hasUnresolvedLabels);
+    }
+
+    public static List<Op> Decompile(BinaryStream stream, out Ws2Version version, bool mustResolveLabels = true)
+    {
+        return Decompile(stream, mustResolveLabels, out version, out _);
+    }
+
+    private static List<Op> Decompile(BinaryStream stream, bool mustResolveLabels, out Ws2Version version, out bool hasUnresolvedLabels)
     {
         var versions = new Ws2Version[] {
             Ws2Version.V3,
@@ -29,7 +40,13 @@ public static class Ws2Compiler
             try
             {
                 version = v;
-                return Decompile(stream, v);
+                var ret = DecompileVersion(stream, v, out var unresolvedLabels);
+                hasUnresolvedLabels = unresolvedLabels.Count > 0;
+                if (mustResolveLabels && hasUnresolvedLabels)
+                {
+                    throw new InvalidDataException($"Unresolved labels: {string.Join(", ", unresolvedLabels)}");
+                }
+                return ret;
             }
             catch (Exception ex)
             {
@@ -39,7 +56,7 @@ public static class Ws2Compiler
         throw new AggregateException("Failed to decompile ws2 file for any version.", exceptions);
     }
 
-    private static List<Op> Decompile(BinaryStream stream, Ws2Version version)
+    private static List<Op> DecompileVersion(BinaryStream stream, Ws2Version version, out HashSet<int> unresolvedLabels)
     {
         using var data = new BinaryStream(stream.Length);
         var writer = new BinaryWriter(data);
@@ -83,11 +100,7 @@ public static class Ws2Compiler
             finalOps.Add(op);
         }
 
-        // Verify all labels are resolved?
-        //if (labels.Count > 0)
-        //{
-        //    throw new Exception($"Unresolved labels: {string.Join(", ", labels)}");
-        //}
+        unresolvedLabels = labels;
         return finalOps;
     }
 
@@ -155,7 +168,25 @@ public static class Ws2Compiler
         }
     }
 
-    public static BinaryStream Compile(IEnumerable<Op> ops)
+    public static BinaryStream Compile(IEnumerable<Op> ops, bool mustResolveLabels = true)
+    {
+        var ret = Compile(ops, out HashSet<int> unresolvedLabels);
+        if (mustResolveLabels && unresolvedLabels.Count > 0)
+        {
+            ret.Dispose();
+            throw new InvalidDataException($"Unresolved labels: {string.Join(", ", unresolvedLabels)}");
+        }
+        return ret;
+    }
+
+    public static BinaryStream Compile(IEnumerable<Op> ops, out bool hasUnresolvedLabels)
+    {
+        var ret = Compile(ops, out HashSet<int> unresolvedLabels);
+        hasUnresolvedLabels = unresolvedLabels.Count > 0;
+        return ret;
+    }
+
+    private static BinaryStream Compile(IEnumerable<Op> ops, out HashSet<int> unresolvedLabels)
     {
         var len = 0;
         var labelMap = new Dictionary<int, int>();
@@ -182,6 +213,7 @@ public static class Ws2Compiler
         }
         var version = Enum.Parse<Ws2Version>(versionOp.Arguments[0].String);
 
+        unresolvedLabels = new HashSet<int>();
         foreach (var op in ops.Skip(1).SkipLast(1))
         {
             switch (op.Code)
@@ -195,7 +227,7 @@ public static class Ws2Compiler
                     }
                     break;
                 case (>= 0) and (<= 0xFF):
-                    WriteOp(writer, op, labelMap);
+                    WriteOp(writer, op, labelMap, unresolvedLabels);
                     break;
                 default:
                     throw new InvalidDataException($"Invalid op code 0x{op.Code:X2}.");
@@ -223,23 +255,33 @@ public static class Ws2Compiler
         return data;
     }
 
-    private static void WriteOp(BinaryWriter writer, Op op, Dictionary<int, int> labelMap)
+    private static void WriteOp(BinaryWriter writer, Op op, Dictionary<int, int> labelMap, HashSet<int> unresolvedLabels)
     {
         writer.WriteUInt8((byte)op.Code);
         foreach (var arg in op.Arguments)
         {
-            WriteArgument(writer, arg, labelMap);
+            WriteArgument(writer, arg, labelMap, unresolvedLabels);
         }
     }
 
-    private static void WriteArgument(BinaryWriter writer, Argument arg, Dictionary<int, int> labelMap)
+    private static void WriteArgument(BinaryWriter writer, Argument arg, Dictionary<int, int> labelMap, HashSet<int> unresolvedLabels)
     {
         switch (arg.Value)
         {
             case int a:
-                // Verify label is resolved?
-                //writer.WriteInt32(labelMap[a]);
-                writer.WriteInt32(labelMap.GetValueOrDefault(a, a));
+                if (a == 0)
+                {
+                    writer.WriteInt32(0);
+                }
+                else if (labelMap.TryGetValue(a, out var label))
+                {
+                    writer.WriteInt32(label);
+                }
+                else
+                {
+                    unresolvedLabels.Add(a);
+                    writer.WriteInt32(a);
+                }
                 break;
             case byte b:
                 writer.WriteUInt8(b);
@@ -285,7 +327,7 @@ public static class Ws2Compiler
                     writer.WriteUInt8(elem.Arg3);
                     writer.WriteUInt8(elem.Arg4);
                     writer.WriteUInt8(elem.Arg5);
-                    WriteOp(writer, elem.JumpOp, labelMap);
+                    WriteOp(writer, elem.JumpOp, labelMap, unresolvedLabels);
                 }
                 break;
             default:

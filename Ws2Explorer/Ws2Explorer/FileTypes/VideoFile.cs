@@ -1,5 +1,8 @@
-﻿namespace Ws2Explorer;
+﻿namespace Ws2Explorer.FileTypes;
 
+/// <summary>
+/// A WMV video file.
+/// </summary>
 public sealed class VideoFile : IFile<VideoFile>
 {
     private static readonly byte[] SIGNATURE = [
@@ -11,6 +14,9 @@ public sealed class VideoFile : IFile<VideoFile>
 
     private bool disposedValue;
 
+    /// <summary>
+    /// The underlying binary stream.
+    /// </summary>
     public BinaryStream Stream { get; }
 
     private VideoFile(BinaryStream stream, out DecodeConfidence confidence)
@@ -30,6 +36,12 @@ public sealed class VideoFile : IFile<VideoFile>
         confidence = DecodeConfidence.High;
     }
 
+    /// <summary>
+    /// Decodes a video file from a binary stream.
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="confidence"></param>
+    /// <returns></returns>
     public static VideoFile Decode(BinaryStream stream, out DecodeConfidence confidence)
     {
         return DecodeException.Wrap(
@@ -37,6 +49,9 @@ public sealed class VideoFile : IFile<VideoFile>
             out confidence);
     }
 
+    /// <summary>
+    /// Disposes the video file.
+    /// </summary>
     public void Dispose()
     {
         if (!disposedValue)
@@ -47,6 +62,9 @@ public sealed class VideoFile : IFile<VideoFile>
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Disposes the video file.
+    /// </summary>
     ~VideoFile()
     {
         Dispose();

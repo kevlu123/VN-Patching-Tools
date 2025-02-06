@@ -3,7 +3,7 @@ using System.Reflection;
 using Ws2Explorer;
 using Ws2Explorer.Compiler;
 using Ws2Explorer.HighLevel;
-
+using Ws2Explorer.FileTypes;
 using Files = Ws2Explorer.DisposingDictionary<string, Ws2Explorer.IFile>;
 
 /*
@@ -521,7 +521,7 @@ static void MyMain(string[] args)
 
     System.IO.Directory.CreateDirectory(outputPath);
     Console.WriteLine($"Created directory {outputPath}.");
-    var gameDir = new Ws2Explorer.Directory(outputPath);
+    var gameDir = new Ws2Explorer.FileTypes.Directory(outputPath);
 
     void WriteArc(ArcFile arc, string name)
     {

@@ -1,17 +1,3 @@
-"""
-a - label
-b - int8
-h - int16
-i - int32
-f - float
-s - string
-n - prefixed string (NameString)
-m - suffixed string (MessageString)
-H - int16 array
-S - string array
-C - choice array
-"""
-
 descriptions = {
     0x00: "Null",
     0x01: "ConditionalJump",

@@ -1,30 +1,67 @@
 ﻿using System.Text;
 
-namespace Ws2Explorer;
+namespace Ws2Explorer.FileTypes;
 
+/// <summary>
+/// An ARC file header.
+/// </summary>
 public record ArcHeader
 {
     internal const int Size = 8;
 
+    /// <summary>
+    /// The number of files in the ARC file.
+    /// </summary>
     public required int FileCount { get; init; }
+
+    /// <summary>
+    /// The total length of the all the subheaders in bytes.
+    /// </summary>
     public required int SubHeaderLen { get; init; }
 }
 
+/// <summary>
+/// An ARC file subheader describing a subfile.
+/// </summary>
 public record ArcSubHeader
 {
     internal int Size => 10 + Encoding.Unicode.GetByteCount(Filename);
 
+    /// <summary>
+    /// The length of the subfile data in bytes.
+    /// </summary>
     public required int DataLen { get; init; }
+
+    /// <summary>
+    /// The offset of the subfile data in the ARC file
+    /// relative to the end of the subheaders.
+    /// </summary>
     public required int DataOffset { get; init; }
+
+    /// <summary>
+    /// The filename of the subfile.
+    /// </summary>
     public required string Filename { get; init; }
 }
 
+/// <summary>
+/// A game archive file.
+/// </summary>
 public sealed class ArcFile : IArchive<ArcFile>
 {
+    /// <summary>
+    /// The ARC file header.
+    /// </summary>
     public ArcHeader Header { get; }
 
+    /// <summary>
+    /// The ARC file subheaders.
+    /// </summary>
     public IReadOnlyDictionary<string, ArcSubHeader> SubHeaders => subHeaders.AsReadOnly();
 
+    /// <summary>
+    /// The underlying binary stream.
+    /// </summary>
     public BinaryStream Stream { get; }
 
     private readonly SortedDictionary<string, ArcSubHeader> subHeaders;
@@ -126,6 +163,12 @@ public sealed class ArcFile : IArchive<ArcFile>
         Stream.Freeze();
     }
 
+    /// <summary>
+    /// Decodes an ARC file from a binary stream.
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="confidence"></param>
+    /// <returns></returns>
     public static ArcFile Decode(BinaryStream stream, out DecodeConfidence confidence)
     {
         return DecodeException.Wrap(
@@ -133,16 +176,30 @@ public sealed class ArcFile : IArchive<ArcFile>
             out confidence);
     }
 
+    /// <summary>
+    /// Constructs an ARC file from subfiles.
+    /// </summary>
+    /// <param name="contents"></param>
+    /// <returns></returns>
     public static ArcFile Create(IDictionary<string, BinaryStream> contents)
     {
         return ArchiveCreationException.Wrap(() => new ArcFile(contents));
     }
 
+    /// <summary>
+    /// See <see cref="Create(IDictionary{string, BinaryStream})"/>.
+    /// </summary>
+    /// <param name="contents"></param>
+    /// <returns></returns>
     IArchive IArchive.Create(IDictionary<string, BinaryStream> contents)
     {
         return Create(contents);
     }
 
+    /// <summary>
+    /// Lists the subfiles.
+    /// </summary>
+    /// <returns></returns>
     public List<FileInfo> ListFiles()
     {
         return subHeaders
@@ -155,6 +212,14 @@ public sealed class ArcFile : IArchive<ArcFile>
             .ToList();
     }
 
+    /// <summary>
+    /// Opens a subfile.
+    /// The filename is case-insensitive.
+    /// </summary>
+    /// <param name="filename"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public Task<BinaryStream> OpenFile(
         string filename,
         IProgress<TaskProgressInfo>? progress = null,
@@ -169,6 +234,9 @@ public sealed class ArcFile : IArchive<ArcFile>
         return Task.FromResult(substream);
     }
 
+    /// <summary>
+    /// Disposes the ARC file.
+    /// </summary>
     public void Dispose()
     {
         if (!disposedValue)
@@ -179,6 +247,9 @@ public sealed class ArcFile : IArchive<ArcFile>
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Disposes the ARC file.
+    /// </summary>
     ~ArcFile()
     {
         Dispose();

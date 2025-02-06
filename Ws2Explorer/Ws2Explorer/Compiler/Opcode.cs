@@ -1,7 +1,13 @@
 ﻿namespace Ws2Explorer.Compiler;
 
+/// <summary>
+/// List of opcodes and pseudo-opcodes.
+/// Negative values are pseudo-opcodes used to signal special meaning to the compiler.
+/// These opcodes do not appear in the binary (but their arguments may).
+/// </summary>
 public static class Opcode
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public const int EPILOGUE = -1;
     public const int LABEL = -2;
     public const int VERSION = -3;
@@ -54,4 +60,5 @@ public static class Opcode
     public const byte VARIABLE_UNKNOWN_6F = 111;
     public const byte SCREEN_UNKNOWN_F0 = 240;
     public const byte FILE_END_FF = 255;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

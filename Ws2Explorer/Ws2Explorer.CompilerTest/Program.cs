@@ -1,13 +1,14 @@
 ﻿using System.Reflection;
 using Ws2Explorer;
 using Ws2Explorer.Compiler;
+using Ws2Explorer.FileTypes;
 
 Console.WriteLine("================= Start =================");
 Console.WriteLine();
 int tried = 0;
 var failed = new List<(string filename, Exception exception)>();
 var exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-var dir = new Ws2Explorer.Directory(Path.Combine(exePath, "Data"));
+var dir = new Ws2Explorer.FileTypes.Directory(Path.Combine(exePath, "Data"));
 using var arcFiles = await dir.LoadAllFilesOfType<ArcFile>();
 foreach (var (arcName, arcFile) in arcFiles)
 {

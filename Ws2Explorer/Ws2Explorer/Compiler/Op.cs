@@ -4,27 +4,63 @@ using System.Text.Json.Nodes;
 
 namespace Ws2Explorer.Compiler;
 
+/// <summary>
+/// A string used by the engine for names.
+/// The string may contain a special prefix.
+/// </summary>
 public readonly struct NameString
 {
+    /// <summary>
+    /// The full string, including the prefix.
+    /// </summary>
     public string FullString { get; }
+
+    /// <summary>
+    /// The prefix of the string.
+    /// </summary>
     public string Prefix => FullString[..GetPrefixLength()];
+
+    /// <summary>
+    /// The string without the prefix.
+    /// </summary>
     public string String => FullString[GetPrefixLength()..];
 
+    /// <summary>
+    /// Creates a new NameString with the given full string.
+    /// </summary>
+    /// <param name="fullString"></param>
     public NameString(string fullString)
     {
         FullString = fullString;
     }
 
+    /// <summary>
+    /// Creates a new NameString with the given prefix and string.
+    /// </summary>
+    /// <param name="prefix"></param>
+    /// <param name="str"></param>
     public NameString(string prefix, string str)
     {
         FullString = prefix + str;
     }
 
+    /// <summary>
+    /// Creates a new NameString from this NameString
+    /// with a different prefix, but the same string.
+    /// </summary>
+    /// <param name="prefix"></param>
+    /// <returns></returns>
     public NameString WithPrefix(string prefix)
     {
         return new NameString(prefix, String);
     }
 
+    /// <summary>
+    /// Creates a new NameString from this NameString
+    /// with a different string, but the same prefix.
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
     public NameString WithString(string str)
     {
         return new NameString(Prefix, str);
@@ -57,27 +93,63 @@ public readonly struct NameString
     }
 }
 
+/// <summary>
+/// A string used by the engine for messages.
+/// The string may contain a special suffix.
+/// </summary>
 public readonly struct MessageString
 {
+    /// <summary>
+    /// The full string, including the suffix.
+    /// </summary>
     public string FullString { get; }
+
+    /// <summary>
+    /// The string without the suffix.
+    /// </summary>
     public string String => FullString[..^GetSuffixLength()];
+
+    /// <summary>
+    /// The suffix of the string.
+    /// </summary>
     public string Suffix => FullString[^GetSuffixLength()..];
 
+    /// <summary>
+    /// Creates a new MessageString with the given full string.
+    /// </summary>
+    /// <param name="fullString"></param>
     public MessageString(string fullString)
     {
         FullString = fullString;
     }
 
+    /// <summary>
+    /// Creates a new MessageString with the given string and suffix.
+    /// </summary>
+    /// <param name="str"></param>
+    /// <param name="suffix"></param>
     public MessageString(string str, string suffix)
     {
         FullString = str + suffix;
     }
 
+    /// <summary>
+    /// Creates a new MessageString from this MessageString
+    /// with a different string, but the same suffix.
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
     public MessageString WithString(string str)
     {
         return new MessageString(str, Suffix);
     }
 
+    /// <summary>
+    /// Creates a new MessageString from this MessageString
+    /// with a different suffix, but the same string.
+    /// </summary>
+    /// <param name="suffix"></param>
+    /// <returns></returns>
     public MessageString WithSuffix(string suffix)
     {
         return new MessageString(String, suffix);
@@ -110,13 +182,40 @@ public readonly struct MessageString
     }
 }
 
+/// <summary>
+/// A choice argument type.
+/// </summary>
 public readonly struct Choice
 {
+    /// <summary>
+    /// The ID of the choice.
+    /// </summary>
     public required ushort Id { get; init; }
+
+    /// <summary>
+    /// The text of the choice.
+    /// </summary>
     public required string Text { get; init; }
+
+    /// <summary>
+    /// Unknown byte.
+    /// </summary>
     public required byte Arg3 { get; init; }
+
+    /// <summary>
+    /// Unknown byte.
+    /// </summary>
     public required byte Arg4 { get; init; }
+
+    /// <summary>
+    /// Unknown byte.
+    /// </summary>
     public required byte Arg5 { get; init; }
+
+    /// <summary>
+    /// The instruction to run when this choice is selected.
+    /// Must be either <see cref="Opcode.JUMP_06"/> or <see cref="Opcode.JUMP_FILE_07"/>.
+    /// </summary>
     public required Op JumpOp
     {
         get => jumpOp;
@@ -158,22 +257,74 @@ public readonly struct Choice
     }
 }
 
+/// <summary>
+/// An argument for an opcode.
+/// </summary>
 public readonly struct Argument
 {
+    /// <summary>
+    /// The value of the argument as an object.
+    /// </summary>
     public readonly object Value { get; private init; }
 
+    /// <summary>
+    /// The label value.
+    /// </summary>
     public int Label { get => (int)Value; }
+
+    /// <summary>
+    /// The uint8 value.
+    /// </summary>
     public byte UInt8 { get => (byte)Value; }
+
+    /// <summary>
+    /// The uint16 value.
+    /// </summary>
     public ushort UInt16 { get => (ushort)Value; }
+
+    /// <summary>
+    /// The uint32 value.
+    /// </summary>
     public uint UInt32 { get => (uint)Value; }
+
+    /// <summary>
+    /// The float32 value.
+    /// </summary>
     public float Float32 { get => (float)Value; }
+
+    /// <summary>
+    /// The string value.
+    /// </summary>
     public string String { get => (string)Value; }
+
+    /// <summary>
+    /// The NameString value.
+    /// </summary>
     public NameString NameString { get => (NameString)Value; }
+
+    /// <summary>
+    /// The MessageString value.
+    /// </summary>
     public MessageString MessageString { get => (MessageString)Value; }
+
+    /// <summary>
+    /// The uint16 array value.
+    /// </summary>
     public ImmutableArray<ushort> UInt16Array { get => (ImmutableArray<ushort> )Value; }
+
+    /// <summary>
+    /// The string array value.
+    /// </summary>
     public ImmutableArray<string> StringArray { get => (ImmutableArray<string>)Value; }
+
+    /// <summary>
+    /// The choice array value.
+    /// </summary>
     public ImmutableArray<Choice> ChoiceArray { get => (ImmutableArray<Choice>)Value; }
 
+    /// <summary>
+    /// The size of the argument in bytes.
+    /// </summary>
     public int Size => Value switch
     {
         int => sizeof(int),
@@ -190,16 +341,81 @@ public readonly struct Argument
         _ => throw new UnreachableException(),
     };
 
+    /// <summary>
+    /// Creates a label argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewLabel(int v) => new() { Value = v };
+
+    /// <summary>
+    /// Creates a uint8 argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewUInt8(byte v) => new() { Value = v };
+
+    /// <summary>
+    /// Creates a uint16 argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewUInt16(ushort v) => new() { Value = v };
+
+    /// <summary>
+    /// Creates a uint32 argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewUInt32(uint v) => new() { Value = v };
+
+    /// <summary>
+    /// Creates a float32 argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewFloat32(float v) => new() { Value = v };
+
+    /// <summary>
+    /// Creates a string argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewString(string v) => new() { Value = v };
+
+    /// <summary>
+    /// Creates a NameString argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewNameString(NameString v) => new() { Value = v };
+
+    /// <summary>
+    /// Creates a MessageString argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewMessageString(MessageString v) => new() { Value = v };
+
+    /// <summary>
+    /// Creates a uint16 array argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewUInt16Array(IEnumerable<ushort> v) => new() { Value = ImmutableArray<ushort>.Empty.AddRange(v) };
+
+    /// <summary>
+    /// Creates a string array argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewStringArray(IEnumerable<string> v) => new() { Value = ImmutableArray<string>.Empty.AddRange(v) };
+
+    /// <summary>
+    /// Creates a choice array argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static Argument NewChoiceArray(IEnumerable<Choice> v) => new() { Value = ImmutableArray<Choice>.Empty.AddRange(v) };
 
     internal JsonNode ToJson()
@@ -241,11 +457,17 @@ public readonly struct Argument
     }
 }
 
+/// <summary>
+/// An instruction in a WS2 script.
+/// </summary>
 public readonly struct Op
 {
     internal const int EPILOGUE_SIZE = 8;
 
-    private readonly int code;
+    /// <summary>
+    /// The opcode.
+    /// See <see cref="Opcode"/>.
+    /// </summary>
     public int Code {
         get => code;
         init
@@ -257,7 +479,11 @@ public readonly struct Op
             code = value;
         }
     }
+    private readonly int code;
 
+    /// <summary>
+    /// The description of the opcode if it is known.
+    /// </summary>
     public string? Description => Code switch
     {
         Opcode.EPILOGUE => "<Epilogue>",
@@ -266,13 +492,19 @@ public readonly struct Op
         _ => OpFormat.Formats[Code].Description,
     };
 
-    private readonly ImmutableArray<Argument> arguments;
+    /// <summary>
+    /// The arguments of the op.
+    /// </summary>
     public ImmutableArray<Argument> Arguments
     {
         get => arguments.IsDefault ? [] : arguments;
         init => arguments = value;
     }
+    private readonly ImmutableArray<Argument> arguments;
 
+    /// <summary>
+    /// The labels that this op references.
+    /// </summary>
     public IEnumerable<int> Labels
     {
         get
@@ -297,6 +529,9 @@ public readonly struct Op
         }
     }
 
+    /// <summary>
+    /// The size of the op in bytes.
+    /// </summary>
     public int Size => Code switch
     {
         Opcode.EPILOGUE => EPILOGUE_SIZE,
@@ -305,6 +540,13 @@ public readonly struct Op
         _ => 1 + Arguments.Sum(a => a.Size),
     };
 
+    /// <summary>
+    /// Creates a new op from this with the given argument
+    /// replacing the argument at the given index.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="arg"></param>
+    /// <returns></returns>
     public Op WithArgument(int index, Argument arg) => new()
     {
         Code = Code,

@@ -1,10 +1,26 @@
 ﻿using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Directory = Ws2Explorer.FileTypes.Directory;
 
 namespace Ws2Explorer.HighLevel;
 
+/// <summary>
+/// Utilities for file operations.
+/// </summary>
 public static class FileTool
 {
+    /// <summary>
+    /// Opens a list of folders from a path.
+    /// The path may point inside archives.
+    /// The first folder is the root directory and
+    /// the next folders are direct subfolders of the previous folder.
+    /// This is useful for navigation, and for operations need to propagate
+    /// changes back to the real filesystem (rather than staying in memory).
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task<DisposingList<NamedFolder>> OpenFolderHierarchy(
         string path,
         IProgress<TaskProgressInfo>? progress = null,
@@ -58,6 +74,18 @@ public static class FileTool
         }
     }
 
+    /// <summary>
+    /// Propagates modifications in the last folder to the parent folders,
+    /// moving up the hierarchy until a real directory is reached
+    /// (where the changes are written to the filesystem).
+    /// </summary>
+    /// <param name="hierarchy">
+    /// The input folder hierarchy.
+    /// After the operation, this list is modified to contain the updated folders.
+    /// </param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task PropagateModifications(
         IList<NamedFolder> hierarchy,
         IProgress<TaskProgressInfo>? progress = null,
@@ -91,6 +119,14 @@ public static class FileTool
         }
     }
 
+    /// <summary>
+    /// Reads the data from a path.
+    /// The path may point inside archives.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task<BinaryStream> ReadFile(
         string path,
         IProgress<TaskProgressInfo>? progress = null,
@@ -102,6 +138,14 @@ public static class FileTool
         return await folders[^1].Folder.OpenFile(parts[^1], progress, ct);
     }
 
+    /// <summary>
+    /// Batch reads data from multiple paths.
+    /// The paths may point inside archives.
+    /// </summary>
+    /// <param name="paths"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task<DisposingDictionary<string, BinaryStream>> ReadFiles(
         IEnumerable<string> paths,
         IProgress<TaskProgressInfo>? progress = null,
@@ -127,6 +171,16 @@ public static class FileTool
         }
     }
 
+    /// <summary>
+    /// Writes data to a path.
+    /// The path may point inside archives.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="stream"></param>
+    /// <param name="overwriteMode">The policy used when writing to a file that already exists.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task WriteFile(
         string path,
         BinaryStream stream,
@@ -145,17 +199,54 @@ public static class FileTool
             ct);
     }
 
-    public static async Task<IArchive> ModifyFolder(
-        IArchive folder,
+    /// <summary>
+    /// Modifies an archive.
+    /// </summary>
+    /// <param name="archive">The archive to modify.</param>
+    /// <param name="modify">
+    /// The function to modify the contents of the archive.
+    /// The dictionary parameter receives the subfiles in the
+    /// archive. This dictionary is to be modified.
+    /// </param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>The modified archive.</returns>
+    public static Task<IArchive> ModifyFolder(
+        IArchive archive,
         Action<IDictionary<string, BinaryStream>> modify,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        var contents = await folder.LoadAllStreams(progress, ct);
-        try
+        return ModifyFolder(archive, contents =>
         {
             modify(contents);
-            return folder.Create(contents);
+            return Task.CompletedTask;
+        }, progress, ct);
+    }
+
+    /// <summary>
+    /// Modifies an archive.
+    /// </summary>
+    /// <param name="archive">The archive to modify.</param>
+    /// <param name="modify">
+    /// The awaitable function to modify the contents of the archive.
+    /// The dictionary parameter receives the subfiles in the
+    /// archive. This dictionary is to be modified.
+    /// </param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>The modified archive.</returns>
+    public static async Task<IArchive> ModifyFolder(
+        IArchive archive,
+        Func<IDictionary<string, BinaryStream>, Task> modify,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        var contents = await archive.LoadAllStreams(progress, ct);
+        try
+        {
+            await modify(contents);
+            return archive.Create(contents);
         }
         catch
         {
@@ -164,31 +255,53 @@ public static class FileTool
         }
     }
 
+    /// <summary>
+    /// Renames a subfile in an archive.
+    /// </summary>
+    /// <param name="archive">The archive to modify.</param>
+    /// <param name="oldName">The subfile to rename.</param>
+    /// <param name="newName">The new name of the subfile.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>The modified archive.</returns>
     public static Task<IArchive> Rename(
-        IArchive folder,
-        string oldChildName,
-        string newChildName,
+        IArchive archive,
+        string oldName,
+        string newName,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        return ModifyFolder(folder, contents =>
+        return ModifyFolder(archive, contents =>
         {
-            if (!contents.TryGetValue(oldChildName, out var stream))
+            if (!contents.TryGetValue(oldName, out var stream))
             {
-                throw new FileNotFoundException("File not found.", oldChildName);
+                throw new FileNotFoundException("File not found.", oldName);
             }
-            else if (oldChildName != newChildName)
+            else if (oldName != newName)
             {
-                contents[newChildName] = stream;
-                contents.Remove(oldChildName);
+                contents[newName] = stream;
+                contents.Remove(oldName);
             }
         }, progress, ct);
     }
 
+    /// <summary>
+    /// Renames a subfile in a folder and propagates the changes
+    /// up the hierarchy.
+    /// </summary>
+    /// <param name="hierarchy">
+    /// The hierarchy that the changes will propagate through.
+    /// The last folder will have the file renamed.
+    /// </param>
+    /// <param name="oldName">The subfile to rename.</param>
+    /// <param name="newName">The new name of the subfile.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task Rename(
         IList<NamedFolder> hierarchy,
-        string oldChildName,
-        string newChildName,
+        string oldName,
+        string newName,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
@@ -196,30 +309,30 @@ public static class FileTool
         if (dst is Directory directory)
         {
             var fileInfo = directory.ListFiles()
-                .FirstOrDefault(fi => fi.Filename == oldChildName)
-                ?? throw new FileNotFoundException("File not found.", oldChildName);
-            if (oldChildName == newChildName)
+                .FirstOrDefault(fi => fi.Filename == oldName)
+                ?? throw new FileNotFoundException("File not found.", oldName);
+            if (oldName == newName)
             {
                 return;
             } else if (fileInfo.IsDirectory)
             {
                 System.IO.Directory.Move(
-                    Path.Combine(directory.FullPath, oldChildName),
-                    Path.Combine(directory.FullPath, newChildName));
+                    Path.Combine(directory.FullPath, oldName),
+                    Path.Combine(directory.FullPath, newName));
             }
             else
             {
                 File.Move(
-                    Path.Combine(directory.FullPath, oldChildName),
-                    Path.Combine(directory.FullPath, newChildName));
+                    Path.Combine(directory.FullPath, oldName),
+                    Path.Combine(directory.FullPath, newName));
             }
         }
         else
         {
             var rebuilt = await Rename(
                 (IArchive)dst,
-                oldChildName,
-                newChildName,
+                oldName,
+                newName,
                 progress,
                 ct);
             hierarchy[^1] = hierarchy[^1] with
@@ -230,47 +343,67 @@ public static class FileTool
         }
     }
 
+    /// <summary>
+    /// Deletes subfiles from an archive.
+    /// </summary>
+    /// <param name="archive">The archive to modify.</param>
+    /// <param name="names">The subfiles to delete.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>The modified archive.</returns>
     private static Task<IArchive> Delete(
-        IArchive folder,
-        IEnumerable<string> childNames,
+        IArchive archive,
+        IEnumerable<string> names,
         IProgress<TaskProgressInfo>? progress = null,
                              CancellationToken ct = default)
     {
-        return ModifyFolder(folder, contents =>
+        return ModifyFolder(archive, contents =>
         {
-            foreach (var childName in childNames)
+            foreach (var name in names)
             {
-                if (!contents.Remove(childName))
+                if (!contents.Remove(name))
                 {
-                    throw new FileNotFoundException("File not found.", childName);
+                    throw new FileNotFoundException("File not found.", name);
                 }
             }
         }, progress, ct);
     }
 
+    /// <summary>
+    /// Deletes subfiles from a folder and propagates the changes
+    /// up the hierarchy.
+    /// </summary>
+    /// <param name="hierarchy">
+    /// The hierarchy that the changes will propagate through.
+    /// The last folder will have the subfiles deleted.
+    /// </param>
+    /// <param name="names">The subfiles to delete.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task Delete(
         IList<NamedFolder> hierarchy,
-        IEnumerable<string> childNames,
+        IEnumerable<string> names,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
         var dst = hierarchy[^1].Folder;
         if (dst is Directory directory)
         {
-            foreach (var childName in childNames)
+            foreach (var name in names)
             {
                 var fileInfo = directory.ListFiles()
-                    .FirstOrDefault(fi => fi.Filename == childName)
-                    ?? throw new FileNotFoundException("File not found.", childName);
+                    .FirstOrDefault(fi => fi.Filename == name)
+                    ?? throw new FileNotFoundException("File not found.", name);
                 if (fileInfo.IsDirectory)
                 {
                     System.IO.Directory.Delete(
-                        Path.Combine(directory.FullPath, childName),
+                        Path.Combine(directory.FullPath, name),
                         true);
                 }
                 else
                 {
-                    File.Delete(Path.Combine(directory.FullPath, childName));
+                    File.Delete(Path.Combine(directory.FullPath, name));
                 }
             }
         }
@@ -278,7 +411,7 @@ public static class FileTool
         {
             var rebuilt = await Delete(
                 (IArchive)dst,
-                childNames,
+                names,
                 progress,
                 ct);
             hierarchy[^1] = hierarchy[^1] with
@@ -289,14 +422,23 @@ public static class FileTool
         }
     }
 
+    /// <summary>
+    /// Inserts subfiles into an archive.
+    /// </summary>
+    /// <param name="archive">The archive to modify/</param>
+    /// <param name="streams">A map of the new files to insert.</param>
+    /// <param name="overwriteMode">The policy used when writing to a file that already exists.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>The modified archive.</returns>
     public static async Task<IArchive> Insert(
-        IArchive folder,
+        IArchive archive,
         IDictionary<string, BinaryStream> streams,
         OverwriteMode overwriteMode = OverwriteMode.Throw,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
-        return await ModifyFolder(folder, contents =>
+        return await ModifyFolder(archive, contents =>
         {
             var existing = contents.Keys;
             foreach (var (name, stream) in streams)
@@ -329,6 +471,16 @@ public static class FileTool
         }, progress, ct);
     }
 
+    /// <summary>
+    /// Inserts subfiles into a folder and propagates the changes
+    /// up the hierarchy.
+    /// </summary>
+    /// <param name="hierarchy">The hierarchy that the changes will propagate through.</param>
+    /// <param name="streams">A map of the new files to insert.</param>
+    /// <param name="overwriteMode">The policy used when writing to a file that already exists.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task Insert(
         IList<NamedFolder> hierarchy,
         IDictionary<string, BinaryStream> streams,
@@ -387,6 +539,16 @@ public static class FileTool
         }
     }
 
+    /// <summary>
+    /// Copies a file from a source path to a destination path.
+    /// The paths may point inside archives.
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="dst"></param>
+    /// <param name="overwriteMode">The policy used when writing to a file that already exists.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task Copy(
         string src,
         string dst,
@@ -398,6 +560,20 @@ public static class FileTool
         await WriteFile(dst, stream, overwriteMode, progress, ct);
     }
 
+    /// <summary>
+    /// Recursively extracts all files matching a pattern from a folder
+    /// to a destination path.
+    /// The path may point inside archives.
+    /// </summary>
+    /// <param name="folder"></param>
+    /// <param name="dst"></param>
+    /// <param name="pattern">The pattern to match.</param>
+    /// <param name="overwriteMode">The policy used when writing to a file that already exists.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>
+    /// The paths of the extracted files relative to the source folder.
+    /// </returns>
     public static async Task<HashSet<string>> RecursiveExtract(
         IFolder folder,
         string dst,
@@ -442,6 +618,16 @@ public static class FileTool
         return extracted;
     }
 
+    /// <summary>
+    /// Compares the subfiles in two archives.
+    /// If a subfile appears twice in the same set, the result is unspecified.
+    /// </summary>
+    /// <param name="oldArchive"></param>
+    /// <param name="newArchive"></param>
+    /// <param name="partitionMode">Flags listing the category of files to be returned.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task<DisposingDictionary<string, BinaryStream>> Diff(
         IFolder oldArchive,
         IFolder newArchive,
@@ -457,6 +643,16 @@ public static class FileTool
             ct);
     }
 
+    /// <summary>
+    /// Compares the subfiles in two sets of archives.
+    /// If a subfile appears twice in the same set, the result is unspecified.
+    /// </summary>
+    /// <param name="oldArchives"></param>
+    /// <param name="newArchives"></param>
+    /// <param name="partitionMode">Flags listing the category of files to be returned.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task<DisposingDictionary<string, BinaryStream>> Diff(
         IEnumerable<IFolder> oldArchives,
         IEnumerable<IFolder> newArchives,
@@ -522,7 +718,7 @@ public static class FileTool
                 {
                     foreach (var oldArchive in oldArchives)
                     {
-                        if (oldArchive.ContainsFile(name))
+                        if (oldArchive.ListFiles().Any(f => f.Filename == name))
                         {
                             var content = await oldArchive.OpenFile(name, progress, ct);
                             content.IncRef();
@@ -541,6 +737,11 @@ public static class FileTool
             .ToDisposingDictionary();
     }
 
+    /// <summary>
+    /// Splits a path into its parts.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public static List<string> SplitPath(string path)
     {
         var parts = new List<string>();
@@ -554,6 +755,12 @@ public static class FileTool
         return parts;
     }
 
+    /// <summary>
+    /// Generates an alternative name for a file that does not conflict with existing names.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="existingNames"></param>
+    /// <returns></returns>
     public static string AlternativeName(string name, IEnumerable<string> existingNames)
     {
         var baseName = Path.GetFileNameWithoutExtension(name);
@@ -565,14 +772,4 @@ public static class FileTool
         }
         return name;
     }
-}
-
-[Flags]
-public enum DiffPartitionMode
-{
-    None = 0,
-    New = 1 << 0,
-    Old = 1 << 1,
-    Common = 1 << 2,
-    Changed = 1 << 3,
 }

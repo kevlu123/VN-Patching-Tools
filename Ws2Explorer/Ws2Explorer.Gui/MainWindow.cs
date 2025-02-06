@@ -7,9 +7,8 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
-using Ws2Explorer.HighLevel;
+using Ws2Explorer.FileTypes;
 using FormTimer = System.Windows.Forms.Timer;
-using Flowchart = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>;
 using System.Text.RegularExpressions;
 
 namespace Ws2Explorer.Gui;

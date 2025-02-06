@@ -1,10 +1,29 @@
 ﻿namespace Ws2Explorer;
 
+/// <summary>
+/// Exception thrown when an error occurs while decoding a file.
+/// </summary>
 public class DecodeException : Exception
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DecodeException"/> class.
+    /// </summary>
     public DecodeException() { }
-    public DecodeException(string? message) : base(message) { }
-    public DecodeException(string? message, Exception? innerException) : base(message, innerException) { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DecodeException"/> class
+    /// </summary>
+    /// <param name="message"></param>
+    public DecodeException(string? message)
+        : base(message) { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DecodeException"/> class
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="innerException"></param>
+    public DecodeException(string? message, Exception? innerException)
+        : base(message, innerException) { }
 
     internal static T Wrap<T>(Func<(T, DecodeConfidence)> fn, out DecodeConfidence confidence)
     {

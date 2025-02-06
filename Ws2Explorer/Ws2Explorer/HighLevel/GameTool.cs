@@ -1,7 +1,12 @@
 ﻿using Ws2Explorer.Compiler;
+using Ws2Explorer.FileTypes;
+using Directory = Ws2Explorer.FileTypes.Directory;
 
 namespace Ws2Explorer.HighLevel;
 
+/// <summary>
+/// Utilities for game operations.
+/// </summary>
 public static class GameTool
 {
     private static List<string> GetRioFilenames(Directory gameFolder)
@@ -43,11 +48,20 @@ public static class GameTool
         return result!;
     }
 
+    /// <summary>
+    /// Finds the game folder given a hierarchy which is
+    /// descended from the game folder.
+    /// The game folder is found by looking for a file named "AdvHD.exe".
+    /// The game folder must be a real directory.
+    /// </summary>
+    /// <param name="hierarchy"></param>
+    /// <returns>The game folder or null if it is not found.</returns>
     public static Directory? FindGameFolder(IList<NamedFolder> hierarchy)
     {
         for (int i = hierarchy.Count - 1; i >= 0; i--)
         {
-            if (hierarchy[i].Folder is Directory dir && dir.ContainsFile("AdvHD.exe"))
+            if (hierarchy[i].Folder is Directory dir
+                && dir.ListFiles().Any(f => f.Filename.Equals("AdvHD.exe", StringComparison.InvariantCultureIgnoreCase)))
             {
                 return dir;
             }
@@ -55,6 +69,20 @@ public static class GameTool
         return null;
     }
 
+    /// <summary>
+    /// Finds all references to a string in the game's WS2 scripts
+    /// Only string arguments of instructions are searched.
+    /// Only archives containing "rio" and ending with ".arc" are considered.
+    /// </summary>
+    /// <param name="gameFolder"></param>
+    /// <param name="str"></param>
+    /// <param name="comparisonType"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>
+    /// The script filenames that contain the string and
+    /// the number of occurrences in that script.
+    /// </returns>
     public static async Task<Dictionary<string, int>> FindReferences(
         Directory gameFolder,
         string str,
@@ -87,6 +115,21 @@ public static class GameTool
         return refs;
     }
 
+    /// <summary>
+    /// Sets the WS2 script entry point of the game.
+    /// The first script loaded is always start.ws2.
+    /// This operation will set the next file that start.ws2 jumps to.
+    /// Only archives containing "rio" and ending with ".arc" are considered.
+    /// </summary>
+    /// <param name="gameFolder"></param>
+    /// <param name="setEntryPrompt">
+    /// A function to get the new entry point to be set.
+    /// This first parameter of this function is the current entry point.
+    /// The second parameter is the list of available entry points.
+    /// </param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task SetEntryPoint(
         Directory gameFolder,
         Func<string, IEnumerable<string>, string> setEntryPrompt,
@@ -151,6 +194,16 @@ public static class GameTool
             ct);
     }
 
+    /// <summary>
+    /// Converts all compiled lua scripts to text form.
+    /// This is done by storing the file as a byte array in lua
+    /// and calling load on it. This does not decompile the script.
+    /// Only the archive called "script.arc" is considered.
+    /// </summary>
+    /// <param name="gameFolder"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task ConvertLuacToText(
         Directory gameFolder,
         IProgress<TaskProgressInfo>? progress = null,
@@ -188,6 +241,14 @@ end
         await gameFolder.WriteFile("script.arc", newScriptArc.Stream, progress, ct);
     }
 
+    /// <summary>
+    /// Gets all choices in the game from the WS2 scripts.
+    /// Only archives containing "rio" and ending with ".arc" are considered.
+    /// </summary>
+    /// <param name="gameFolder"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>A list of choice group information.</returns>
     public static async Task<List<ChoiceInfo>> GetChoices(
         Directory gameFolder,
         IProgress<TaskProgressInfo>? progress = null,
@@ -218,6 +279,19 @@ end
         return choices;
     }
 
+    /// <summary>
+    /// Gets the flow of the game's WS2 scripts.
+    /// Not necessarily all the paths will be reachable and
+    /// sometimes the scripts will reference non-existent scripts.
+    /// </summary>
+    /// <param name="gameFolder"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>
+    /// A map of where a script leads.
+    /// The dictionary value is the list of scripts that the script leads to
+    /// in order of appearance and may contain duplicates.
+    /// </returns>
     public static async Task<Dictionary<string, List<string>>> GetFlowchart(
         Directory gameFolder,
         IProgress<TaskProgressInfo>? progress = null,
@@ -241,6 +315,19 @@ end
         return graph;
     }
 
+    /// <summary>
+    /// Gets the flow of the WS2 scripts in an <see cref="ArcFile"/> .
+    /// Not necessarily all the paths will be reachable and
+    /// sometimes the scripts will reference non-existent scripts.
+    /// </summary>
+    /// <param name="arc"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>
+    /// A map of where a script leads.
+    /// The dictionary value is the list of scripts that the script leads to
+    /// in order of appearance and may contain duplicates.
+    /// </returns>
     public static async Task<Dictionary<string, List<string>>> GetFlowchart(
         ArcFile arc,
         IProgress<TaskProgressInfo>? progress = null,
@@ -275,6 +362,19 @@ end
         return graph;
     }
 
+    /// <summary>
+    /// Modifies the character names in the game.
+    /// Only archives containing "rio" and ending with ".arc" are considered.
+    /// </summary>
+    /// <param name="gameFolder"></param>
+    /// <param name="modifyNamesPrompt">
+    /// A function to get the name change mapping. Names that do not appear
+    /// in the mapping will not be changed.
+    /// The parameter is the list of names that currently exist in the game.
+    /// </param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public static async Task ModifyNames(
         Directory gameFolder,
         Func<IEnumerable<string>, Dictionary<string, string>> modifyNamesPrompt,

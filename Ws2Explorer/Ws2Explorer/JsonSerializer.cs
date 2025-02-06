@@ -6,23 +6,25 @@ namespace Ws2Explorer;
 
 internal static class JsonSerializer
 {
-    public static readonly JsonSerializerOptions OptionsIndented = new()
-    {
-        WriteIndented = true,
-        AllowTrailingCommas = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-    };
+    public static readonly JsonSerializerOptions OptionsIndented =
+        new()
+        {
+            WriteIndented = true,
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
 
-    public static readonly JsonSerializerOptions Options = new()
-    {
-        WriteIndented = false,
-        AllowTrailingCommas = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-    };
+    public static readonly JsonSerializerOptions Options =
+        new()
+        {
+            WriteIndented = false,
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
 
     public static T Deserialize<T>(string json)
     {

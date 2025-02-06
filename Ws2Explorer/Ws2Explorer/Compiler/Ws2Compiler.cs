@@ -1,25 +1,38 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Reflection.Emit;
 using System.Text.Json.Nodes;
 
 namespace Ws2Explorer.Compiler;
 
-public enum Ws2Version
-{
-    V1,
-    V2,
-    V3,
-    V3_1,
-}
-
+/// <summary>
+/// WS2 compiler and decompiler.
+/// </summary>
 public static class Ws2Compiler
 {
+    /// <summary>
+    /// Decompile a WS2 file to a list of ops.
+    /// </summary>
+    /// <param name="stream">The input data.</param>
+    /// <param name="version">The version that the script sucessfully decompiled as.</param>
+    /// <param name="hasUnresolvedLabels">
+    /// Whether decompilation finished with labels that do
+    /// not point to a valid location.
+    /// </param>
+    /// <returns></returns>
     public static List<Op> Decompile(BinaryStream stream, out Ws2Version version, out bool hasUnresolvedLabels)
     {
         return Decompile(stream, false, out version, out hasUnresolvedLabels);
     }
 
+    /// <summary>
+    /// Decompile a WS2 file to a list of ops.
+    /// </summary>
+    /// <param name="stream">The input data.</param>
+    /// <param name="version">The version that the script successfully decompiled as.</param>
+    /// <param name="mustResolveLabels">
+    /// Whether all labels must point to valid locations.
+    /// </param>
+    /// <returns></returns>
     public static List<Op> Decompile(BinaryStream stream, out Ws2Version version, bool mustResolveLabels = true)
     {
         return Decompile(stream, mustResolveLabels, out version, out _);
@@ -168,6 +181,14 @@ public static class Ws2Compiler
         }
     }
 
+    /// <summary>
+    /// Compile a list of ops to a binary stream.
+    /// </summary>
+    /// <param name="ops">The list of ops.</param>
+    /// <param name="mustResolveLabels">
+    /// Whether all labels must point to valid locations.
+    /// </param>
+    /// <returns></returns>
     public static BinaryStream Compile(IEnumerable<Op> ops, bool mustResolveLabels = true)
     {
         var ret = Compile(ops, out HashSet<int> unresolvedLabels);
@@ -179,6 +200,15 @@ public static class Ws2Compiler
         return ret;
     }
 
+    /// <summary>
+    /// Compile a list of ops to a binary stream.
+    /// </summary>
+    /// <param name="ops">The list of ops.</param>
+    /// <param name="hasUnresolvedLabels">
+    /// Whether compilation finished with labels that do
+    /// not point to a valid location.
+    /// </param>
+    /// <returns></returns>
     public static BinaryStream Compile(IEnumerable<Op> ops, out bool hasUnresolvedLabels)
     {
         var ret = Compile(ops, out HashSet<int> unresolvedLabels);
@@ -335,6 +365,11 @@ public static class Ws2Compiler
         }
     }
 
+    /// <summary>
+    /// Serialize a list of ops to a JSON string.
+    /// </summary>
+    /// <param name="ops"></param>
+    /// <returns></returns>
     public static string ToJson(IEnumerable<Op> ops)
     {
         var count = ops.Count();
@@ -349,6 +384,11 @@ public static class Ws2Compiler
         return string.Join("\n", lines);
     }
 
+    /// <summary>
+    /// Deserialize a list of ops from a JSON string.
+    /// </summary>
+    /// <param name="json"></param>
+    /// <returns></returns>
     public static List<Op> FromJson(string json)
     {
         var array = JsonSerializer.Deserialize<JsonArray>(json);

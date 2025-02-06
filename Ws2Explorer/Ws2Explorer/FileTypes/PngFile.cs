@@ -1,5 +1,8 @@
-﻿namespace Ws2Explorer;
+﻿namespace Ws2Explorer.FileTypes;
 
+/// <summary>
+/// A PNG image file.
+/// </summary>
 public sealed class PngFile : IFile<PngFile>
 {
     internal static readonly PngFile Example = Decode(new BinaryStream([
@@ -11,12 +14,24 @@ public sealed class PngFile : IFile<PngFile>
         0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
     ]), out _);
 
+    /// <summary>
+    /// The PNG signature.
+    /// </summary>
+    public const int SIGNATURE = 0x474E5089;
+
+    /// <summary>
+    /// The underlying binary stream.
+    /// </summary>
     public BinaryStream Stream { get; }
 
-    public string? MetadataSummary => $"Dimensions: {ImageWidth}x{ImageHeight}";
-
+    /// <summary>
+    /// The width of the image.
+    /// </summary>
     public int ImageWidth { get; }
 
+    /// <summary>
+    /// The height of the image.
+    /// </summary>
     public int ImageHeight { get; }
 
     private bool disposedValue;
@@ -28,7 +43,7 @@ public sealed class PngFile : IFile<PngFile>
         if (stream.Length < 67) // https://evanhahn.com/worlds-smallest-png/
         {
             throw new DecodeException("File is too short.");
-        } else if (reader.ReadUInt32() != 0x474E5089)
+        } else if (reader.ReadUInt32() != SIGNATURE)
         {
             throw new DecodeException("Invalid signature.");
         }
@@ -43,6 +58,12 @@ public sealed class PngFile : IFile<PngFile>
         confidence = DecodeConfidence.High;
     }
 
+    /// <summary>
+    /// Decodes a PNG file from a binary stream.
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="confidence"></param>
+    /// <returns></returns>
     public static PngFile Decode(BinaryStream stream, out DecodeConfidence confidence)
     {
         return DecodeException.Wrap(
@@ -50,6 +71,9 @@ public sealed class PngFile : IFile<PngFile>
             out confidence);
     }
 
+    /// <summary>
+    /// Disposes the PNG file.
+    /// </summary>
     public void Dispose()
     {
         if (!disposedValue)
@@ -60,6 +84,9 @@ public sealed class PngFile : IFile<PngFile>
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Disposes the PNG file.
+    /// </summary>
     ~PngFile()
     {
         Dispose();

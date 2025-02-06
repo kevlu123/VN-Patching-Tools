@@ -1,58 +1,53 @@
-﻿/*
-PTF Compression Format
+﻿using System.Runtime.InteropServices;
 
-4 bytes:        length of the decompressed data, uint32 little-endian
-1 byte:         format bits
-8x[1,2] bytes:  data/reference to data
-1 byte:         format bits
-8x[1,2] bytes:  data/reference to data
-1 byte:         format bits
-8x[1,2] bytes:  data/reference to data
-...
+namespace Ws2Explorer.FileTypes;
 
-While output is written, a circular buffer of 4096 bytes keeps
-track of the output history.
-
-After all output has been written, the output is XORed with an
-externally provided value. This value can be easily inferred
-by looking at the first few bytes of the output.
-
-Format bits is an array of 8 bits corresponding to the mode
-of 8 'blocks' of data that follow. This bit array is read
-starting from the least significant bit.
-
-If the format bit is 1, the next byte is a single byte of data.
-
-If the format bit is 0, the next two bytes encode a reference
-to a sequence of data in the history buffer.
-Denote the two bytes by 0bAAAABBBB 0bCCCCDDDD.
-The index of the sequence in the history buffer is 0bBBBBCCCC.
-The length of the sequence is 0b0000DDDD+2 bytes.
-This sequence may wrap around the end of the history buffer.
-If the index is 0, the end of the data is reached and the
-reference is not used.
- */
-
-using System.Runtime.InteropServices;
-using System.Text;
-
-namespace Ws2Explorer;
-
+/// <summary>
+/// Font type.
+/// </summary>
 public enum FontType
 {
+    /// <summary>
+    /// True type font.
+    /// </summary>
     TTF,
+
+    /// <summary>
+    /// Open type font.
+    /// </summary>
     OTF,
 }
 
+/// <summary>
+/// A compressed font file.
+/// </summary>
 public sealed class PtfFile : IArchive<PtfFile>
 {
+    /// <summary>
+    /// The filename of the decompressed font file.
+    /// </summary>
     public const string FONT_FILENAME = "font";
+
+    /// <summary>
+    /// The filename of the XOR key file.
+    /// </summary>
     public const string XOR_KEY_FILENAME = "xor_key.txt";
 
+    /// <summary>
+    /// The underlying binary stream.
+    /// </summary>
     public BinaryStream Stream { get; }
 
+    /// <summary>
+    /// The XOR key used to obfuscate the data.
+    /// This key is specific to different games but
+    /// can be easily inferred.
+    /// </summary>
     public byte XorKey { get; }
 
+    /// <summary>
+    /// The type of font file.
+    /// </summary>
     public FontType FontType { get; }
 
     private readonly BinaryStream decompressed;
@@ -116,10 +111,16 @@ public sealed class PtfFile : IArchive<PtfFile>
         Stream = compressed;
         compressed.Freeze();
         compressed.IncRef();
-        this.decompressed = decompressed.Clone();
-        this.decompressed.Freeze();
+        this.decompressed = decompressed;
+        decompressed.IncRef();
     }
 
+    /// <summary>
+    /// Decodes a PTF file from a binary stream.
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="confidence"></param>
+    /// <returns></returns>
     public static PtfFile Decode(BinaryStream stream, out DecodeConfidence confidence)
     {
         return DecodeException.Wrap(
@@ -127,16 +128,33 @@ public sealed class PtfFile : IArchive<PtfFile>
             out confidence);
     }
 
+    /// <summary>
+    /// Constructs a PTF file from subfiles.
+    /// Files <see cref="FONT_FILENAME"/> and <see cref="XOR_KEY_FILENAME"/> are required.
+    /// The font file may have the extension ".ttf" or ".otf".
+    /// The XOR key file must contain a single byte in hexadecimal format e.g. "0x1E".
+    /// </summary>
+    /// <param name="contents"></param>
+    /// <returns></returns>
     public static PtfFile Create(IDictionary<string, BinaryStream> contents)
     {
         return ArchiveCreationException.Wrap(() => new PtfFile(contents));
     }
 
+    /// <summary>
+    /// See <see cref="Create(IDictionary{string, BinaryStream})"/>.
+    /// </summary>
+    /// <param name="contents"></param>
+    /// <returns></returns>
     IArchive IArchive.Create(IDictionary<string, BinaryStream> contents)
     {
         return Create(contents);
     }
 
+    /// <summary>
+    /// Lists the virtual subfiles.
+    /// </summary>
+    /// <returns></returns>
     public List<FileInfo> ListFiles()
     {
         return [
@@ -153,6 +171,14 @@ public sealed class PtfFile : IArchive<PtfFile>
         ];
     }
 
+    /// <summary>
+    /// Opens a virtual subfile.
+    /// The filename is case-insensitive.
+    /// </summary>
+    /// <param name="filename"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public Task<BinaryStream> OpenFile(string filename, IProgress<TaskProgressInfo>? progress = null, CancellationToken ct = default)
     {
         switch (filename.ToLowerInvariant())
@@ -169,6 +195,11 @@ public sealed class PtfFile : IArchive<PtfFile>
         }
     }
 
+    /// <summary>
+    /// Gets the font type from the font file data.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
     public static FontType? GetFontType(ReadOnlySpan<byte> data)
     {
         if (data.Length >= 4)
@@ -188,7 +219,7 @@ public sealed class PtfFile : IArchive<PtfFile>
         return null;
     }
 
-    public static byte? InferXorKey(ReadOnlySpan<byte> data, out FontType fontType)
+    private static byte? InferXorKey(ReadOnlySpan<byte> data, out FontType fontType)
     {
         var ft = GetFontType(data);
         if (ft == null)
@@ -205,6 +236,13 @@ public sealed class PtfFile : IArchive<PtfFile>
         return data[0];
     }
 
+    /// <summary>
+    /// Decompresses a PTF file.
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="xorKey">The inferred XOR key used to obfuscate the data.</param>
+    /// <param name="fontType"></param>
+    /// <returns></returns>
     public static BinaryStream Decompress(BinaryStream stream, out byte xorKey, out FontType fontType)
     {
         var reader = new BinaryReader(stream);
@@ -287,6 +325,12 @@ public sealed class PtfFile : IArchive<PtfFile>
         return new BinaryStream(outputBuffer.ToArray());
     }
 
+    /// <summary>
+    /// Compresses to a PTF file.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="xorKey">The XOR key to obfuscate the data.</param>
+    /// <returns></returns>
     public static BinaryStream Compress(BinaryStream data, byte xorKey)
     {
         var reader = new BinaryReader(data);
@@ -344,6 +388,9 @@ public sealed class PtfFile : IArchive<PtfFile>
         return new BinaryStream([.. output]);
     }
 
+    /// <summary>
+    /// Disposes the PTF file.
+    /// </summary>
     public void Dispose()
     {
         if (!disposedValue)
@@ -354,6 +401,9 @@ public sealed class PtfFile : IArchive<PtfFile>
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Disposes the PTF file.
+    /// </summary>
     ~PtfFile()
     {
         Dispose();

@@ -2,7 +2,9 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Ws2Explorer.HighLevel;
+using Ws2Explorer.FileTypes;
 using Flowchart = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>;
+using Ws2Directory = Ws2Explorer.FileTypes.Directory;
 
 namespace Ws2Explorer.Gui;
 
@@ -199,7 +201,7 @@ class ApplicationState(string? openPath)
                 // Open real directory
                 folderStack.Add(new NamedFolder
                 {
-                    Folder = folderStack[^1].Folder.OpenFolder(name),
+                    Folder = ((Ws2Directory)folderStack[^1].Folder).OpenDirectory(name),
                     Name = name,
                 });
             }
@@ -284,7 +286,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (folderStack[^1].Folder is not Directory directory)
+            if (folderStack[^1].Folder is not Ws2Directory directory)
             {
                 throw new QuietError("Cannot create directory in an archive.");
             }
@@ -779,7 +781,7 @@ class ApplicationState(string? openPath)
     {
         ProtectSync(() =>
         {
-            if (GetGameFolderOrCurrentInternal() is Directory gameFolder)
+            if (GetGameFolderOrCurrentInternal() is Ws2Directory gameFolder)
             {
                 var gamePath = Path.Combine(gameFolder.FullPath, "AdvHD.exe");
                 var leprocPath = Path.Combine(GetExeFolderPath()!, "LEProc.exe");
@@ -811,7 +813,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (GetGameFolderOrCurrentInternal() is Directory dir)
+            if (GetGameFolderOrCurrentInternal() is Ws2Directory dir)
             {
                 await GameTool.SetEntryPoint(dir, setEntryPrompt, progress, ct);
                 await RefreshFolderInternal(ct);
@@ -827,7 +829,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (GetGameFolderOrCurrentInternal() is Directory dir)
+            if (GetGameFolderOrCurrentInternal() is Ws2Directory dir)
             {
                 await GameTool.ConvertLuacToText(dir, progress, ct);
                 await RefreshFolderInternal(ct);
@@ -843,7 +845,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (GetGameFolderOrCurrentInternal() is Directory dir)
+            if (GetGameFolderOrCurrentInternal() is Ws2Directory dir)
             {
                 var choices = await GameTool.GetChoices(dir, progress, ct);
                 onResult(choices);
@@ -867,7 +869,7 @@ class ApplicationState(string? openPath)
 
     private async Task GetFlowChartInternal(Action<Flowchart> onResult, CancellationToken ct)
     {
-        if (GetGameFolderOrCurrentInternal() is Directory dir)
+        if (GetGameFolderOrCurrentInternal() is Ws2Directory dir)
         {
             onResult(await GameTool.GetFlowchart(dir, progress, ct));
         }
@@ -881,7 +883,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (GetGameFolderOrCurrentInternal() is Directory dir)
+            if (GetGameFolderOrCurrentInternal() is Ws2Directory dir)
             {
                 await GameTool.ModifyNames(dir, modifyNamesPrompt, progress, ct);
                 await RefreshFolderInternal(ct);
@@ -1029,7 +1031,7 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (GetGameFolderOrCurrentInternal() is Directory dir)
+            if (GetGameFolderOrCurrentInternal() is Ws2Directory dir)
             {
                 var search = searchTextPrompt();
                 if (search == null)

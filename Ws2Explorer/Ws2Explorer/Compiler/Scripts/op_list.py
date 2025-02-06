@@ -5,8 +5,8 @@ h - int16
 i - int32
 f - float
 s - string
-n - prefixed string (NameString)
-m - suffixed string (MessageString)
+n - NameString
+m - MessageString
 H - int16 array
 S - string array
 C - choice array

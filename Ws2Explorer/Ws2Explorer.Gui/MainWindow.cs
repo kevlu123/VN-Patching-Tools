@@ -106,6 +106,7 @@ partial class MainWindow : Form
             LexerName = "cpp",
             WrapMode = WrapMode.None,
             ScrollWidth = 49,
+            ReadOnly = true,
         };
 #pragma warning restore CS0618 // Type or member is obsolete (Lexer)
         textPreview_Scintilla.Margins.Capacity = 5;
@@ -293,7 +294,9 @@ partial class MainWindow : Form
     {
         audioPlayer.Stop();
 
+        textPreview_Scintilla.ReadOnly = false;
         textPreview_Scintilla.Text = text;
+        textPreview_Scintilla.ReadOnly = true;
         if (!panels_SplitContainer.Panel2.Controls.Contains(textPreview_Scintilla))
         {
             panels_SplitContainer.Panel2.Controls.Clear();

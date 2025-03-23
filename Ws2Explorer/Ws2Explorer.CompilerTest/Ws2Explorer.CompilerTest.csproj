@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ws2Explorer\Ws2Explorer.csproj" />
-	<None Include="Data/*">
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</None>
+    <ProjectReference Include="../Ws2Explorer/Ws2Explorer.csproj" />
+    <None Include="Data/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

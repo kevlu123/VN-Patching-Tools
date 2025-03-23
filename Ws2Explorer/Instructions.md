@@ -162,6 +162,9 @@ Start a timer. This gives a pause in the script e.g. giving time for animations 
 
 Display text.
 
+In Ws2Explorer, the Text field is of type MessageString rather than string.
+The MessageString API automatically separates the suffix from the displayed text.
+
 ### Version <= V2
 
 | Type   | Name   | Description |
@@ -182,6 +185,9 @@ Display text.
 ## DISPLAY_NAME_15
 
 Set the currently displayed character name.
+
+In Ws2Explorer, the Text field is of type NameString rather than string.
+The NameString API automatically separates the prefix from the displayed text.
 
 ### Version <= V2
 

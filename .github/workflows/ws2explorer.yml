@@ -21,13 +21,47 @@ jobs:
       - name: Build
         shell: pwsh
         run: |
-          cd Ws2Explorer/Ws2Explorer.Gui
+          $zip_name = "${{ github.ref_name }}"
           $version = "${{ github.ref_name }}".Substring("Ws2Explorer-v".Length)
+          cd Ws2Explorer
+
+          # Build
+          cd Ws2Explorer.Gui
           dotnet publish -c Release /p:Version=$version
-          mv bin/Release/net8.0-windows/publish ${{ github.ref_name }}
-          Compress-Archive -Path ${{ github.ref_name }} -DestinationPath ${{ github.ref_name }}.zip
+          cd ..
+
+          # Package
+          mv Ws2Explorer.Gui/bin/Release/net8.0-windows/publish $zip_name
+          Compress-Archive -Path $zip_name -DestinationPath $zip_name-dotnet8.zip
+          rm -Force -Recurse $zip_name
+
+      - name: Build self-contained
+        shell: pwsh
+        run: |
+          $zip_name = "${{ github.ref_name }}"
+          $version = "${{ github.ref_name }}".Substring("Ws2Explorer-v".Length)
+          cd Ws2Explorer
+
+          # Build Ws2Explorer.Gui
+          cd Ws2Explorer.Gui
+          rm -Force -Recurse bin
+          dotnet publish -c Release --self-contained -r win-x64 /p:Version=$version
+          cd ..
+
+          # Build LocaleEmulator
+          cd LocaleEmulator
+          dotnet publish -c Release --self-contained -r win-x86
+          cd ..
+
+          # Package
+          mv Ws2Explorer.Gui/bin/Release/net8.0-windows/win-x64/publish $zip_name
+          mv LocaleEmulator/bin/Release/net8.0-windows/win-x86/publish $zip_name/LEProc
+          Compress-Archive -Path $zip_name -DestinationPath $zip_name-standalone.zip
+          rm -Force -Recurse $zip_name
         
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: Ws2Explorer/Ws2Explorer.Gui/${{ github.ref_name }}.zip
+          files: |
+            Ws2Explorer/${{ github.ref_name }}-dotnet8.zip
+            Ws2Explorer/${{ github.ref_name }}-standalone.zip

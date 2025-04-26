@@ -17,11 +17,11 @@ class Config
     };
 
     public string OpenFolder { get; set; } = "";
-    public string TextEditorPath { get; set; } = "C:\\Program Files\\Notepad++\\notepad++.exe";
-    public string TextEditorArgs { get; set; } = "-multiInst -nosession";
+    public string TextEditorPath { get; set; } = "notepad.exe";
+    public string TextEditorArgs { get; set; } = "";
     public string ImageEditorPath { get; set; } = "mspaint.exe";
     public string ImageEditorArgs { get; set; } = "";
-    public string HexEditorPath { get; set; } = "C:\\Program Files\\HxD\\HxD.exe";
+    public string HexEditorPath { get; set; } = "";
     public string HexEditorArgs { get; set; } = "";
     public bool WordWrap { get; set; } = false;
     public bool WindowMaximized { get; set; } = false;

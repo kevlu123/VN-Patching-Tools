@@ -785,6 +785,10 @@ class ApplicationState(string? openPath)
             {
                 var gamePath = Path.Combine(gameFolder.FullPath, "AdvHD.exe");
                 var leprocPath = Path.Combine(GetExeFolderPath()!, "LEProc.exe");
+                if (!File.Exists(leprocPath))
+                {
+                    leprocPath = Path.Combine(GetExeFolderPath()!, "LEProc/LEProc.exe");
+                }
 
                 if (!File.Exists(gamePath))
                 {
@@ -795,7 +799,7 @@ class ApplicationState(string? openPath)
                 {
                     ArgumentList = { gamePath },
                     WorkingDirectory = gameFolder.FullPath,
-                }) ?? throw new IOException("Failed to launch Locale Emulator (LEProc.exe).");
+                }) ?? throw new IOException($"Failed to launch Locale Emulator ({leprocPath}).");
             }
             else
             {

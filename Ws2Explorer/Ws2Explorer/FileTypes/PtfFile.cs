@@ -247,6 +247,10 @@ public sealed class PtfFile : IArchive<PtfFile>
     {
         var reader = new BinaryReader(stream);
         var outputLen = reader.ReadInt32();
+        if (outputLen <= 4)
+        {
+            throw new InvalidDataException("Decompressed data too short");
+        }
         var outputBuffer = new List<byte>();
 
         var history = new byte[0x1000];
@@ -306,6 +310,10 @@ public sealed class PtfFile : IArchive<PtfFile>
         }
 
     end:
+        if (reader.Length != reader.Position)
+        {
+            throw new InvalidDataException("Length mismatch.");
+        }
         CheckXorKey();
         if (!key.HasValue)
         {

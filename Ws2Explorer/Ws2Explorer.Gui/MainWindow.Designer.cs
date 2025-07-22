@@ -56,12 +56,14 @@
             toolStripSeparator12 = new ToolStripSeparator();
             createArchive_MenuItem = new ToolStripMenuItem();
             createArc_MenuItem = new ToolStripMenuItem();
+            createLegacyArc8_MenuItem = new ToolStripMenuItem();
             createPna_MenuItem = new ToolStripMenuItem();
             createPan_MenuItem = new ToolStripMenuItem();
             createPtf_MenuItem = new ToolStripMenuItem();
             createWs2_MenuItem = new ToolStripMenuItem();
             openArchiveAs_MenuItem = new ToolStripMenuItem();
             openAsArc_MenuItem = new ToolStripMenuItem();
+            openAsLegacyArc8_MenuItem = new ToolStripMenuItem();
             openAsPna_MenuItem = new ToolStripMenuItem();
             openAsPan_MenuItem = new ToolStripMenuItem();
             openAsPtf_MenuItem = new ToolStripMenuItem();
@@ -116,6 +118,8 @@
             mermaidFlowchart_MenuItem = new ToolStripMenuItem();
             jsonFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
+            openAsLegacyArc12_MenuItem = new ToolStripMenuItem();
+            createLegacyArc12_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -326,7 +330,7 @@
             // 
             // createArchive_MenuItem
             // 
-            createArchive_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { createArc_MenuItem, createPna_MenuItem, createPan_MenuItem, createPtf_MenuItem, createWs2_MenuItem });
+            createArchive_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { createArc_MenuItem, createLegacyArc8_MenuItem, createLegacyArc12_MenuItem, createPna_MenuItem, createPan_MenuItem, createPtf_MenuItem, createWs2_MenuItem });
             createArchive_MenuItem.Name = "createArchive_MenuItem";
             createArchive_MenuItem.Size = new Size(244, 22);
             createArchive_MenuItem.Text = "Create Archive";
@@ -335,45 +339,53 @@
             // 
             createArc_MenuItem.Name = "createArc_MenuItem";
             createArc_MenuItem.ShortcutKeys = Keys.Control | Keys.F1;
-            createArc_MenuItem.Size = new Size(144, 22);
+            createArc_MenuItem.Size = new Size(235, 22);
             createArc_MenuItem.Text = "ARC";
             createArc_MenuItem.Click += CreateArc_MenuItemClicked;
+            // 
+            // createLegacyArc8_MenuItem
+            // 
+            createLegacyArc8_MenuItem.Name = "createLegacyArc8_MenuItem";
+            createLegacyArc8_MenuItem.ShortcutKeys = Keys.Control | Keys.F2;
+            createLegacyArc8_MenuItem.Size = new Size(235, 22);
+            createLegacyArc8_MenuItem.Text = "ARC (Legacy, 8 char)";
+            createLegacyArc8_MenuItem.Click += CreateLegacyArc8_MenuItemClicked;
             // 
             // createPna_MenuItem
             // 
             createPna_MenuItem.Name = "createPna_MenuItem";
-            createPna_MenuItem.ShortcutKeys = Keys.Control | Keys.F2;
-            createPna_MenuItem.Size = new Size(144, 22);
+            createPna_MenuItem.ShortcutKeys = Keys.Control | Keys.F4;
+            createPna_MenuItem.Size = new Size(235, 22);
             createPna_MenuItem.Text = "PNA";
             createPna_MenuItem.Click += CreatePna_MenuItemClicked;
             // 
             // createPan_MenuItem
             // 
             createPan_MenuItem.Name = "createPan_MenuItem";
-            createPan_MenuItem.ShortcutKeys = Keys.Control | Keys.F3;
-            createPan_MenuItem.Size = new Size(144, 22);
+            createPan_MenuItem.ShortcutKeys = Keys.Control | Keys.F5;
+            createPan_MenuItem.Size = new Size(235, 22);
             createPan_MenuItem.Text = "PAN";
             createPan_MenuItem.Click += CreatePan_MenuItemClicked;
             // 
             // createPtf_MenuItem
             // 
             createPtf_MenuItem.Name = "createPtf_MenuItem";
-            createPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.F4;
-            createPtf_MenuItem.Size = new Size(144, 22);
+            createPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.F6;
+            createPtf_MenuItem.Size = new Size(235, 22);
             createPtf_MenuItem.Text = "PTF";
             createPtf_MenuItem.Click += CreatePtf_MenuItemClicked;
             // 
             // createWs2_MenuItem
             // 
             createWs2_MenuItem.Name = "createWs2_MenuItem";
-            createWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.F5;
-            createWs2_MenuItem.Size = new Size(144, 22);
+            createWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.F7;
+            createWs2_MenuItem.Size = new Size(235, 22);
             createWs2_MenuItem.Text = "WS2";
             createWs2_MenuItem.Click += CreateWs2_MenuItemClicked;
             // 
             // openArchiveAs_MenuItem
             // 
-            openArchiveAs_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { openAsArc_MenuItem, openAsPna_MenuItem, openAsPan_MenuItem, openAsPtf_MenuItem, openAsWs2_MenuItem });
+            openArchiveAs_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { openAsArc_MenuItem, openAsLegacyArc8_MenuItem, openAsLegacyArc12_MenuItem, openAsPna_MenuItem, openAsPan_MenuItem, openAsPtf_MenuItem, openAsWs2_MenuItem });
             openArchiveAs_MenuItem.Name = "openArchiveAs_MenuItem";
             openArchiveAs_MenuItem.Size = new Size(244, 22);
             openArchiveAs_MenuItem.Text = "Open Archive As";
@@ -382,39 +394,47 @@
             // 
             openAsArc_MenuItem.Name = "openAsArc_MenuItem";
             openAsArc_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F1;
-            openAsArc_MenuItem.Size = new Size(176, 22);
+            openAsArc_MenuItem.Size = new Size(267, 22);
             openAsArc_MenuItem.Text = "ARC";
             openAsArc_MenuItem.Click += OpenAsArc_MenuItemClicked;
+            // 
+            // openAsLegacyArc8_MenuItem
+            // 
+            openAsLegacyArc8_MenuItem.Name = "openAsLegacyArc8_MenuItem";
+            openAsLegacyArc8_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F2;
+            openAsLegacyArc8_MenuItem.Size = new Size(267, 22);
+            openAsLegacyArc8_MenuItem.Text = "ARC (Legacy, 8 char)";
+            openAsLegacyArc8_MenuItem.Click += OpenAsLegacyArc8_MenuItemClicked;
             // 
             // openAsPna_MenuItem
             // 
             openAsPna_MenuItem.Name = "openAsPna_MenuItem";
-            openAsPna_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F2;
-            openAsPna_MenuItem.Size = new Size(176, 22);
+            openAsPna_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F4;
+            openAsPna_MenuItem.Size = new Size(267, 22);
             openAsPna_MenuItem.Text = "PNA";
             openAsPna_MenuItem.Click += OpenAsPna_MenuItemClicked;
             // 
             // openAsPan_MenuItem
             // 
             openAsPan_MenuItem.Name = "openAsPan_MenuItem";
-            openAsPan_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F3;
-            openAsPan_MenuItem.Size = new Size(176, 22);
+            openAsPan_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F5;
+            openAsPan_MenuItem.Size = new Size(267, 22);
             openAsPan_MenuItem.Text = "PAN";
             openAsPan_MenuItem.Click += OpenAsPan_MenuItemClicked;
             // 
             // openAsPtf_MenuItem
             // 
             openAsPtf_MenuItem.Name = "openAsPtf_MenuItem";
-            openAsPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F4;
-            openAsPtf_MenuItem.Size = new Size(176, 22);
+            openAsPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F6;
+            openAsPtf_MenuItem.Size = new Size(267, 22);
             openAsPtf_MenuItem.Text = "PTF";
             openAsPtf_MenuItem.Click += OpenAsPtf_MenuItemClicked;
             // 
             // openAsWs2_MenuItem
             // 
             openAsWs2_MenuItem.Name = "openAsWs2_MenuItem";
-            openAsWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F5;
-            openAsWs2_MenuItem.Size = new Size(176, 22);
+            openAsWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F7;
+            openAsWs2_MenuItem.Size = new Size(267, 22);
             openAsWs2_MenuItem.Text = "WS2";
             openAsWs2_MenuItem.Click += OpenAsWs2_MenuItemClicked;
             // 
@@ -787,6 +807,22 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
+            // openAsLegacyArc12_MenuItem
+            // 
+            openAsLegacyArc12_MenuItem.Name = "openAsLegacyArc12_MenuItem";
+            openAsLegacyArc12_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F3;
+            openAsLegacyArc12_MenuItem.Size = new Size(267, 22);
+            openAsLegacyArc12_MenuItem.Text = "ARC (Legacy, 12 char)";
+            openAsLegacyArc12_MenuItem.Click += OpenAsLegacyArc12_MenuItemClicked;
+            // 
+            // createLegacyArc12_MenuItem
+            // 
+            createLegacyArc12_MenuItem.Name = "createLegacyArc12_MenuItem";
+            createLegacyArc12_MenuItem.ShortcutKeys = Keys.Control | Keys.F3;
+            createLegacyArc12_MenuItem.Size = new Size(235, 22);
+            createLegacyArc12_MenuItem.Text = "ARC (Legacy, 12 char)";
+            createLegacyArc12_MenuItem.Click += CreateLegacyArc12_MenuItemClicked;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -904,5 +940,9 @@
         private ToolStripMenuItem newDirectory_MenuItem;
         private ToolStripMenuItem listFiles_MenuItem;
         private ToolStripMenuItem findReferences_MenuItem;
+        private ToolStripMenuItem createLegacyArc8_MenuItem;
+        private ToolStripMenuItem openAsLegacyArc8_MenuItem;
+        private ToolStripMenuItem createLegacyArc12_MenuItem;
+        private ToolStripMenuItem openAsLegacyArc12_MenuItem;
     }
 }

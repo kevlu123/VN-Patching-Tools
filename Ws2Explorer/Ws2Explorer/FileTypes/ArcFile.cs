@@ -56,6 +56,8 @@ public sealed class ArcFile : IArchive<ArcFile>
 
     /// <summary>
     /// The ARC file subheaders.
+    /// The keys are the filenames with extensions.
+    /// The keys are case-insensitive.
     /// </summary>
     public IReadOnlyDictionary<string, ArcSubHeader> SubHeaders => subHeaders.AsReadOnly();
 
@@ -76,7 +78,7 @@ public sealed class ArcFile : IArchive<ArcFile>
             SubHeaderLen = reader.ReadNonnegativeInt32(),
         };
 
-        subHeaders = [];
+        subHeaders = new SortedDictionary<string, ArcSubHeader>(StringComparer.InvariantCultureIgnoreCase);
         int position = ArcHeader.Size + Header.SubHeaderLen;
         for (var i = 0; i < Header.FileCount; i++)
         {

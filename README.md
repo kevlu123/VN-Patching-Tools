@@ -1,4 +1,4 @@
-# VN Patching Tools
+# VNPT (VN Patching Tools)
 
 A collection of open source VN patching tools and patches for various games.
 

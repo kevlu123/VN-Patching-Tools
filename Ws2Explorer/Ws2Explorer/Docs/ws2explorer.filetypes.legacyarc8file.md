@@ -1,44 +1,58 @@
-# ArcFile
+# LegacyArc8File
 
 Namespace: Ws2Explorer.FileTypes
 
-A game archive file.
+A game archive file used in older games.
+ This archive version has a max length of 8 bytes for filenames
+ excluding the dot and extension.
 
 ```csharp
-public sealed class ArcFile : Ws2Explorer.IArchive`1[[Ws2Explorer.FileTypes.ArcFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], Ws2Explorer.IArchive, Ws2Explorer.IFile, System.IDisposable, Ws2Explorer.IFolder, Ws2Explorer.IFile`1[[Ws2Explorer.FileTypes.ArcFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+public sealed class LegacyArc8File : Ws2Explorer.IArchive`1[[Ws2Explorer.FileTypes.LegacyArc8File, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], Ws2Explorer.IArchive, Ws2Explorer.IFile, System.IDisposable, Ws2Explorer.IFolder, Ws2Explorer.IFile`1[[Ws2Explorer.FileTypes.LegacyArc8File, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
 ```
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ArcFile](./ws2explorer.filetypes.arcfile.md)<br>
-Implements [IArchive&lt;ArcFile&gt;](./ws2explorer.iarchive-1.md), [IArchive](./ws2explorer.iarchive.md), [IFile](./ws2explorer.ifile.md), [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable), [IFolder](./ws2explorer.ifolder.md), [IFile&lt;ArcFile&gt;](./ws2explorer.ifile-1.md)<br>
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [LegacyArc8File](./ws2explorer.filetypes.legacyarc8file.md)<br>
+Implements [IArchive&lt;LegacyArc8File&gt;](./ws2explorer.iarchive-1.md), [IArchive](./ws2explorer.iarchive.md), [IFile](./ws2explorer.ifile.md), [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable), [IFolder](./ws2explorer.ifolder.md), [IFile&lt;LegacyArc8File&gt;](./ws2explorer.ifile-1.md)<br>
 Attributes [NullableContextAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullablecontextattribute), [NullableAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullableattribute)
 
 ## Properties
 
-### **Header**
+### **GroupCount**
 
-The ARC file header.
+The number of groups (different file extensions) in the legacy ARC file.
 
 ```csharp
-public ArcHeader Header { get; }
+public int GroupCount { get; }
 ```
 
 #### Property Value
 
-[ArcHeader](./ws2explorer.filetypes.archeader.md)<br>
+[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
+### **GroupHeaders**
+
+The list of group headers.
+
+```csharp
+public IReadOnlyList<LegacyArcGroupHeader> GroupHeaders { get; }
+```
+
+#### Property Value
+
+[IReadOnlyList&lt;LegacyArcGroupHeader&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1)<br>
 
 ### **SubHeaders**
 
-The ARC file subheaders.
+The subheaders describing each subfile.
  The keys are the filenames with extensions.
  The keys are case-insensitive.
 
 ```csharp
-public IReadOnlyDictionary<string, ArcSubHeader> SubHeaders { get; }
+public IReadOnlyDictionary<string, LegacyArcSubHeader> SubHeaders { get; }
 ```
 
 #### Property Value
 
-[IReadOnlyDictionary&lt;String, ArcSubHeader&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2)<br>
+[IReadOnlyDictionary&lt;String, LegacyArcSubHeader&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2)<br>
 
 ### **Stream**
 
@@ -56,10 +70,10 @@ public BinaryStream Stream { get; }
 
 ### **Decode(BinaryStream, DecodeConfidence&)**
 
-Decodes an ARC file from a binary stream.
+Decodes a legacy ARC file from a binary stream.
 
 ```csharp
-public static ArcFile Decode(BinaryStream stream, DecodeConfidence& confidence)
+public static LegacyArc8File Decode(BinaryStream stream, DecodeConfidence& confidence)
 ```
 
 #### Parameters
@@ -70,14 +84,14 @@ public static ArcFile Decode(BinaryStream stream, DecodeConfidence& confidence)
 
 #### Returns
 
-[ArcFile](./ws2explorer.filetypes.arcfile.md)<br>
+[LegacyArc8File](./ws2explorer.filetypes.legacyarc8file.md)<br>
 
 ### **Create(IDictionary&lt;String, BinaryStream&gt;)**
 
-Constructs an ARC file from subfiles.
+Constructs a legacy ARC file from subfiles.
 
 ```csharp
-public static ArcFile Create(IDictionary<string, BinaryStream> contents)
+public static LegacyArc8File Create(IDictionary<string, BinaryStream> contents)
 ```
 
 #### Parameters
@@ -86,7 +100,7 @@ public static ArcFile Create(IDictionary<string, BinaryStream> contents)
 
 #### Returns
 
-[ArcFile](./ws2explorer.filetypes.arcfile.md)<br>
+[LegacyArc8File](./ws2explorer.filetypes.legacyarc8file.md)<br>
 
 ### **ListFiles()**
 
@@ -123,16 +137,8 @@ public Task<BinaryStream> OpenFile(string filename, IProgress<TaskProgressInfo> 
 
 ### **Dispose()**
 
-Disposes the ARC file.
+Disposes the legacy ARC file.
 
 ```csharp
 public void Dispose()
-```
-
-### **Finalize()**
-
-Disposes the ARC file.
-
-```csharp
-protected void Finalize()
 ```

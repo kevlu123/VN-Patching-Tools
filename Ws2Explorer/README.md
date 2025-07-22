@@ -1,12 +1,14 @@
 # Ws2Explorer
 
-A comprehensive set of tools for editing games using Willplus' AdvHD engine.
+A comprehensive set of tools for editing games based on WillPlus' AdvHD engine.
 
 <!-- no toc -->
 - [GUI Editor](#gui-editor)
 - [Dokan Virtual Filesystem](#dokan-virtual-filesystem)
 - [Ws2Explorer C# Library](#ws2explorer-c-library)
 - [File Formats Documentation](FileFormats.md)
+
+I am available to help with modifying any AdvHD game. Submit an issue for any queries.
 
 ## GUI Editor
 
@@ -19,20 +21,20 @@ and perform common operations to modify the game.
 
 ### Recognised file types
 
-| Name    | Description                     |
-|---------|---------------------------------|
-| .arc    | Archive                         |
-| .ws2    | Script                          |
-| .dat    | Video                           |
-| .ogg    | Audio                           |
-| .lua    | Compiled Lua                    |
-| .ptf    | Compressed font                 |
-| .otf    | Open type font                  |
-| .ttf    | True type font                  |
-| .pna    | PNG array archive               |
-| .mos    | Same as .pna but used for masks |
-| .png    | PNG image                       |
-| pan.dat | Audio panning data?             |
+| Name    | Description                                                   |
+|---------|---------------------------------------------------------------|
+| .arc    | Archive (legacy version used in earlier games also supported) |
+| .ws2    | Script                                                        |
+| .dat    | Video                                                         |
+| .ogg    | Audio                                                         |
+| .lua    | Compiled Lua                                                  |
+| .ptf    | Compressed font                                               |
+| .otf    | Open type font                                                |
+| .ttf    | True type font                                                |
+| .pna    | PNG array archive                                             |
+| .mos    | Same as .pna but used for masks                               |
+| .png    | PNG image                                                     |
+| pan.dat | Audio panning data?                                           |
 
 ### Features
 

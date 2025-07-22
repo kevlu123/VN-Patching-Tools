@@ -78,6 +78,14 @@
 
 [FontType](./ws2explorer.filetypes.fonttype.md)
 
+[LegacyArc12File](./ws2explorer.filetypes.legacyarc12file.md)
+
+[LegacyArc8File](./ws2explorer.filetypes.legacyarc8file.md)
+
+[LegacyArcGroupHeader](./ws2explorer.filetypes.legacyarcgroupheader.md)
+
+[LegacyArcSubHeader](./ws2explorer.filetypes.legacyarcsubheader.md)
+
 [LuacFile](./ws2explorer.filetypes.luacfile.md)
 
 [OggFile](./ws2explorer.filetypes.oggfile.md)

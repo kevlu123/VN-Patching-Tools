@@ -702,6 +702,24 @@ partial class MainWindow : Form
         }
     }
 
+    private void OpenAsLegacyArc8_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenArchiveAs<LegacyArc8File>(index);
+        }
+    }
+
+    private void OpenAsLegacyArc12_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenArchiveAs<LegacyArc12File>(index);
+        }
+    }
+
     private void OpenAsPna_MenuItemClicked(object sender, EventArgs e)
     {
         if (files_ListView.SelectedIndices.Count == 1)
@@ -741,6 +759,16 @@ partial class MainWindow : Form
     private void CreateArc_MenuItemClicked(object sender, EventArgs e)
     {
         CreateArchive<ArcFile>(new CommonFileDialogFilter("ARC file", "*.arc"));
+    }
+
+    private void CreateLegacyArc8_MenuItemClicked(object sender, EventArgs e)
+    {
+        CreateArchive<LegacyArc8File>(new CommonFileDialogFilter("ARC file", "*.arc"));
+    }
+
+    private void CreateLegacyArc12_MenuItemClicked(object sender, EventArgs e)
+    {
+        CreateArchive<LegacyArc12File>(new CommonFileDialogFilter("ARC file", "*.arc"));
     }
 
     private void CreatePna_MenuItemClicked(object sender, EventArgs e)

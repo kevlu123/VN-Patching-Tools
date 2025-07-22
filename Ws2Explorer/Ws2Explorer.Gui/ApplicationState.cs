@@ -580,6 +580,10 @@ class ApplicationState(string? openPath)
                 TextFile => EditorType.Text,
                 _ => EditorType.Hex,
             });
+            if (editor.Trim().Length == 0)
+            {
+                throw new InvalidOperationException("No editor configured for this file type.");
+            }
 
             using Process proc = Process.Start(editor, $"{args} \"{tempFilename}\"");
             await proc.WaitForExitAsync(ct);
@@ -1128,6 +1132,8 @@ class ApplicationState(string? openPath)
         return file switch
         {
             ArcFile => "ARC",
+            LegacyArc8File => "ARC (Legacy, 8 char filename)",
+            LegacyArc12File => "ARC (Legacy, 12 char filename)",
             BinFile => "BIN",
             LuacFile luac => $"LUAC (v{luac.LuaVersion:X2})",
             OggFile ogg => $"OGG ({ogg.Duration / 60:00}:{ogg.Duration % 60:00})",
@@ -1151,6 +1157,10 @@ class ApplicationState(string? openPath)
         return file switch
         {
             ArcFile arc => "(ARC) Archive file\n\n"
+                        + $"File count: {arc.ListFiles().Count}",
+            LegacyArc8File arc => "(ARC) Legacy archive file with max 8 character filename\n\n"
+                        + $"File count: {arc.ListFiles().Count}",
+            LegacyArc12File arc => "(ARC) Legacy archive file with max 12 character filename\n\n"
                         + $"File count: {arc.ListFiles().Count}",
             BinFile => "Generic binary file",
             LuacFile luac => "(LUAC) Compiled Lua file\n\n"

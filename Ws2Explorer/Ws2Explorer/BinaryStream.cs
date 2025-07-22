@@ -328,6 +328,7 @@ public sealed class BinaryStream : IDisposable
         CancellationToken ct = default,
         bool decRef = true)
     {
+        // Try PNG first, the most common high-confidence only file type.
         return DecodeWithHint<PngFile>(progress, ct, decRef: decRef);
     }
 
@@ -356,20 +357,41 @@ public sealed class BinaryStream : IDisposable
         var ext = Path.GetExtension(filename).ToLowerInvariant();
         return ext switch
         {
-            ".png" => DecodeWithHint<PngFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".pna" or ".mos" => DecodeWithHint<PnaFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".lua" => DecodeWithHint<LuacFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".ogg" => DecodeWithHint<OggFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".dat" => DecodeWithHint<VideoFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".pan" => DecodeWithHint<PanFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".ttf" => DecodeWithHint<TtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".otf" => DecodeWithHint<OtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".arc" => DecodeWithHint<ArcFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".ws2" => DecodeWithHint<Ws2File>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".ptf" => DecodeWithHint<PtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".png" =>            DecodeWithHint<PngFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".pna" or ".mos" =>  DecodeWithHint<PnaFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".lua" =>            DecodeWithHint<LuacFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".ogg" =>            DecodeWithHint<OggFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".dat" =>            DecodeWithHint<VideoFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".pan" =>            DecodeWithHint<PanFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".ttf" =>            DecodeWithHint<TtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".otf" =>            DecodeWithHint<OtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".ws2" =>            DecodeWithHint<Ws2File>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".ptf" =>            DecodeWithHint<PtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".txt" or ".json" => DecodeWithHint<TextFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".arc" =>            DecodeWithHintOr<ArcFile>(decRef: decRef,
+                                    () => DecodeWithHintOr<LegacyArc12File>(decRef: decRef,
+                                        () => DecodeWithHint<LegacyArc8File>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence))),
             _ => Decode(progress, ct, decRef: decRef),
         };
+    }
+
+    private async Task<IFile> DecodeWithHintOr<Hint>(bool decRef, Func<Task<IFile>> or)
+        where Hint : class, IFile<Hint>
+    {
+        IFile arcFile;
+        try
+        {
+            arcFile = await Decode<Hint>(decRef: false);
+        }
+        catch (DecodeException)
+        {
+            return await or();
+        }
+        if (decRef)
+        {
+            DecRef();
+        }
+        return arcFile;
     }
 
     /// <summary>
@@ -434,6 +456,11 @@ public sealed class BinaryStream : IDisposable
             bool TryType<T>()
                 where T : class, IFile<T>
             {
+                if (typeof(T) == typeof(Hint))
+                {
+                    // Already checked
+                    return false;
+                }
                 if (ct.IsCancellationRequested)
                 {
                     return true; // Short circuit further down
@@ -477,6 +504,8 @@ public sealed class BinaryStream : IDisposable
                 TryType<OtfFile>() ||
                 // Try other types in order of commonality
                 TryType<ArcFile>() ||
+                TryType<LegacyArc12File>() ||
+                TryType<LegacyArc8File>() ||
                 TryType<Ws2File>() ||
                 TryType<PtfFile>() ||
                 TryType<TextFile>() ||

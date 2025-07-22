@@ -23,7 +23,7 @@ public record LegacyArcGroupHeader
     /// The offset from the beginning of the file
     /// of the file listing data of this group.
     /// </summary>
-    public required int DataOffset { get; init; }
+    public required int ListingOffset { get; init; }
 }
 
 /// <summary>
@@ -80,7 +80,7 @@ internal sealed class LegacyArcFileBase : IDisposable
             {
                 GroupExtension = ext,
                 FileCount = reader.ReadNonnegativeInt32(),
-                DataOffset = reader.ReadNonnegativeInt32(),
+                ListingOffset = reader.ReadNonnegativeInt32(),
             });
         }
 
@@ -157,7 +157,7 @@ internal sealed class LegacyArcFileBase : IDisposable
             groupHeaders.Add(new LegacyArcGroupHeader
             {
                 GroupExtension = ext,
-                DataOffset = position,
+                ListingOffset = position,
                 FileCount = group.Count,
             });
             foreach (var (nameWithExt, _) in group)
@@ -191,7 +191,7 @@ internal sealed class LegacyArcFileBase : IDisposable
         {
             writer.WriteUTF8String(groupHeader.GroupExtension);
             writer.WriteInt32(groupHeader.FileCount);
-            writer.WriteInt32(groupHeader.DataOffset);
+            writer.WriteInt32(groupHeader.ListingOffset);
         }
         foreach (var subHeader in subHeaderList)
         {

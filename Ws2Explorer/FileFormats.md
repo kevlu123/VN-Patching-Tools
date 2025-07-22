@@ -4,6 +4,7 @@ All types are little endian and all strings are null terminated in their respect
 
 <!-- no toc -->
 - [ARC](#arc-archive-file)
+- [ARC (Legacy)](#arc-archive-file-legacy)
 - [PNA](#pna-png-array-file)
 - [WS2](#ws2-script-file)
 - [Pan.dat](#pandat-audio-panning-data)
@@ -25,6 +26,31 @@ All types are little endian and all strings are null terminated in their respect
 | int32     | DataLen    | Length of the file. |
 | int32     | DataOffset | Offset of the file data relative to the end of the subheaders. |
 | utf16 str | Filename   | Name of the file. |
+
+## (ARC) Archive File (Legacy)
+
+| Type            | Field        | Description |
+|-----------------|--------------|-------------|
+| int32           | GroupCount   | Each distinct 3-char file extension of the subfiles forms a group. This is the number of groups. |
+| groupheader[N]  | GroupHeaders | Headers for each group. |
+| fileheader[N,M] | FileHeaders  | Headers for each file. Headers for the first group appear before the headers for the second group etc. |
+| data[N,M] |     | Files        | Raw data for the files. |
+
+### GroupHeader
+
+| Type    | Field         | Description |
+|---------|---------------|-------------|
+| int8[4] | Extension     | The 3-char null-terminated file extension of the group |
+| int32   | FileCount     | The number of files in this group. |
+| int32   | ListingOffset | The offset from the beginning of the file of the file listings (containing a list of file headers) of this group. |
+
+### FileHeader
+
+| Type                   | Field         | Description |
+|------------------------|---------------|-------------|
+| (ASCII?) null padded str | Filename   | The name of the file. Depending on the version, this field is either 9 or 13 bytes. The last byte is always null. |
+| int32                  | DataLen    | The length of the file. |
+| int32                  | DataOffset | The offset from the beginning of the file of the file data. |
 
 ## (PNA) PNG Array File
 

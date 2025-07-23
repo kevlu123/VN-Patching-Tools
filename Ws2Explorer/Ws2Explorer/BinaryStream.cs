@@ -456,11 +456,6 @@ public sealed class BinaryStream : IDisposable
             bool TryType<T>()
                 where T : class, IFile<T>
             {
-                if (typeof(T) == typeof(Hint))
-                {
-                    // Already checked
-                    return false;
-                }
                 if (ct.IsCancellationRequested)
                 {
                     return true; // Short circuit further down

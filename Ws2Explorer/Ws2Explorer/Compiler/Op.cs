@@ -759,14 +759,20 @@ public readonly struct Op
     {
         var code = GetOpCode(node["op"]!.GetValue<string>());
         var args = node["args"]!.AsArray();
-        if ((version.IsWs2() && code == Opcode.WS2_SHOW_CHOICE_0F) ||
-            (version.IsWsc() && code == Opcode.WSC_SHOW_CHOICE_02))
+        if (version.IsWs2() && code == Opcode.WS2_SHOW_CHOICE_0F)
         {
-            // Choice
             return new Op
             {
                 Code = code,
                 Arguments = [Argument.FromJson(args, 'C', version)],
+            };
+        }
+        else if (version.IsWsc() && code == Opcode.WSC_SHOW_CHOICE_02)
+        {
+            return new Op
+            {
+                Code = code,
+                Arguments = [Argument.FromJson(args, 'D', version)],
             };
         }
         else

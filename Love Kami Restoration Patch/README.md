@@ -23,3 +23,7 @@ Download, unzip, and replace the game files with the new ones.
 For Trouble Goddess, the exe file has been patched to decrease the size of the text.
 
 A byte at offset 0x39555 has been changed from 72 (0x48) to 80 (0x50) which is used as a divisor to compute the lfHeight field for [LOGFONT](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-logfonta).
+
+## Developers
+
+This patch was created when this repository was at git commit 2ea2b33f37a9a5c49b64fd705daa5fb8cfee2fdf.

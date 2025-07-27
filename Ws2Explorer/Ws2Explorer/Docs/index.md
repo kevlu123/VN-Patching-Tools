@@ -48,7 +48,7 @@
 
 [Argument](./ws2explorer.compiler.argument.md)
 
-[Choice](./ws2explorer.compiler.choice.md)
+[Label](./ws2explorer.compiler.label.md)
 
 [MessageString](./ws2explorer.compiler.messagestring.md)
 
@@ -58,9 +58,17 @@
 
 [Opcode](./ws2explorer.compiler.opcode.md)
 
-[Ws2Compiler](./ws2explorer.compiler.ws2compiler.md)
+[RelativeLabel](./ws2explorer.compiler.relativelabel.md)
 
-[Ws2Version](./ws2explorer.compiler.ws2version.md)
+[ScriptCompiler](./ws2explorer.compiler.scriptcompiler.md)
+
+[ScriptVersion](./ws2explorer.compiler.scriptversion.md)
+
+[ScriptVersionExtensions](./ws2explorer.compiler.scriptversionextensions.md)
+
+[Ws2Choice](./ws2explorer.compiler.ws2choice.md)
+
+[WscChoice](./ws2explorer.compiler.wscchoice.md)
 
 ## Ws2Explorer.FileTypes
 
@@ -117,6 +125,8 @@
 [VideoFile](./ws2explorer.filetypes.videofile.md)
 
 [Ws2File](./ws2explorer.filetypes.ws2file.md)
+
+[WscFile](./ws2explorer.filetypes.wscfile.md)
 
 ## Ws2Explorer.HighLevel
 

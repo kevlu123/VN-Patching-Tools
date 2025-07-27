@@ -5,6 +5,37 @@ using System.Text.Json.Nodes;
 namespace Ws2Explorer.Compiler;
 
 /// <summary>
+/// An absolute address.
+/// </summary>
+/// <param name="address"></param>
+public readonly struct Label(int address)
+{
+    /// <summary>
+    /// The absolute address as bytes from the beginning of the script.
+    /// </summary>
+    public int Address { get; } = address;
+}
+
+/// <summary>
+/// A relative address.
+/// </summary>
+/// <param name="relativeAddress"></param>
+/// <param name="computedAbsAddress"></param>
+public readonly struct RelativeLabel(int relativeAddress, int computedAbsAddress)
+{
+    /// <summary>
+    /// The relative address as bytes from the end of the current op.
+    /// </summary>
+    public int RelativeAddress { get; } = relativeAddress;
+
+    /// <summary>
+    /// The computed absolute address as bytes from the beginning of the script.
+    /// This value does not appear in the compiled script and is only used by the compiler.
+    /// </summary>
+    public int ComputedAbsoluteAddress { get; } = computedAbsAddress;
+}
+
+/// <summary>
 /// A string used by the engine for names.
 /// The string may contain a special prefix.
 /// </summary>
@@ -183,9 +214,9 @@ public readonly struct MessageString
 }
 
 /// <summary>
-/// A choice argument type.
+/// A WS2 choice argument type.
 /// </summary>
-public readonly struct Choice
+public readonly struct Ws2Choice
 {
     /// <summary>
     /// The ID of the choice.
@@ -214,23 +245,23 @@ public readonly struct Choice
 
     /// <summary>
     /// The instruction to run when this choice is selected.
-    /// Must be either <see cref="Opcode.JUMP_06"/> or <see cref="Opcode.JUMP_FILE_07"/>.
+    /// Must be either <see cref="Opcode.WS2_JUMP_06"/> or <see cref="Opcode.WS2_JUMP_FILE_07"/>.
     /// </summary>
     public required Op JumpOp
     {
         get => jumpOp;
         init
         {
-            if (value.Code != Opcode.JUMP_06 && value.Code != Opcode.JUMP_FILE_07)
+            if (value.Code != Opcode.WS2_JUMP_06 && value.Code != Opcode.WS2_JUMP_FILE_07)
             {
-                throw new ArgumentException($"jumpOp must be opcode {Opcode.JUMP_06} or {Opcode.JUMP_FILE_07}.");
+                throw new ArgumentException($"JumpOp must be opcode {Opcode.WS2_JUMP_06} or {Opcode.WS2_JUMP_FILE_07}.");
             }
             jumpOp = value;
         }
     }
     private readonly Op jumpOp;
 
-    internal JsonNode ToJson()
+    internal JsonNode ToJson(ScriptVersion version)
     {
         return new JsonArray
         {
@@ -239,20 +270,95 @@ public readonly struct Choice
             Arg3,
             Arg4,
             Arg5,
-            JumpOp.ToJson(),
+            JumpOp.ToJson(version),
         };
     }
 
-    internal static Choice FromJson(JsonNode array)
+    internal static Ws2Choice FromJson(JsonNode array, ScriptVersion version)
     {
-        return new Choice
+        return new Ws2Choice
         {
             Id = array[0]!.GetValue<ushort>(),
             Text = array[1]!.GetValue<string>(),
             Arg3 = array[2]!.GetValue<byte>(),
             Arg4 = array[3]!.GetValue<byte>(),
             Arg5 = array[4]!.GetValue<byte>(),
-            JumpOp = Op.FromJson(array[5]!, Ws2Version.V1 /* Consistent across versions */),
+            JumpOp = Op.FromJson(array[5]!, version),
+        };
+    }
+}
+
+/// <summary>
+/// A WSC choice argument type.
+/// </summary>
+public readonly struct WscChoice
+{
+    /// <summary>
+    /// The ID of the choice.
+    /// </summary>
+    public required ushort Id { get; init; }
+
+    /// <summary>
+    /// The text of the choice.
+    /// </summary>
+    public required string Text { get; init; }
+
+    /// <summary>
+    /// Unknown byte.
+    /// </summary>
+    public required byte Arg3 { get; init; }
+
+    /// <summary>
+    /// Unknown byte.
+    /// </summary>
+    public required byte Arg4 { get; init; }
+
+    /// <summary>
+    /// Unknown byte.
+    /// </summary>
+    public required byte Arg5 { get; init; }
+
+    /// <summary>
+    /// The instruction to run when this choice is selected.
+    /// Must be either <see cref="Opcode.WSC_JUMP_06"/> or <see cref="Opcode.WSC_JUMP_FILE_07"/>.
+    /// </summary>
+    public required Op JumpOp
+    {
+        get => jumpOp;
+        init
+        {
+            if (value.Code != Opcode.WSC_JUMP_06 && value.Code != Opcode.WSC_JUMP_FILE_07)
+            {
+                throw new ArgumentException($"JumpOp must be opcode {Opcode.WSC_JUMP_06} or {Opcode.WSC_JUMP_FILE_07}.");
+            }
+            jumpOp = value;
+        }
+    }
+    private readonly Op jumpOp;
+
+    internal JsonNode ToJson(ScriptVersion version)
+    {
+        return new JsonArray
+        {
+            Id,
+            Text,
+            Arg3,
+            Arg4,
+            Arg5,
+            JumpOp.ToJson(version),
+        };
+    }
+
+    internal static WscChoice FromJson(JsonNode array, ScriptVersion version)
+    {
+        return new WscChoice
+        {
+            Id = array[0]!.GetValue<ushort>(),
+            Text = array[1]!.GetValue<string>(),
+            Arg3 = array[2]!.GetValue<byte>(),
+            Arg4 = array[3]!.GetValue<byte>(),
+            Arg5 = array[4]!.GetValue<byte>(),
+            JumpOp = Op.FromJson(array[5]!, version),
         };
     }
 }
@@ -270,7 +376,12 @@ public readonly struct Argument
     /// <summary>
     /// The label value.
     /// </summary>
-    public int Label { get => (int)Value; }
+    public Label Label { get => (Label)Value; }
+
+    /// <summary>
+    /// The relative label value.
+    /// </summary>
+    public RelativeLabel RelativeLabel { get => (RelativeLabel)Value; }
 
     /// <summary>
     /// The uint8 value.
@@ -318,26 +429,33 @@ public readonly struct Argument
     public ImmutableArray<string> StringArray { get => (ImmutableArray<string>)Value; }
 
     /// <summary>
-    /// The choice array value.
+    /// The WS2 choice array value.
     /// </summary>
-    public ImmutableArray<Choice> ChoiceArray { get => (ImmutableArray<Choice>)Value; }
+    public ImmutableArray<Ws2Choice> Ws2ChoiceArray { get => (ImmutableArray<Ws2Choice>)Value; }
+
+    /// <summary>
+    /// The WSC choice array value.
+    /// </summary>
+    public ImmutableArray<WscChoice> WscChoiceArray { get => (ImmutableArray<WscChoice>)Value; }
 
     /// <summary>
     /// The size of the argument in bytes.
     /// </summary>
     public int Size => Value switch
     {
-        int => sizeof(int),
-        byte => sizeof(byte),
-        ushort => sizeof(ushort),
-        uint => sizeof(uint),
-        float => sizeof(float),
+        Compiler.Label => 4,
+        Compiler.RelativeLabel => 4,
+        byte => 1,
+        ushort => 2,
+        uint => 4,
+        float => 4,
         string => 1 + SjisEncoding.Encoding.GetByteCount(String),
         NameString v => 1 + SjisEncoding.Encoding.GetByteCount(v.FullString),
         MessageString v => 1 + SjisEncoding.Encoding.GetByteCount(v.FullString),
-        ImmutableArray<ushort> v => 1 + (v.Length * sizeof(ushort)),
+        ImmutableArray<ushort> v => 1 + (v.Length * 2),
         ImmutableArray<string> v => 1 + v.Sum(s => 1 + SjisEncoding.Encoding.GetByteCount(s)),
-        ImmutableArray<Choice> v => 1 + v.Sum(c => 6 + SjisEncoding.Encoding.GetByteCount(c.Text) + c.JumpOp.Size),
+        ImmutableArray<Ws2Choice> v => 1 + v.Sum(c => 6 + SjisEncoding.Encoding.GetByteCount(c.Text) + c.JumpOp.Size),
+        ImmutableArray<WscChoice> v => 2 + v.Sum(c => 6 + SjisEncoding.Encoding.GetByteCount(c.Text) + c.JumpOp.Size),
         _ => throw new UnreachableException(),
     };
 
@@ -346,7 +464,14 @@ public readonly struct Argument
     /// </summary>
     /// <param name="v"></param>
     /// <returns></returns>
-    public static Argument NewLabel(int v) => new() { Value = v };
+    public static Argument NewLabel(Label v) => new() { Value = v };
+
+    /// <summary>
+    /// Creates a relative label argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
+    public static Argument NewRelativeLabel(RelativeLabel v) => new() { Value = v };
 
     /// <summary>
     /// Creates a uint8 argument.
@@ -412,17 +537,25 @@ public readonly struct Argument
     public static Argument NewStringArray(IEnumerable<string> v) => new() { Value = ImmutableArray<string>.Empty.AddRange(v) };
 
     /// <summary>
-    /// Creates a choice array argument.
+    /// Creates a WS2 choice array argument.
     /// </summary>
     /// <param name="v"></param>
     /// <returns></returns>
-    public static Argument NewChoiceArray(IEnumerable<Choice> v) => new() { Value = ImmutableArray<Choice>.Empty.AddRange(v) };
+    public static Argument NewWs2ChoiceArray(IEnumerable<Ws2Choice> v) => new() { Value = ImmutableArray<Ws2Choice>.Empty.AddRange(v) };
 
-    internal JsonNode ToJson()
+    /// <summary>
+    /// Creates a WSC choice array argument.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
+    public static Argument NewWscChoiceArray(IEnumerable<WscChoice> v) => new() { Value = ImmutableArray<WscChoice>.Empty.AddRange(v) };
+
+    internal JsonNode ToJson(ScriptVersion version)
     {
         return Value switch
         {
-            int v => v,
+            Label v => v.Address,
+            RelativeLabel v => v.ComputedAbsoluteAddress,
             byte v => v,
             ushort v => v,
             uint v => v,
@@ -432,16 +565,18 @@ public readonly struct Argument
             MessageString v => v.ToJson(),
             ImmutableArray<ushort> v => new JsonArray(v.Select(x => JsonValue.Create(x)).ToArray()),
             ImmutableArray<string> v => new JsonArray(v.Select(x => JsonValue.Create(x)).ToArray()),
-            ImmutableArray<Choice> v => new JsonArray(v.Select(x => x.ToJson()).ToArray()),
+            ImmutableArray<Ws2Choice> v => new JsonArray(v.Select(x => x.ToJson(version)).ToArray()),
+            ImmutableArray<WscChoice> v => new JsonArray(v.Select(x => x.ToJson(version)).ToArray()),
             _ => throw new UnreachableException(),
         };
     }
 
-    internal static Argument FromJson(JsonNode node, char type)
+    internal static Argument FromJson(JsonNode node, char type, ScriptVersion version)
     {
         return type switch
         {
-            'a' => NewLabel(node.GetValue<int>()),
+            'a' => NewLabel(new(node.GetValue<int>())),
+            'r' => NewRelativeLabel(new(0 /* Placeholder */, node.GetValue<int>())),
             'b' => NewUInt8(node.GetValue<byte>()),
             'h' => NewUInt16(node.GetValue<ushort>()),
             'i' => NewUInt32(node.GetValue<uint>()),
@@ -451,7 +586,8 @@ public readonly struct Argument
             'm' => NewMessageString(MessageString.FromJson(node)),
             'H' => NewUInt16Array(node.AsArray().Select(x => x!.GetValue<ushort>())),
             'S' => NewStringArray(node.AsArray().Select(x => x!.GetValue<string>())),
-            'C' => NewChoiceArray(node.AsArray().Select(x => Choice.FromJson(x!))),
+            'C' => NewWs2ChoiceArray(node.AsArray().Select(x => Ws2Choice.FromJson(x!, version))),
+            'D' => NewWscChoiceArray(node.AsArray().Select(x => WscChoice.FromJson(x!, version))),
             _ => throw new ArgumentOutOfRangeException(nameof(type)),
         };
     }
@@ -462,8 +598,6 @@ public readonly struct Argument
 /// </summary>
 public readonly struct Op
 {
-    internal const int EPILOGUE_SIZE = 8;
-
     /// <summary>
     /// The opcode.
     /// See <see cref="Opcode"/>.
@@ -484,12 +618,11 @@ public readonly struct Op
     /// <summary>
     /// The description of the opcode if it is known.
     /// </summary>
-    public string? Description => Code switch
+    public string? GetDescription(ScriptVersion version) => Code switch
     {
-        Opcode.EPILOGUE => "<Epilogue>",
         Opcode.LABEL => "<Label>",
         Opcode.VERSION => "<Version>",
-        _ => OpFormat.Formats[Code].Description,
+        _ => OpFormat.Formats[(int)version][Code]?.Description,
     };
 
     /// <summary>
@@ -511,13 +644,27 @@ public readonly struct Op
         {
             foreach (var arg in Arguments)
             {
-                if (arg.Value is int label)
+                if (arg.Value is Label label)
                 {
-                    yield return label;
+                    yield return label.Address;
                 }
-                else if (arg.Value is ImmutableArray<Choice> choices)
+                else if (arg.Value is RelativeLabel relLabel)
                 {
-                    foreach (var choice in choices)
+                    yield return relLabel.ComputedAbsoluteAddress;
+                }
+                else if (arg.Value is ImmutableArray<Ws2Choice> ws2Choices)
+                {
+                    foreach (var choice in ws2Choices)
+                    {
+                        foreach (var lbl in choice.JumpOp.Labels)
+                        {
+                            yield return lbl;
+                        }
+                    }
+                }
+                else if (arg.Value is ImmutableArray<WscChoice> wscChoices)
+                {
+                    foreach (var choice in wscChoices)
                     {
                         foreach (var lbl in choice.JumpOp.Labels)
                         {
@@ -534,7 +681,6 @@ public readonly struct Op
     /// </summary>
     public int Size => Code switch
     {
-        Opcode.EPILOGUE => EPILOGUE_SIZE,
         Opcode.LABEL => 0,
         Opcode.VERSION => 0,
         _ => 1 + Arguments.Sum(a => a.Size),
@@ -553,14 +699,13 @@ public readonly struct Op
         Arguments = [.. Arguments.Select((a, i) => i == index ? arg : a)],
     };
 
-    private string GetOpName()
+    private string GetOpName(ScriptVersion version)
     {
         return Code switch
         {
-            Opcode.EPILOGUE => "<Epilogue>",
             Opcode.LABEL => "<Label>",
             Opcode.VERSION => "<Version>",
-            _ when Description != null => $"{Code:X2} ({Description})",
+            _ when GetDescription(version) != null => $"{Code:X2} ({GetDescription(version)})",
             _ => $"{Code:X2}",
         };
     }
@@ -569,8 +714,6 @@ public readonly struct Op
     {
         switch (name)
         {
-            case "<Epilogue>":
-                return Opcode.EPILOGUE;
             case "<Label>":
                 return Opcode.LABEL;
             case "<Version>":
@@ -587,57 +730,58 @@ public readonly struct Op
         }
     }
 
-    internal JsonNode ToJson()
+    internal JsonNode ToJson(ScriptVersion version)
     {
-        if (Code == 0x0F)
+        // For choice op: avoid creating an array just to contain a single array.
+        // i.e. [[ ... ]] -> [ ... ]
+        if ((version.IsWs2() && Code == Opcode.WS2_SHOW_CHOICE_0F) ||
+            (version.IsWsc() && Code == Opcode.WSC_SHOW_CHOICE_02))
         {
-            // For choice op: avoid creating an array just to contain a single array.
-            // i.e. [[ ... ]] -> [ ... ]
             return new JsonObject
             {
-                ["op"] = GetOpName(),
-                ["args"] = Arguments[0].ToJson(),
+                ["op"] = GetOpName(version),
+                ["args"] = Arguments[0].ToJson(version),
             };
         }
         else
         {
             return new JsonObject
             {
-                ["op"] = GetOpName(),
+                ["op"] = GetOpName(version),
                 ["args"] = new JsonArray(Arguments
-                    .Select(a => a.ToJson())
+                    .Select(a => a.ToJson(version))
                     .ToArray()),
             };
         }
     }
 
-    internal static Op FromJson(JsonNode node, Ws2Version version)
+    internal static Op FromJson(JsonNode node, ScriptVersion version)
     {
         var code = GetOpCode(node["op"]!.GetValue<string>());
         var args = node["args"]!.AsArray();
-        if (code == 0x0F)
+        if ((version.IsWs2() && code == Opcode.WS2_SHOW_CHOICE_0F) ||
+            (version.IsWsc() && code == Opcode.WSC_SHOW_CHOICE_02))
         {
             // Choice
             return new Op
             {
                 Code = code,
-                Arguments = [Argument.FromJson(args, 'C')],
+                Arguments = [Argument.FromJson(args, 'C', version)],
             };
         }
         else
         {
             string format = code switch
             {
-                Opcode.EPILOGUE => "bbbbbbbb",
                 Opcode.LABEL => "a",
                 Opcode.VERSION => "s",
-                _ => OpFormat.Formats[code].VersionFormats[(int)version]
+                _ => OpFormat.Formats[(int)version][code]?.Format
                     ?? throw new InvalidDataException($"Op code {code:X2} is not supported in version {version}"),
             };
             return new Op
             {
                 Code = code,
-                Arguments = [.. args.Select((a, i) => Argument.FromJson(a!, format[i]))],
+                Arguments = [.. args.Select((a, i) => Argument.FromJson(a!, format[i], version))],
             };
         }
     }

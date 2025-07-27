@@ -964,7 +964,8 @@ class ApplicationState(string? openPath)
             string[] oldFilenames,
             string[] newFilenames,
             string dst,
-            DiffPartitionMode mode
+            DiffPartitionMode mode,
+            Type createArchiveType
         )?> fileListPrompt)
     {
         Protect(interruptable: false, async ct =>
@@ -976,7 +977,7 @@ class ApplicationState(string? openPath)
             {
                 return;
             }
-            var (oldFilenames, newFilenames, dst, mode) = pathInfo.Value;
+            var (oldFilenames, newFilenames, dst, mode, createArchiveType) = pathInfo.Value;
 
             using var newArchiveStreams = await FileTool.ReadFiles(newFilenames, progress, ct);
             using var newArchives = new DisposingList<IFolder>();
@@ -1014,7 +1015,13 @@ class ApplicationState(string? openPath)
                 return;
             }
 
-            using var arc = ArcFile.Create(diff);
+            using IArchive arc = createArchiveType switch {
+                Type t when t == typeof(ArcFile) => ArcFile.Create(diff),
+                Type t when t == typeof(LegacyArc8File) => LegacyArc8File.Create(diff),
+                Type t when t == typeof(LegacyArc12File) => LegacyArc12File.Create(diff),
+                _ => throw new InvalidOperationException("Unsupported archive type for diff."),
+            };
+
             await FileTool.WriteFile(dst, arc.Stream, OverwriteMode.Overwrite, progress, ct);
             await RefreshFolderInternal(ct);
             if (diff.Count == 1)
@@ -1148,6 +1155,9 @@ class ApplicationState(string? openPath)
             Ws2File ws2 => ws2.HasUnresolvedLabels
                 ? $"WS2 ({ws2.Version}; WARNING UNRESOLVED LABELS)"
                 : $"WS2 ({ws2.Version})",
+            WscFile wsc => wsc.HasUnresolvedLabels
+                ? $"WSC ({wsc.Version}; WARNING UNRESOLVED LABELS)"
+                : $"WSC ({wsc.Version})",
             _ => "UNKNOWN",
         };
     }
@@ -1186,6 +1196,9 @@ class ApplicationState(string? openPath)
             Ws2File ws2 => "(WS2) Script file\n\n"
                          + $"Version: {ws2.Version}\n"
                          + $"Has unresolved labels: {ws2.HasUnresolvedLabels}",
+            WscFile wsc => "(WSC) Script file\n\n"
+                         + $"Version: {wsc.Version}\n"
+                         + $"Has unresolved labels: {wsc.HasUnresolvedLabels}",
             _ => "Unknown file type",
         };
     }

@@ -30,12 +30,24 @@ public object Value { get; private set; }
 The label value.
 
 ```csharp
-public int Label { get; }
+public Label Label { get; }
 ```
 
 #### Property Value
 
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+[Label](./ws2explorer.compiler.label.md)<br>
+
+### **RelativeLabel**
+
+The relative label value.
+
+```csharp
+public RelativeLabel RelativeLabel { get; }
+```
+
+#### Property Value
+
+[RelativeLabel](./ws2explorer.compiler.relativelabel.md)<br>
 
 ### **UInt8**
 
@@ -145,17 +157,29 @@ public ImmutableArray<string> StringArray { get; }
 
 ImmutableArray&lt;String&gt;<br>
 
-### **ChoiceArray**
+### **Ws2ChoiceArray**
 
-The choice array value.
+The WS2 choice array value.
 
 ```csharp
-public ImmutableArray<Choice> ChoiceArray { get; }
+public ImmutableArray<Ws2Choice> Ws2ChoiceArray { get; }
 ```
 
 #### Property Value
 
-ImmutableArray&lt;Choice&gt;<br>
+ImmutableArray&lt;Ws2Choice&gt;<br>
+
+### **WscChoiceArray**
+
+The WSC choice array value.
+
+```csharp
+public ImmutableArray<WscChoice> WscChoiceArray { get; }
+```
+
+#### Property Value
+
+ImmutableArray&lt;WscChoice&gt;<br>
 
 ### **Size**
 
@@ -171,17 +195,33 @@ public int Size { get; }
 
 ## Methods
 
-### **NewLabel(Int32)**
+### **NewLabel(Label)**
 
 Creates a label argument.
 
 ```csharp
-Argument NewLabel(int v)
+Argument NewLabel(Label v)
 ```
 
 #### Parameters
 
-`v` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+`v` [Label](./ws2explorer.compiler.label.md)<br>
+
+#### Returns
+
+[Argument](./ws2explorer.compiler.argument.md)<br>
+
+### **NewRelativeLabel(RelativeLabel)**
+
+Creates a relative label argument.
+
+```csharp
+Argument NewRelativeLabel(RelativeLabel v)
+```
+
+#### Parameters
+
+`v` [RelativeLabel](./ws2explorer.compiler.relativelabel.md)<br>
 
 #### Returns
 
@@ -331,17 +371,33 @@ Argument NewStringArray(IEnumerable<string> v)
 
 [Argument](./ws2explorer.compiler.argument.md)<br>
 
-### **NewChoiceArray(IEnumerable&lt;Choice&gt;)**
+### **NewWs2ChoiceArray(IEnumerable&lt;Ws2Choice&gt;)**
 
-Creates a choice array argument.
+Creates a WS2 choice array argument.
 
 ```csharp
-Argument NewChoiceArray(IEnumerable<Choice> v)
+Argument NewWs2ChoiceArray(IEnumerable<Ws2Choice> v)
 ```
 
 #### Parameters
 
-`v` [IEnumerable&lt;Choice&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1)<br>
+`v` [IEnumerable&lt;Ws2Choice&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1)<br>
+
+#### Returns
+
+[Argument](./ws2explorer.compiler.argument.md)<br>
+
+### **NewWscChoiceArray(IEnumerable&lt;WscChoice&gt;)**
+
+Creates a WSC choice array argument.
+
+```csharp
+Argument NewWscChoiceArray(IEnumerable<WscChoice> v)
+```
+
+#### Parameters
+
+`v` [IEnumerable&lt;WscChoice&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1)<br>
 
 #### Returns
 

@@ -57,6 +57,7 @@
             createArchive_MenuItem = new ToolStripMenuItem();
             createArc_MenuItem = new ToolStripMenuItem();
             createLegacyArc8_MenuItem = new ToolStripMenuItem();
+            createLegacyArc12_MenuItem = new ToolStripMenuItem();
             createPna_MenuItem = new ToolStripMenuItem();
             createPan_MenuItem = new ToolStripMenuItem();
             createPtf_MenuItem = new ToolStripMenuItem();
@@ -64,6 +65,7 @@
             openArchiveAs_MenuItem = new ToolStripMenuItem();
             openAsArc_MenuItem = new ToolStripMenuItem();
             openAsLegacyArc8_MenuItem = new ToolStripMenuItem();
+            openAsLegacyArc12_MenuItem = new ToolStripMenuItem();
             openAsPna_MenuItem = new ToolStripMenuItem();
             openAsPan_MenuItem = new ToolStripMenuItem();
             openAsPtf_MenuItem = new ToolStripMenuItem();
@@ -118,8 +120,8 @@
             mermaidFlowchart_MenuItem = new ToolStripMenuItem();
             jsonFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
-            openAsLegacyArc12_MenuItem = new ToolStripMenuItem();
-            createLegacyArc12_MenuItem = new ToolStripMenuItem();
+            createWsc_MenuItem = new ToolStripMenuItem();
+            openAsWsc_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -330,7 +332,7 @@
             // 
             // createArchive_MenuItem
             // 
-            createArchive_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { createArc_MenuItem, createLegacyArc8_MenuItem, createLegacyArc12_MenuItem, createPna_MenuItem, createPan_MenuItem, createPtf_MenuItem, createWs2_MenuItem });
+            createArchive_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { createArc_MenuItem, createLegacyArc8_MenuItem, createLegacyArc12_MenuItem, createPna_MenuItem, createPan_MenuItem, createPtf_MenuItem, createWs2_MenuItem, createWsc_MenuItem });
             createArchive_MenuItem.Name = "createArchive_MenuItem";
             createArchive_MenuItem.Size = new Size(244, 22);
             createArchive_MenuItem.Text = "Create Archive";
@@ -350,6 +352,14 @@
             createLegacyArc8_MenuItem.Size = new Size(235, 22);
             createLegacyArc8_MenuItem.Text = "ARC (Legacy, 8 char)";
             createLegacyArc8_MenuItem.Click += CreateLegacyArc8_MenuItemClicked;
+            // 
+            // createLegacyArc12_MenuItem
+            // 
+            createLegacyArc12_MenuItem.Name = "createLegacyArc12_MenuItem";
+            createLegacyArc12_MenuItem.ShortcutKeys = Keys.Control | Keys.F3;
+            createLegacyArc12_MenuItem.Size = new Size(235, 22);
+            createLegacyArc12_MenuItem.Text = "ARC (Legacy, 12 char)";
+            createLegacyArc12_MenuItem.Click += CreateLegacyArc12_MenuItemClicked;
             // 
             // createPna_MenuItem
             // 
@@ -385,7 +395,7 @@
             // 
             // openArchiveAs_MenuItem
             // 
-            openArchiveAs_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { openAsArc_MenuItem, openAsLegacyArc8_MenuItem, openAsLegacyArc12_MenuItem, openAsPna_MenuItem, openAsPan_MenuItem, openAsPtf_MenuItem, openAsWs2_MenuItem });
+            openArchiveAs_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { openAsArc_MenuItem, openAsLegacyArc8_MenuItem, openAsLegacyArc12_MenuItem, openAsPna_MenuItem, openAsPan_MenuItem, openAsPtf_MenuItem, openAsWs2_MenuItem, openAsWsc_MenuItem });
             openArchiveAs_MenuItem.Name = "openArchiveAs_MenuItem";
             openArchiveAs_MenuItem.Size = new Size(244, 22);
             openArchiveAs_MenuItem.Text = "Open Archive As";
@@ -405,6 +415,14 @@
             openAsLegacyArc8_MenuItem.Size = new Size(267, 22);
             openAsLegacyArc8_MenuItem.Text = "ARC (Legacy, 8 char)";
             openAsLegacyArc8_MenuItem.Click += OpenAsLegacyArc8_MenuItemClicked;
+            // 
+            // openAsLegacyArc12_MenuItem
+            // 
+            openAsLegacyArc12_MenuItem.Name = "openAsLegacyArc12_MenuItem";
+            openAsLegacyArc12_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F3;
+            openAsLegacyArc12_MenuItem.Size = new Size(267, 22);
+            openAsLegacyArc12_MenuItem.Text = "ARC (Legacy, 12 char)";
+            openAsLegacyArc12_MenuItem.Click += OpenAsLegacyArc12_MenuItemClicked;
             // 
             // openAsPna_MenuItem
             // 
@@ -807,21 +825,21 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
-            // openAsLegacyArc12_MenuItem
+            // createWsc_MenuItem
             // 
-            openAsLegacyArc12_MenuItem.Name = "openAsLegacyArc12_MenuItem";
-            openAsLegacyArc12_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F3;
-            openAsLegacyArc12_MenuItem.Size = new Size(267, 22);
-            openAsLegacyArc12_MenuItem.Text = "ARC (Legacy, 12 char)";
-            openAsLegacyArc12_MenuItem.Click += OpenAsLegacyArc12_MenuItemClicked;
+            createWsc_MenuItem.Name = "createWsc_MenuItem";
+            createWsc_MenuItem.ShortcutKeys = Keys.Control | Keys.F8;
+            createWsc_MenuItem.Size = new Size(235, 22);
+            createWsc_MenuItem.Text = "WSC";
+            createWsc_MenuItem.Click += CreateWsc_MenuItemClicked;
             // 
-            // createLegacyArc12_MenuItem
+            // openAsWsc_MenuItem
             // 
-            createLegacyArc12_MenuItem.Name = "createLegacyArc12_MenuItem";
-            createLegacyArc12_MenuItem.ShortcutKeys = Keys.Control | Keys.F3;
-            createLegacyArc12_MenuItem.Size = new Size(235, 22);
-            createLegacyArc12_MenuItem.Text = "ARC (Legacy, 12 char)";
-            createLegacyArc12_MenuItem.Click += CreateLegacyArc12_MenuItemClicked;
+            openAsWsc_MenuItem.Name = "openAsWsc_MenuItem";
+            openAsWsc_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F8;
+            openAsWsc_MenuItem.Size = new Size(267, 22);
+            openAsWsc_MenuItem.Text = "WSC";
+            openAsWsc_MenuItem.Click += OpenAsWsc_MenuItemClicked;
             // 
             // MainWindow
             // 
@@ -944,5 +962,7 @@
         private ToolStripMenuItem openAsLegacyArc8_MenuItem;
         private ToolStripMenuItem createLegacyArc12_MenuItem;
         private ToolStripMenuItem openAsLegacyArc12_MenuItem;
+        private ToolStripMenuItem createWsc_MenuItem;
+        private ToolStripMenuItem openAsWsc_MenuItem;
     }
 }

@@ -1,4 +1,5 @@
-﻿using Ws2Explorer.Compiler;
+﻿using System.Collections.Immutable;
+using Ws2Explorer.Compiler;
 using Ws2Explorer.FileTypes;
 using Directory = Ws2Explorer.FileTypes.Directory;
 
@@ -70,7 +71,7 @@ public static class GameTool
     }
 
     /// <summary>
-    /// Finds all references to a string in the game's WS2 scripts
+    /// Finds all references to a string in the game's WS2/WSC scripts
     /// Only string arguments of instructions are searched.
     /// Only archives containing "rio" and ending with ".arc" are considered.
     /// </summary>
@@ -93,18 +94,37 @@ public static class GameTool
         var refs = new Dictionary<string, int>();
         foreach (var rioFilename in GetRioFilenames(gameFolder))
         {
-            using var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
-                .Decode<ArcFile>();
-            using var ws2Files = await arc.LoadAllFilesOfType<Ws2File>(progress, ct);
-            foreach (var (name, ws2) in ws2Files)
+            using var rio = await gameFolder.OpenFile(rioFilename, progress, ct)
+                .DecodeWithHint(rioFilename);
+            if (rio is not IArchive arc)
             {
-                foreach (var op in ws2.Ops)
+                continue;
+            }
+            
+            using var files = await arc.LoadAllFiles(progress, ct);
+            foreach (var (name, file) in files)
+            {
+                ImmutableArray<Op> ops;
+                if (file is Ws2File ws2) {
+                    ops = ws2.Ops;
+                }
+                else if (file is WscFile wsc) {
+                    ops = wsc.Ops;
+                }
+                else
+                {
+                    continue;
+                }
+
+                foreach (var op in ops)
                 {
                     foreach (var arg in op.Arguments)
                     {
                         if ((arg.Value is string s && s.Equals(str, comparisonType)) ||
                             (arg.Value is NameString n && n.String.Equals(str, comparisonType)) ||
-                            (arg.Value is MessageString m && m.String.Equals(str, comparisonType)))
+                            (arg.Value is MessageString m && m.String.Equals(str, comparisonType)) ||
+                            (arg.Value is ImmutableArray<WscChoice> cs && cs.Any(c => c.Text.Equals(str, comparisonType))) ||
+                            (arg.Value is ImmutableArray<Ws2Choice> ds && ds.Any(c => c.Text.Equals(str, comparisonType))))
                         {
                             refs[name] = refs.GetValueOrDefault(name, 0) + 1;
                         }
@@ -139,8 +159,13 @@ public static class GameTool
         using var rioFiles = new DisposingList<NamedFolder>();
         foreach (var rioFilename in GetRioFilenames(gameFolder))
         {
-            var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
-                .Decode<ArcFile>();
+            using var file = await gameFolder.OpenFile(rioFilename, progress, ct)
+                .DecodeWithHint(rioFilename);
+            if (file is not IArchive arc)
+            {
+                continue;
+            }
+            arc.Stream.IncRef();
             rioFiles.Add(new() { Name = rioFilename, Folder = arc });
         }
 
@@ -153,7 +178,7 @@ public static class GameTool
             .Decode<Ws2File>();
         List<Op> ops = [.. entryWs2.Ops];
         var entryOp = ops.Single(
-            op => op.Code == Opcode.JUMP_FILE_07,
+            op => op.Code == Opcode.WS2_JUMP_FILE_07,
             "JumpFile op not found.",
             "Multiple JumpFile ops found.");
         var currentEntry = entryOp.Arguments[0].String;
@@ -171,12 +196,12 @@ public static class GameTool
             return;
         }
 
-        ops[ops.FindIndex(op => op.Code == Opcode.JUMP_FILE_07)] = new Op
+        ops[ops.FindIndex(op => op.Code == Opcode.WS2_JUMP_FILE_07)] = new Op
         {
-            Code = Opcode.JUMP_FILE_07,
+            Code = Opcode.WS2_JUMP_FILE_07,
             Arguments = [Argument.NewString(newEntry)],
         };
-        using var newWs2 = Ws2Compiler.Compile(ops);
+        using var newWs2 = ScriptCompiler.Compile(ops);
         var hierarchy = new List<NamedFolder>
         {
             new() { Name = gameFolder.DirectoryName, Folder = gameFolder },
@@ -242,7 +267,7 @@ end
     }
 
     /// <summary>
-    /// Gets all choices in the game from the WS2 scripts.
+    /// Gets all choices in the game from the WS2/WSC scripts.
     /// Only archives containing "rio" and ending with ".arc" are considered.
     /// </summary>
     /// <param name="gameFolder"></param>
@@ -257,30 +282,61 @@ end
         var choices = new List<ChoiceInfo>();
         foreach (var rioFilename in GetRioFilenames(gameFolder))
         {
-            using var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
-                .Decode<ArcFile>();
+            using var file = await gameFolder.OpenFile(rioFilename, progress, ct)
+                .DecodeWithHint(rioFilename);
+            if (file is not IArchive arc)
+            {
+                continue;
+            }
+
             var ws2Filenames = arc.ListFiles()
                 .Select(fi => fi.Filename)
                 .Where(f => f.EndsWith(".ws2", StringComparison.OrdinalIgnoreCase));
             foreach (var ws2Filename in ws2Filenames)
             {
-                using var ws2 = await arc.OpenFile(ws2Filename, progress, ct)
-                    .Decode<Ws2File>();
-                var choiceOps = ws2.Ops
-                    .Where(op => op.Code == Opcode.SHOW_CHOICE_0F)
-                    .Select(op => new ChoiceInfo
-                    {
-                        Filename = ws2Filename,
-                        Choices = op.Arguments[0].ChoiceArray,
-                    });
-                choices.AddRange(choiceOps);
+                try
+                {
+                    using var ws2 = await arc.OpenFile(ws2Filename, progress, ct)
+                        .Decode<Ws2File>();
+                    var choiceOps = ws2.Ops
+                        .Where(op => op.Code == Opcode.WS2_SHOW_CHOICE_0F)
+                        .Select(op => new ChoiceInfo {
+                            Filename = ws2Filename,
+                            Ws2Choices = op.Arguments[0].Ws2ChoiceArray,
+                            WscChoices = [],
+                        });
+                    choices.AddRange(choiceOps);
+                }
+                catch (DecodeException) { }
+            }
+
+            var wscFilenames = arc.ListFiles()
+                .Select(fi => fi.Filename)
+                .Where(f => f.EndsWith(".wsc", StringComparison.OrdinalIgnoreCase));
+            foreach (var wscFilename in wscFilenames)
+            {
+                try
+                {
+                    using var wsc = await arc.OpenFile(wscFilename, progress, ct)
+                        .Decode<WscFile>();
+                    var choiceOps = wsc.Ops
+                        .Where(op => op.Code == Opcode.WSC_SHOW_CHOICE_02)
+                        .Select(op => new ChoiceInfo
+                        {
+                            Filename = wscFilename,
+                            Ws2Choices = [],
+                            WscChoices = op.Arguments[0].WscChoiceArray,
+                        });
+                    choices.AddRange(choiceOps);
+                }
+                catch (DecodeException) { }
             }
         }
         return choices;
     }
 
     /// <summary>
-    /// Gets the flow of the game's WS2 scripts.
+    /// Gets the flow of the game's WS2/WSC scripts.
     /// Not necessarily all the paths will be reachable and
     /// sometimes the scripts will reference non-existent scripts.
     /// </summary>
@@ -300,8 +356,12 @@ end
         var graph = new Dictionary<string, List<string>>();
         foreach (var rioFilename in GetRioFilenames(gameFolder))
         {
-            using var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
-                .Decode<ArcFile>();
+            using var file = await gameFolder.OpenFile(rioFilename, progress, ct)
+                .DecodeWithHint(rioFilename);
+            if (file is not IArchive arc)
+            {
+                continue;
+            }
             foreach (var (src, dsts) in await GetFlowchart(arc, progress, ct))
             {
                 if (!graph.TryGetValue(src, out var value))
@@ -316,7 +376,7 @@ end
     }
 
     /// <summary>
-    /// Gets the flow of the WS2 scripts in an <see cref="ArcFile"/> .
+    /// Gets the flow of the WS2/WSC scripts in an <see cref="ArcFile"/>/<see cref="LegacyArc8File"/>/<see cref="LegacyArc12File"/>.
     /// Not necessarily all the paths will be reachable and
     /// sometimes the scripts will reference non-existent scripts.
     /// </summary>
@@ -329,41 +389,76 @@ end
     /// in order of appearance and may contain duplicates.
     /// </returns>
     public static async Task<Dictionary<string, List<string>>> GetFlowchart(
-        ArcFile arc,
+        IArchive arc,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
         var graph = new Dictionary<string, List<string>>(StringComparer.InvariantCultureIgnoreCase);
+
         var ws2Filenames = arc.ListFiles()
             .Select(fi => fi.Filename)
             .Where(f => f.EndsWith(".ws2", StringComparison.OrdinalIgnoreCase));
         foreach (var ws2Filename in ws2Filenames)
         {
-            var nameNoExt = ws2Filename[..^4];
+            var nameNoExt = ws2Filename[..^4].ToLowerInvariant();
             if (!graph.TryGetValue(nameNoExt, out var value))
             {
                 value = [];
                 graph[nameNoExt] = value;
             }
 
-            using var ws2 = await arc.OpenFile(ws2Filename, progress, ct)
-                .Decode<Ws2File>();
-            var jumpOps = ws2.Ops
-                .Where(op => op.Code == Opcode.JUMP_FILE_07)
-                .Select(op => op.Arguments[0].String.ToLowerInvariant());
-            var choiceOps = ws2.Ops
-                .Where(op => op.Code == Opcode.SHOW_CHOICE_0F)
-                .SelectMany(op => op.Arguments[0].ChoiceArray
-                    .Where(j => j.JumpOp.Code == Opcode.JUMP_FILE_07)
-                    .Select(j => j.JumpOp.Arguments[0].String.ToLowerInvariant()));
-            value.AddRange(jumpOps);
-            value.AddRange(choiceOps);
+            try
+            {
+                using var ws2 = await arc.OpenFile(ws2Filename, progress, ct)
+                    .Decode<Ws2File>();
+                var jumpOps = ws2.Ops
+                    .Where(op => op.Code == Opcode.WS2_JUMP_FILE_07)
+                    .Select(op => op.Arguments[0].String.ToLowerInvariant());
+                var choiceOps = ws2.Ops
+                    .Where(op => op.Code == Opcode.WS2_SHOW_CHOICE_0F)
+                    .SelectMany(op => op.Arguments[0].Ws2ChoiceArray
+                        .Where(j => j.JumpOp.Code == Opcode.WS2_JUMP_FILE_07)
+                        .Select(j => j.JumpOp.Arguments[0].String.ToLowerInvariant()));
+                value.AddRange(jumpOps);
+                value.AddRange(choiceOps);
+            }
+            catch (DecodeException) { }
+        }
+
+        var wscFilenames = arc.ListFiles()
+            .Select(fi => fi.Filename)
+            .Where(f => f.EndsWith(".wsc", StringComparison.OrdinalIgnoreCase));
+        foreach (var wscFilename in wscFilenames)
+        {
+            var nameNoExt = wscFilename[..^4].ToLowerInvariant();
+            if (!graph.TryGetValue(nameNoExt, out var value))
+            {
+                value = [];
+                graph[nameNoExt] = value;
+            }
+
+            try
+            {
+                using var wsc = await arc.OpenFile(wscFilename, progress, ct)
+                    .Decode<WscFile>();
+                var jumpOps = wsc.Ops
+                    .Where(op => op.Code == Opcode.WSC_JUMP_FILE_07)
+                    .Select(op => op.Arguments[0].String.ToLowerInvariant());
+                var choiceOps = wsc.Ops
+                    .Where(op => op.Code == Opcode.WSC_SHOW_CHOICE_02)
+                    .SelectMany(op => op.Arguments[0].WscChoiceArray
+                        .Where(j => j.JumpOp.Code == Opcode.WSC_JUMP_FILE_07)
+                        .Select(j => j.JumpOp.Arguments[0].String.ToLowerInvariant()));
+                value.AddRange(jumpOps);
+                value.AddRange(choiceOps);
+            }
+            catch (DecodeException) { }
         }
         return graph;
     }
 
     /// <summary>
-    /// Modifies the character names in the game.
+    /// Modifies the character names in the game's WS2/WSC files.
     /// Only archives containing "rio" and ending with ".arc" are considered.
     /// </summary>
     /// <param name="gameFolder"></param>
@@ -384,8 +479,13 @@ end
         using var rioArcs = new DisposingDictionary<string, IFolder>();
         foreach (var rioFilename in GetRioFilenames(gameFolder))
         {
-            var arc = await gameFolder.OpenFile(rioFilename, progress, ct)
-                .Decode<ArcFile>();
+            using var file = await gameFolder.OpenFile(rioFilename, progress, ct)
+                .DecodeWithHint(rioFilename);
+            if (file is not IArchive arc)
+            {
+                continue;
+            }
+            arc.Stream.IncRef();
             rioArcs.Add(rioFilename, arc);
         }
 
@@ -403,8 +503,14 @@ end
                 if (child is Ws2File ws2)
                 {
                     names.UnionWith(ws2.Ops
-                        .Where(op => op.Code == Opcode.DISPLAY_NAME_15)
+                        .Where(op => op.Code == Opcode.WS2_DISPLAY_NAME_15)
                         .Select(op => op.Arguments[0].NameString.String));
+                }
+                else if (child is WscFile wsc)
+                {
+                    names.UnionWith(wsc.Ops
+                        .Where(op => op.Code == Opcode.WSC_DISPLAY_TEXT_AND_NAME_42)
+                        .Select(op => op.Arguments[3].NameString.String));
                 }
             }
         }
@@ -422,38 +528,62 @@ end
             throw new Exception("Cannot map names to empty strings.");
         }
 
-        foreach (var (arcName, children) in arcChildren)
+        foreach (var (rioArc, (arcName, children)) in Enumerable.Zip(rioArcs, arcChildren))
         {
             using var streams = new DisposingDictionary<string, BinaryStream>();
             foreach (var (childName, child) in children)
             {
-                if (child is not Ws2File ws2)
+                if (child is Ws2File ws2)
+                {
+                    var newOps = new List<Op>();
+                    foreach (var op in ws2.Ops)
+                    {
+                        if (op.Code == Opcode.WS2_DISPLAY_NAME_15)
+                        {
+                            var oldNameString = op.Arguments[0].NameString;
+                            var oldName = oldNameString.String;
+                            var newName = nameMapping.GetValueOrDefault(oldName, oldName);
+                            var newOp = op.WithArgument(
+                                0,
+                                Argument.NewNameString(oldNameString.WithString(newName)));
+                            newOps.Add(newOp);
+                        }
+                        else
+                        {
+                            newOps.Add(op);
+                        }
+                    }
+                    streams.Add(childName, ScriptCompiler.Compile(newOps));
+                }
+                else if (child is WscFile wsc)
+                {
+                    var newOps = new List<Op>();
+                    foreach (var op in wsc.Ops)
+                    {
+                        if (op.Code == Opcode.WSC_DISPLAY_TEXT_AND_NAME_42)
+                        {
+                            var oldNameString = op.Arguments[3].NameString;
+                            var oldName = oldNameString.String;
+                            var newName = nameMapping.GetValueOrDefault(oldName, oldName);
+                            var newOp = op.WithArgument(
+                                3,
+                                Argument.NewNameString(oldNameString.WithString(newName)));
+                            newOps.Add(newOp);
+                        }
+                        else
+                        {
+                            newOps.Add(op);
+                        }
+                    }
+                    streams.Add(childName, ScriptCompiler.Compile(newOps));
+                }
+                else
                 {
                     streams.Add(childName, child.Stream);
-                    continue;
                 }
 
-                var newOps = new List<Op>();
-                foreach (var op in ws2.Ops)
-                {
-                    if (op.Code == Opcode.DISPLAY_NAME_15)
-                    {
-                        var oldNameString = op.Arguments[0].NameString;
-                        var oldName = oldNameString.String;
-                        var newName = nameMapping.GetValueOrDefault(oldName, oldName);
-                        var newOp = op.WithArgument(
-                            0,
-                            Argument.NewNameString(oldNameString.WithString(newName)));
-                        newOps.Add(newOp);
-                    }
-                    else
-                    {
-                        newOps.Add(op);
-                    }
-                }
-                streams.Add(childName, Ws2Compiler.Compile(newOps));
             }
-            using var newArc = ArcFile.Create(streams);
+            using var newArc = ((IArchive)rioArc.Value).Create(streams);
             await gameFolder.WriteFile(arcName, newArc.Stream, progress, ct);
         }
     }

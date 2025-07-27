@@ -78,16 +78,17 @@ All types are little endian and all strings are null terminated in their respect
 | float64      | Transparency | Transparency. (Unaligned and 64-bits though?) |
 | int32        | DataLen      | Length of the image file. |
 
-## (WS2) Script File
+## (WS2/WSC) Script File
 
 The arguments of each opcode are specific to the script version.
 
-See the [Instruction Documentation](Instructions.md).
+See the [WS2 Instruction Documentation](Instructions.md).
 
-| Type    | Field    | Description |
-|---------|----------|-------------|
-| op[N]   | Ops      | Instructions. |
-| int8[8] | Epilogue | 8 bytes with no opcode. |
+There is no documentation for WSC instructions yet.
+
+| Type    | Field | Description |
+|---------|-------|-------------|
+| op[N]   | Ops   | Instructions. |
 
 ### Op
 
@@ -106,12 +107,19 @@ Each argument can be a
 - array of sjis str
 - array of choice
 
-### Array of T
+### Array of T (WS2)
 
 | Type | Field    |
 |------|----------|
 | int8 | Count    |
 | T[N] | Elements |
+
+### Array of T (WSC)
+
+| Type  | Field    |
+|-------|----------|
+| int16 | Count    |
+| T[N]  | Elements |
 
 ### Choice
 

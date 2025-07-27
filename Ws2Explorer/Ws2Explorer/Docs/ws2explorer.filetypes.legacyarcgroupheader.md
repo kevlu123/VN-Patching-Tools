@@ -48,13 +48,13 @@ public int FileCount { get; set; }
 
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
-### **DataOffset**
+### **ListingOffset**
 
 The offset from the beginning of the file
  of the file listing data of this group.
 
 ```csharp
-public int DataOffset { get; set; }
+public int ListingOffset { get; set; }
 ```
 
 #### Property Value

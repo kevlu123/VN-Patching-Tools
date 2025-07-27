@@ -75,12 +75,12 @@ public bool HasUnresolvedLabels { get; }
 The version of the script.
 
 ```csharp
-public Ws2Version Version { get; }
+public ScriptVersion Version { get; }
 ```
 
 #### Property Value
 
-[Ws2Version](./ws2explorer.compiler.ws2version.md)<br>
+[ScriptVersion](./ws2explorer.compiler.scriptversion.md)<br>
 
 ## Constructors
 
@@ -173,12 +173,4 @@ Disposes the WS2 file.
 
 ```csharp
 public void Dispose()
-```
-
-### **Finalize()**
-
-Disposes the WS2 file.
-
-```csharp
-protected void Finalize()
 ```

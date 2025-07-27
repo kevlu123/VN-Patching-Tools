@@ -43,6 +43,11 @@
             destination_TextBox = new TextBox();
             destination_Label = new Label();
             browseDestination_Button = new Button();
+            archive_Radio = new RadioButton();
+            legacyArchive8_Radio = new RadioButton();
+            legacyArchive12_Radio = new RadioButton();
+            selectArchiveType_Label = new Label();
+            selectFiles_Label = new Label();
             SuspendLayout();
             // 
             // oldFiles_Label
@@ -90,11 +95,11 @@
             // saveOldOnly_CheckBox
             // 
             saveOldOnly_CheckBox.AutoSize = true;
-            saveOldOnly_CheckBox.Location = new Point(21, 447);
+            saveOldOnly_CheckBox.Location = new Point(18, 451);
             saveOldOnly_CheckBox.Name = "saveOldOnly_CheckBox";
-            saveOldOnly_CheckBox.Size = new Size(100, 19);
+            saveOldOnly_CheckBox.Size = new Size(73, 19);
             saveOldOnly_CheckBox.TabIndex = 5;
-            saveOldOnly_CheckBox.Text = "Save Old Only";
+            saveOldOnly_CheckBox.Text = "Old-only";
             saveOldOnly_CheckBox.UseVisualStyleBackColor = true;
             // 
             // saveNewOnly_CheckBox
@@ -102,11 +107,11 @@
             saveNewOnly_CheckBox.AutoSize = true;
             saveNewOnly_CheckBox.Checked = true;
             saveNewOnly_CheckBox.CheckState = CheckState.Checked;
-            saveNewOnly_CheckBox.Location = new Point(127, 447);
+            saveNewOnly_CheckBox.Location = new Point(97, 451);
             saveNewOnly_CheckBox.Name = "saveNewOnly_CheckBox";
-            saveNewOnly_CheckBox.Size = new Size(105, 19);
+            saveNewOnly_CheckBox.Size = new Size(78, 19);
             saveNewOnly_CheckBox.TabIndex = 6;
-            saveNewOnly_CheckBox.Text = "Save New Only";
+            saveNewOnly_CheckBox.Text = "New-only";
             saveNewOnly_CheckBox.UseVisualStyleBackColor = true;
             // 
             // saveChanged_CheckBox
@@ -114,21 +119,21 @@
             saveChanged_CheckBox.AutoSize = true;
             saveChanged_CheckBox.Checked = true;
             saveChanged_CheckBox.CheckState = CheckState.Checked;
-            saveChanged_CheckBox.Location = new Point(238, 447);
+            saveChanged_CheckBox.Location = new Point(181, 450);
             saveChanged_CheckBox.Name = "saveChanged_CheckBox";
-            saveChanged_CheckBox.Size = new Size(101, 19);
+            saveChanged_CheckBox.Size = new Size(148, 19);
             saveChanged_CheckBox.TabIndex = 7;
-            saveChanged_CheckBox.Text = "Save Changed";
+            saveChanged_CheckBox.Text = "Common and different";
             saveChanged_CheckBox.UseVisualStyleBackColor = true;
             // 
             // saveCommon_CheckBox
             // 
             saveCommon_CheckBox.AutoSize = true;
-            saveCommon_CheckBox.Location = new Point(345, 447);
+            saveCommon_CheckBox.Location = new Point(335, 451);
             saveCommon_CheckBox.Name = "saveCommon_CheckBox";
-            saveCommon_CheckBox.Size = new Size(104, 19);
+            saveCommon_CheckBox.Size = new Size(148, 19);
             saveCommon_CheckBox.TabIndex = 8;
-            saveCommon_CheckBox.Text = "Save Common";
+            saveCommon_CheckBox.Text = "Common and identical";
             saveCommon_CheckBox.UseVisualStyleBackColor = true;
             // 
             // browseOldFiles_Button
@@ -153,7 +158,7 @@
             // 
             // cancel_Button
             // 
-            cancel_Button.Location = new Point(671, 447);
+            cancel_Button.Location = new Point(671, 500);
             cancel_Button.Name = "cancel_Button";
             cancel_Button.Size = new Size(75, 23);
             cancel_Button.TabIndex = 11;
@@ -163,7 +168,7 @@
             // 
             // ok_Button
             // 
-            ok_Button.Location = new Point(590, 447);
+            ok_Button.Location = new Point(590, 500);
             ok_Button.Name = "ok_Button";
             ok_Button.Size = new Size(75, 23);
             ok_Button.TabIndex = 12;
@@ -197,11 +202,68 @@
             browseDestination_Button.UseVisualStyleBackColor = true;
             browseDestination_Button.Click += BrowseDestination_Button;
             // 
+            // archive_Radio
+            // 
+            archive_Radio.AutoSize = true;
+            archive_Radio.Checked = true;
+            archive_Radio.Location = new Point(18, 502);
+            archive_Radio.Name = "archive_Radio";
+            archive_Radio.Size = new Size(65, 19);
+            archive_Radio.TabIndex = 16;
+            archive_Radio.TabStop = true;
+            archive_Radio.Text = "Archive";
+            archive_Radio.UseVisualStyleBackColor = true;
+            // 
+            // legacyArchive8_Radio
+            // 
+            legacyArchive8_Radio.AutoSize = true;
+            legacyArchive8_Radio.Location = new Point(89, 502);
+            legacyArchive8_Radio.Name = "legacyArchive8_Radio";
+            legacyArchive8_Radio.Size = new Size(195, 19);
+            legacyArchive8_Radio.TabIndex = 17;
+            legacyArchive8_Radio.TabStop = true;
+            legacyArchive8_Radio.Text = "Legacy archive (8 char filename)";
+            legacyArchive8_Radio.UseVisualStyleBackColor = true;
+            // 
+            // legacyArchive12_Radio
+            // 
+            legacyArchive12_Radio.AutoSize = true;
+            legacyArchive12_Radio.Location = new Point(290, 502);
+            legacyArchive12_Radio.Name = "legacyArchive12_Radio";
+            legacyArchive12_Radio.Size = new Size(201, 19);
+            legacyArchive12_Radio.TabIndex = 18;
+            legacyArchive12_Radio.TabStop = true;
+            legacyArchive12_Radio.Text = "Legacy archive (12 char filename)";
+            legacyArchive12_Radio.UseVisualStyleBackColor = true;
+            // 
+            // selectArchiveType_Label
+            // 
+            selectArchiveType_Label.AutoSize = true;
+            selectArchiveType_Label.Location = new Point(18, 484);
+            selectArchiveType_Label.Name = "selectArchiveType_Label";
+            selectArchiveType_Label.Size = new Size(144, 15);
+            selectArchiveType_Label.TabIndex = 19;
+            selectArchiveType_Label.Text = "Select output archive type";
+            // 
+            // selectFiles_Label
+            // 
+            selectFiles_Label.AutoSize = true;
+            selectFiles_Label.Location = new Point(18, 431);
+            selectFiles_Label.Name = "selectFiles_Label";
+            selectFiles_Label.Size = new Size(178, 15);
+            selectFiles_Label.TabIndex = 20;
+            selectFiles_Label.Text = "Select files to save to destination";
+            // 
             // DiffWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(763, 484);
+            ClientSize = new Size(763, 536);
+            Controls.Add(selectFiles_Label);
+            Controls.Add(selectArchiveType_Label);
+            Controls.Add(legacyArchive12_Radio);
+            Controls.Add(legacyArchive8_Radio);
+            Controls.Add(archive_Radio);
             Controls.Add(browseDestination_Button);
             Controls.Add(destination_Label);
             Controls.Add(destination_TextBox);
@@ -243,5 +305,10 @@
         private TextBox destination_TextBox;
         private Label destination_Label;
         private Button browseDestination_Button;
+        private RadioButton archive_Radio;
+        private RadioButton legacyArchive8_Radio;
+        private RadioButton legacyArchive12_Radio;
+        private Label selectArchiveType_Label;
+        private Label selectFiles_Label;
     }
 }

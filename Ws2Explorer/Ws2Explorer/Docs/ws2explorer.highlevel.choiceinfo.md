@@ -25,17 +25,29 @@ public string Filename { get; set; }
 
 [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
-### **Choices**
+### **Ws2Choices**
 
-The choice group.
+The WS2 choice group.
 
 ```csharp
-public ImmutableArray<Choice> Choices { get; set; }
+public ImmutableArray<Ws2Choice> Ws2Choices { get; set; }
 ```
 
 #### Property Value
 
-ImmutableArray&lt;Choice&gt;<br>
+ImmutableArray&lt;Ws2Choice&gt;<br>
+
+### **WscChoices**
+
+The WSC choice group.
+
+```csharp
+public ImmutableArray<WscChoice> WscChoices { get; set; }
+```
+
+#### Property Value
+
+ImmutableArray&lt;WscChoice&gt;<br>
 
 ## Constructors
 

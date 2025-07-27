@@ -14,7 +14,12 @@ public class ChoiceInfo
     public required string Filename { get; init; }
 
     /// <summary>
-    /// The choice group.
+    /// The WS2 choice group.
     /// </summary>
-    public required ImmutableArray<Choice> Choices { get; init; }
+    public required ImmutableArray<Ws2Choice> Ws2Choices { get; init; }
+
+    /// <summary>
+    /// The WSC choice group.
+    /// </summary>
+    public required ImmutableArray<WscChoice> WscChoices { get; init; }
 }

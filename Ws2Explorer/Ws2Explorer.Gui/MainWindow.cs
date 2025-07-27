@@ -1,15 +1,17 @@
-﻿using Microsoft.WindowsAPICodePack.Dialogs;
-using NAudio.Vorbis;
-using NAudio.Wave;
-using ScintillaNET;
-using System.Drawing.Text;
+﻿using System.Drawing.Text;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
-using Ws2Explorer.FileTypes;
-using FormTimer = System.Windows.Forms.Timer;
 using System.Text.RegularExpressions;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using NAudio.Vorbis;
+using NAudio.Wave;
+using ScintillaNET;
+using Ws2Explorer.Compiler;
+using Ws2Explorer.FileTypes;
+using FormLabel = System.Windows.Forms.Label;
+using FormTimer = System.Windows.Forms.Timer;
 
 namespace Ws2Explorer.Gui;
 
@@ -17,7 +19,7 @@ partial class MainWindow : Form
 {
     private const string CONFIG_FILENAME = "config.json";
 
-    private Config config;
+    private readonly Config config;
     private readonly ApplicationState state;
     private readonly FormTimer statusClear_Timer;
     private readonly FormTimer saveConfig_Timer;
@@ -27,7 +29,7 @@ partial class MainWindow : Form
 
     private readonly PictureBox imagePreview_PictureBox;
 
-    private readonly Label fontPreview_Label;
+    private readonly FormLabel fontPreview_Label;
     private PrivateFontCollection fontCollection = new();
     private GCHandle fontGCHandle = GCHandle.Alloc(Array.Empty<byte>(), GCHandleType.Pinned);
 
@@ -142,7 +144,7 @@ partial class MainWindow : Form
             SizeMode = PictureBoxSizeMode.Zoom,
         };
 
-        fontPreview_Label = new Label
+        fontPreview_Label = new FormLabel
         {
             UseCompatibleTextRendering = true,
             Dock = DockStyle.Fill,
@@ -262,10 +264,10 @@ partial class MainWindow : Form
         foreach (var file in fileList)
         {
             files_ListView.Items.Add(new ListViewItem(
-                new string[] {
+                [
                     (file.IsDirectory && file.Filename != "..") ? $"{file.Filename}/" : file.Filename,
                     file.FileSize?.ToString("#,0", nfi) ?? string.Empty,
-                }
+                ]
             ));
         }
         files_ListView.EndUpdate();
@@ -756,6 +758,15 @@ partial class MainWindow : Form
         }
     }
 
+    private void OpenAsWsc_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenArchiveAs<WscFile>(index);
+        }
+    }
+
     private void CreateArc_MenuItemClicked(object sender, EventArgs e)
     {
         CreateArchive<ArcFile>(new CommonFileDialogFilter("ARC file", "*.arc"));
@@ -789,6 +800,11 @@ partial class MainWindow : Form
     private void CreateWs2_MenuItemClicked(object sender, EventArgs e)
     {
         CreateArchive<Ws2File>(new CommonFileDialogFilter("WS2 file", "*.ws2"));
+    }
+
+    private void CreateWsc_MenuItemClicked(object sender, EventArgs e)
+    {
+        CreateArchive<WscFile>(new CommonFileDialogFilter("WSC file", "*.wsc"));
     }
 
     private void CreateArchive<T>(CommonFileDialogFilter filter)
@@ -1025,14 +1041,27 @@ partial class MainWindow : Form
             foreach (var choiceInfo in choiceInfos)
             {
                 texts.Add($"{choiceInfo.Filename}");
-                foreach (var choice in choiceInfo.Choices)
+                foreach (var choice in choiceInfo.Ws2Choices)
                 {
-                    if (choice.JumpOp.Code == 0x06)
+                    if (choice.JumpOp.Code == Opcode.WS2_JUMP_06)
                     {
                         // Jump
                         texts.Add($"  \"{choice.Text}\" -> Label {choice.JumpOp.Arguments[0].Label}");
                     }
-                    else
+                    else if (choice.JumpOp.Code == Opcode.WS2_JUMP_FILE_07)
+                    {
+                        // Jump file
+                        texts.Add($"  \"{choice.Text}\" -> {choice.JumpOp.Arguments[0].String}");
+                    }
+                }
+                foreach (var choice in choiceInfo.WscChoices)
+                {
+                    if (choice.JumpOp.Code == Opcode.WSC_JUMP_06)
+                    {
+                        // Jump
+                        texts.Add($"  \"{choice.Text}\" -> Label {choice.JumpOp.Arguments[0].Label}");
+                    }
+                    else if (choice.JumpOp.Code == Opcode.WSC_JUMP_FILE_07)
                     {
                         // Jump file
                         texts.Add($"  \"{choice.Text}\" -> {choice.JumpOp.Arguments[0].String}");
@@ -1128,7 +1157,13 @@ partial class MainWindow : Form
         {
             using var dialog = new DiffWindow(oldFilenames);
             return dialog.ShowDialog() == DialogResult.OK
-                ? (dialog.OldFilenames, dialog.NewFilenames, dialog.Destination, dialog.DiffPartitionMode)
+                ? (
+                    dialog.OldFilenames,
+                    dialog.NewFilenames,
+                    dialog.Destination,
+                    dialog.DiffPartitionMode,
+                    dialog.CreateArchiveType
+                )
                 : null;
         });
     }

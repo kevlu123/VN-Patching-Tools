@@ -366,6 +366,7 @@ public sealed class BinaryStream : IDisposable
             ".ttf" =>            DecodeWithHint<TtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".otf" =>            DecodeWithHint<OtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".ws2" =>            DecodeWithHint<Ws2File>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".wsc" =>            DecodeWithHint<WscFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".ptf" =>            DecodeWithHint<PtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".txt" or ".json" => DecodeWithHint<TextFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".arc" =>            DecodeWithHintOr<ArcFile>(decRef: decRef,
@@ -502,6 +503,7 @@ public sealed class BinaryStream : IDisposable
                 TryType<LegacyArc12File>() ||
                 TryType<LegacyArc8File>() ||
                 TryType<Ws2File>() ||
+                TryType<WscFile>() ||
                 TryType<PtfFile>() ||
                 TryType<TextFile>() ||
                 // Final fallback (always succeeds)

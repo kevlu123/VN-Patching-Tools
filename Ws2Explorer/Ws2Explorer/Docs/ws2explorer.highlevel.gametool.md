@@ -35,7 +35,7 @@ The game folder or null if it is not found.
 
 ### **FindReferences(Directory, String, StringComparison, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
 
-Finds all references to a string in the game's WS2 scripts
+Finds all references to a string in the game's WS2/WSC scripts
  Only string arguments of instructions are searched.
  Only archives containing "rio" and ending with ".arc" are considered.
 
@@ -114,7 +114,7 @@ public static Task ConvertLuacToText(Directory gameFolder, IProgress<TaskProgres
 
 ### **GetChoices(Directory, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
 
-Gets all choices in the game from the WS2 scripts.
+Gets all choices in the game from the WS2/WSC scripts.
  Only archives containing "rio" and ending with ".arc" are considered.
 
 ```csharp
@@ -136,7 +136,7 @@ A list of choice group information.
 
 ### **GetFlowchart(Directory, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
 
-Gets the flow of the game's WS2 scripts.
+Gets the flow of the game's WS2/WSC scripts.
  Not necessarily all the paths will be reachable and
  sometimes the scripts will reference non-existent scripts.
 
@@ -159,19 +159,19 @@ A map of where a script leads.
  The dictionary value is the list of scripts that the script leads to
  in order of appearance and may contain duplicates.
 
-### **GetFlowchart(ArcFile, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
+### **GetFlowchart(IArchive, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
 
-Gets the flow of the WS2 scripts in an [ArcFile](./ws2explorer.filetypes.arcfile.md) .
+Gets the flow of the WS2/WSC scripts in an [ArcFile](./ws2explorer.filetypes.arcfile.md)/[LegacyArc8File](./ws2explorer.filetypes.legacyarc8file.md)/[LegacyArc12File](./ws2explorer.filetypes.legacyarc12file.md).
  Not necessarily all the paths will be reachable and
  sometimes the scripts will reference non-existent scripts.
 
 ```csharp
-public static Task<Dictionary<string, List<string>>> GetFlowchart(ArcFile arc, IProgress<TaskProgressInfo> progress, CancellationToken ct)
+public static Task<Dictionary<string, List<string>>> GetFlowchart(IArchive arc, IProgress<TaskProgressInfo> progress, CancellationToken ct)
 ```
 
 #### Parameters
 
-`arc` [ArcFile](./ws2explorer.filetypes.arcfile.md)<br>
+`arc` [IArchive](./ws2explorer.iarchive.md)<br>
 
 `progress` [IProgress&lt;TaskProgressInfo&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.iprogress-1)<br>
 
@@ -186,7 +186,7 @@ A map of where a script leads.
 
 ### **ModifyNames(Directory, Func&lt;IEnumerable&lt;String&gt;, Dictionary&lt;String, String&gt;&gt;, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
 
-Modifies the character names in the game.
+Modifies the character names in the game's WS2/WSC files.
  Only archives containing "rio" and ending with ".arc" are considered.
 
 ```csharp

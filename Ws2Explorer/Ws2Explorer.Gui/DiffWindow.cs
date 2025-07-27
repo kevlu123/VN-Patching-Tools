@@ -1,4 +1,5 @@
 ﻿using Ws2Explorer.HighLevel;
+using Ws2Explorer.FileTypes;
 
 namespace Ws2Explorer.Gui;
 
@@ -15,6 +16,7 @@ partial class DiffWindow : Form
     public string[] NewFilenames { get; private set; } = [];
     public string Destination { get; private set; } = "";
     public DiffPartitionMode DiffPartitionMode { get; private set; } = DiffPartitionMode.None;
+    public Type CreateArchiveType { get; private set; } = typeof(ArcFile);
 
     public DiffWindow(IEnumerable<string> newFilenames)
     {
@@ -58,6 +60,19 @@ partial class DiffWindow : Form
         if (saveCommon_CheckBox.Checked)
         {
             mode |= DiffPartitionMode.Common;
+        }
+
+        if (archive_Radio.Checked)
+        {
+            CreateArchiveType = typeof(ArcFile);
+        }
+        else if (legacyArchive8_Radio.Checked)
+        {
+            CreateArchiveType = typeof(LegacyArc8File);
+        }
+        else if (legacyArchive12_Radio.Checked)
+        {
+            CreateArchiveType = typeof(LegacyArc12File);
         }
 
         var oldFilenames = oldFilenames_TextBox.Text

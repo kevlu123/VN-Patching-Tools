@@ -26,18 +26,6 @@ public int Code { get; set; }
 
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
-### **Description**
-
-The description of the opcode if it is known.
-
-```csharp
-public string Description { get; }
-```
-
-#### Property Value
-
-[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
-
 ### **Arguments**
 
 The arguments of the op.
@@ -75,6 +63,22 @@ public int Size { get; }
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
 ## Methods
+
+### **GetDescription(ScriptVersion)**
+
+The description of the opcode if it is known.
+
+```csharp
+string GetDescription(ScriptVersion version)
+```
+
+#### Parameters
+
+`version` [ScriptVersion](./ws2explorer.compiler.scriptversion.md)<br>
+
+#### Returns
+
+[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
 ### **WithArgument(Int32, Argument)**
 

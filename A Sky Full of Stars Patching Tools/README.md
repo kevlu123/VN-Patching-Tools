@@ -17,6 +17,8 @@ Very little testing has been done. Alert me of any issues.
 
 ## Developers
 
+Last tested with git commit 2ea2b33f37a9a5c49b64fd705daa5fb8cfee2fdf. Please git checkout this commit before proceeding.
+
 ### Creating an *Overwrite Files* Style Patch
 
 - Install .NET 8 SDK.

@@ -30,7 +30,7 @@ public static class Examples
             // Get the text from the script instructions
             texts[fileInfo.Filename] = ws2File.Ops
                 // Filter DISPLAY_TEXT instructions
-                .Where(op => op.Code == Opcode.DISPLAY_TEXT_14)
+                .Where(op => op.Code == Opcode.WS2_DISPLAY_TEXT_14)
                 // Get the text argument
                 .Select(op => op.Arguments[2].MessageString.String)
                 .ToList();
@@ -72,7 +72,7 @@ public static class Examples
             foreach (Op op in ws2File.Ops)
             {
                 // If not a DISPLAY_TEXT instruction, add to the new list as is.
-                if (op.Code != Opcode.DISPLAY_TEXT_14)
+                if (op.Code != Opcode.WS2_DISPLAY_TEXT_14)
                 {
                     newOps.Add(op);
                     continue;

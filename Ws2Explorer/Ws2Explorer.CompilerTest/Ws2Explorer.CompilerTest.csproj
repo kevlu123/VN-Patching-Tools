@@ -8,7 +8,10 @@
 
   <ItemGroup>
     <ProjectReference Include="../Ws2Explorer/Ws2Explorer.csproj" />
-    <None Include="Data/*">
+    <None Include="Data/ws2/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Data/wsc/*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

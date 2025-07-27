@@ -1,55 +1,81 @@
 ﻿using System.Reflection;
+using System.Text.RegularExpressions;
 using Ws2Explorer;
 using Ws2Explorer.Compiler;
-using Ws2Explorer.FileTypes;
 
-Console.WriteLine("================= Start =================");
-Console.WriteLine();
-int tried = 0;
-var failed = new List<(string filename, Exception exception)>();
-var exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-var dir = new Ws2Explorer.FileTypes.Directory(Path.Combine(exePath, "Data"));
-using var arcFiles = await dir.LoadAllFilesOfType<ArcFile>();
-foreach (var (arcName, arcFile) in arcFiles)
-{
-    Console.WriteLine(arcName);
-    foreach (var fileInfo in arcFile.ListFiles())
-    {
-        if (!fileInfo.Filename.EndsWith(".ws2", StringComparison.InvariantCultureIgnoreCase))
-        {
-            continue;
-        }
+var pattern = args.Length > 0 ? args[0] : "";
+var patternRegex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        Console.Write($"  {fileInfo.Filename}");
-        tried++;
-        try
-        {
-            using var stream = await arcFile.OpenFile(fileInfo.Filename);
-            var ops = Ws2Compiler.Decompile(stream, out var version, mustResolveLabels: true);
-            Console.Write($" ({version})");
-            using var recompiled = Ws2Compiler.Compile(ops, mustResolveLabels: true);
-            if (!BinaryStream.StreamEquals(stream, recompiled))
-            {
-                throw new Exception("Recompilation does not match original.");
-            }
-        }
-        catch (Exception ex)
-        {
-            failed.Add(($"{arcName}/{fileInfo.Filename}", ex));
-        }
-        Console.WriteLine();
-    }
-}
+var ws2Result = await TestDir("ws2", ".ws2", ScriptCompiler.DecompileWs2);
+var wscResult = await TestDir("wsc", ".wsc", ScriptCompiler.DecompileWsc);
 Console.WriteLine();
 Console.WriteLine("================ Results ================");
 Console.WriteLine();
-foreach (var (filename, ex) in failed)
+foreach (var result in new[] { ws2Result, wscResult })
 {
-    Console.WriteLine($"{filename} failed!");
-    Console.WriteLine();
-    Console.WriteLine(ex);
-    Console.WriteLine();
+    foreach (var (filename, ex) in result.Failed)
+    {
+        Console.WriteLine($"{filename} failed!");
+        Console.WriteLine();
+        Console.WriteLine(ex);
+        Console.WriteLine();
+    }
 }
-Console.WriteLine($"{tried - failed.Count}/{tried} succeeded.");
+Console.WriteLine($"WS2 {ws2Result.Tried - ws2Result.Failed.Count}/{ws2Result.Tried} succeeded.");
+Console.WriteLine($"WSC {wscResult.Tried - wscResult.Failed.Count}/{wscResult.Tried} succeeded.");
 Console.WriteLine();
 Console.WriteLine("=========================================");
+Console.WriteLine();
+
+async Task<TestResult> TestDir(string dirName, string ext, DecompileFn decompile)
+{
+    var result = new TestResult();
+    var exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+    var dir = new Ws2Explorer.FileTypes.Directory(Path.Combine(exePath, "Data", dirName));
+    using var files = await dir.LoadAllFiles();
+    foreach (var (filename, file) in files)
+    {
+        if (file is not IFolder archive)
+        {
+            continue;
+        }
+        foreach (var fileInfo in archive.ListFiles())
+        {
+            var path = $"{dirName}/{filename}/{fileInfo.Filename}";
+            if (!fileInfo.Filename.EndsWith(ext, StringComparison.InvariantCultureIgnoreCase)
+                || !patternRegex.IsMatch(path))
+            {
+                continue;
+            }
+
+            Console.Write(path);
+            result.Tried++;
+            try
+            {
+                using var stream = await archive.OpenFile(fileInfo.Filename);
+                var ops = decompile(stream, out var version);
+                Console.Write($" ({version})");
+                using var recompiled = ScriptCompiler.Compile(ops);
+                if (!BinaryStream.StreamEquals(stream, recompiled))
+                {
+                    throw new Exception("Recompilation does not match original.");
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Failed.Add((path, ex));
+            }
+            Console.WriteLine();
+        }
+    }
+    return result;
+}
+
+delegate List<Op> DecompileFn(BinaryStream stream, out ScriptVersion version);
+
+class TestResult
+{
+    public int Tried { get; set; }
+    public int Succeeded { get; set; }
+    public List<(string filename, Exception exception)> Failed { get; } = [];
+}

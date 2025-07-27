@@ -47,7 +47,7 @@
   - [FILE\_END\_FF](#file_end_ff)
 - [Renderering](#renderering)
 
-See [OpFormat.cs](Ws2Explorer/Compiler/OpFormat.cs) for the full list of instructions.
+See [OpFormat.cs](Ws2Explorer/Compiler/Scripts/ws2_op_list.py) for the full list of instructions.
 
 Notes
 - All types are little endian.

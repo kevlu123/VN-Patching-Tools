@@ -35,7 +35,7 @@ internal sealed class ScriptFileBase : IDisposable
         Stream = stream;
         stream.Freeze();
         stream.IncRef();
-        confidence = ((ReadOnlySpan<byte>)stream.Span).ContainsAnyExcept<byte>(0)
+        confidence = ((ReadOnlySpan<byte>)stream.Span).ContainsAnyExcept<byte>(0) && stream.Length > 16
             ? DecodeConfidence.High
             : DecodeConfidence.Low;
     }

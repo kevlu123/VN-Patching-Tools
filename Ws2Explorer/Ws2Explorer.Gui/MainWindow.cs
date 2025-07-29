@@ -767,6 +767,15 @@ partial class MainWindow : Form
         }
     }
 
+    private void OpenAsLng_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenArchiveAs<LngFile>(index);
+        }
+    }
+
     private void CreateArc_MenuItemClicked(object sender, EventArgs e)
     {
         CreateArchive<ArcFile>(new CommonFileDialogFilter("ARC file", "*.arc"));
@@ -805,6 +814,11 @@ partial class MainWindow : Form
     private void CreateWsc_MenuItemClicked(object sender, EventArgs e)
     {
         CreateArchive<WscFile>(new CommonFileDialogFilter("WSC file", "*.wsc"));
+    }
+
+    private void CreateLng_MenuItemClicked(object sender, EventArgs e)
+    {
+        CreateArchive<LngFile>(new CommonFileDialogFilter("LNG file", "*.lng"));
     }
 
     private void CreateArchive<T>(CommonFileDialogFilter filter)

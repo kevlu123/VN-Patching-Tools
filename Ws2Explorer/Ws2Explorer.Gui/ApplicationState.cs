@@ -1140,9 +1140,10 @@ class ApplicationState(string? openPath)
         return file switch
         {
             ArcFile => "ARC",
+            BinFile => "BIN",
             LegacyArc8File => "ARC (Legacy, 8 char filename)",
             LegacyArc12File => "ARC (Legacy, 12 char filename)",
-            BinFile => "BIN",
+            LngFile => "LNG",
             LuacFile luac => $"LUAC (v{luac.LuaVersion:X2})",
             OggFile ogg => $"OGG ({ogg.Duration / 60:00}:{ogg.Duration % 60:00})",
             OtfFile => "OTF",
@@ -1169,11 +1170,12 @@ class ApplicationState(string? openPath)
         {
             ArcFile arc => "(ARC) Archive file\n\n"
                         + $"File count: {arc.ListFiles().Count}",
+            BinFile => "Generic binary file",
             LegacyArc8File arc => "(ARC) Legacy archive file with max 8 character filename\n\n"
                         + $"File count: {arc.ListFiles().Count}",
             LegacyArc12File arc => "(ARC) Legacy archive file with max 12 character filename\n\n"
                         + $"File count: {arc.ListFiles().Count}",
-            BinFile => "Generic binary file",
+            LngFile => "(LNG) Language pack file",
             LuacFile luac => "(LUAC) Compiled Lua file\n\n"
                          + $"Lua version: {luac.LuaVersion:X2}",
             OggFile ogg => "(OGG) Audio file\n\n"

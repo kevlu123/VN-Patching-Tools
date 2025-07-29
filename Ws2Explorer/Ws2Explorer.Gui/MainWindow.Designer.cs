@@ -62,6 +62,7 @@
             createPan_MenuItem = new ToolStripMenuItem();
             createPtf_MenuItem = new ToolStripMenuItem();
             createWs2_MenuItem = new ToolStripMenuItem();
+            createWsc_MenuItem = new ToolStripMenuItem();
             openArchiveAs_MenuItem = new ToolStripMenuItem();
             openAsArc_MenuItem = new ToolStripMenuItem();
             openAsLegacyArc8_MenuItem = new ToolStripMenuItem();
@@ -70,6 +71,7 @@
             openAsPan_MenuItem = new ToolStripMenuItem();
             openAsPtf_MenuItem = new ToolStripMenuItem();
             openAsWs2_MenuItem = new ToolStripMenuItem();
+            openAsWsc_MenuItem = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
             reveal_MenuItem = new ToolStripMenuItem();
             setEditors_MenuItem = new ToolStripMenuItem();
@@ -120,8 +122,8 @@
             mermaidFlowchart_MenuItem = new ToolStripMenuItem();
             jsonFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
-            createWsc_MenuItem = new ToolStripMenuItem();
-            openAsWsc_MenuItem = new ToolStripMenuItem();
+            createLng_MenuItem = new ToolStripMenuItem();
+            openAsLng_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -332,7 +334,7 @@
             // 
             // createArchive_MenuItem
             // 
-            createArchive_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { createArc_MenuItem, createLegacyArc8_MenuItem, createLegacyArc12_MenuItem, createPna_MenuItem, createPan_MenuItem, createPtf_MenuItem, createWs2_MenuItem, createWsc_MenuItem });
+            createArchive_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { createArc_MenuItem, createLegacyArc8_MenuItem, createLegacyArc12_MenuItem, createPna_MenuItem, createPan_MenuItem, createPtf_MenuItem, createWs2_MenuItem, createWsc_MenuItem, createLng_MenuItem });
             createArchive_MenuItem.Name = "createArchive_MenuItem";
             createArchive_MenuItem.Size = new Size(244, 22);
             createArchive_MenuItem.Text = "Create Archive";
@@ -393,9 +395,17 @@
             createWs2_MenuItem.Text = "WS2";
             createWs2_MenuItem.Click += CreateWs2_MenuItemClicked;
             // 
+            // createWsc_MenuItem
+            // 
+            createWsc_MenuItem.Name = "createWsc_MenuItem";
+            createWsc_MenuItem.ShortcutKeys = Keys.Control | Keys.F8;
+            createWsc_MenuItem.Size = new Size(235, 22);
+            createWsc_MenuItem.Text = "WSC";
+            createWsc_MenuItem.Click += CreateWsc_MenuItemClicked;
+            // 
             // openArchiveAs_MenuItem
             // 
-            openArchiveAs_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { openAsArc_MenuItem, openAsLegacyArc8_MenuItem, openAsLegacyArc12_MenuItem, openAsPna_MenuItem, openAsPan_MenuItem, openAsPtf_MenuItem, openAsWs2_MenuItem, openAsWsc_MenuItem });
+            openArchiveAs_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { openAsArc_MenuItem, openAsLegacyArc8_MenuItem, openAsLegacyArc12_MenuItem, openAsPna_MenuItem, openAsPan_MenuItem, openAsPtf_MenuItem, openAsWs2_MenuItem, openAsWsc_MenuItem, openAsLng_MenuItem });
             openArchiveAs_MenuItem.Name = "openArchiveAs_MenuItem";
             openArchiveAs_MenuItem.Size = new Size(244, 22);
             openArchiveAs_MenuItem.Text = "Open Archive As";
@@ -455,6 +465,14 @@
             openAsWs2_MenuItem.Size = new Size(267, 22);
             openAsWs2_MenuItem.Text = "WS2";
             openAsWs2_MenuItem.Click += OpenAsWs2_MenuItemClicked;
+            // 
+            // openAsWsc_MenuItem
+            // 
+            openAsWsc_MenuItem.Name = "openAsWsc_MenuItem";
+            openAsWsc_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F8;
+            openAsWsc_MenuItem.Size = new Size(267, 22);
+            openAsWsc_MenuItem.Text = "WSC";
+            openAsWsc_MenuItem.Click += OpenAsWsc_MenuItemClicked;
             // 
             // toolStripSeparator2
             // 
@@ -825,21 +843,21 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
-            // createWsc_MenuItem
+            // createLng_MenuItem
             // 
-            createWsc_MenuItem.Name = "createWsc_MenuItem";
-            createWsc_MenuItem.ShortcutKeys = Keys.Control | Keys.F8;
-            createWsc_MenuItem.Size = new Size(235, 22);
-            createWsc_MenuItem.Text = "WSC";
-            createWsc_MenuItem.Click += CreateWsc_MenuItemClicked;
+            createLng_MenuItem.Name = "createLng_MenuItem";
+            createLng_MenuItem.ShortcutKeys = Keys.Control | Keys.F9;
+            createLng_MenuItem.Size = new Size(235, 22);
+            createLng_MenuItem.Text = "LNG";
+            createLng_MenuItem.Click += CreateLng_MenuItemClicked;
             // 
-            // openAsWsc_MenuItem
+            // openAsLng_MenuItem
             // 
-            openAsWsc_MenuItem.Name = "openAsWsc_MenuItem";
-            openAsWsc_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F8;
-            openAsWsc_MenuItem.Size = new Size(267, 22);
-            openAsWsc_MenuItem.Text = "WSC";
-            openAsWsc_MenuItem.Click += OpenAsWsc_MenuItemClicked;
+            openAsLng_MenuItem.Name = "openAsLng_MenuItem";
+            openAsLng_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F9;
+            openAsLng_MenuItem.Size = new Size(267, 22);
+            openAsLng_MenuItem.Text = "LNG";
+            openAsLng_MenuItem.Click += OpenAsLng_MenuItemClicked;
             // 
             // MainWindow
             // 
@@ -964,5 +982,7 @@
         private ToolStripMenuItem openAsLegacyArc12_MenuItem;
         private ToolStripMenuItem createWsc_MenuItem;
         private ToolStripMenuItem openAsWsc_MenuItem;
+        private ToolStripMenuItem createLng_MenuItem;
+        private ToolStripMenuItem openAsLng_MenuItem;
     }
 }

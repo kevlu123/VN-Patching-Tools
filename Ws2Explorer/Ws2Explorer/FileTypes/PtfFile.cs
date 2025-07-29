@@ -116,6 +116,23 @@ public sealed class PtfFile : IArchive<PtfFile>
     }
 
     /// <summary>
+    /// Creates a PTF file from a binary stream and an XOR key.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="xorKey"></param>
+    /// <exception cref="ArchiveCreationException"></exception>
+    public PtfFile(BinaryStream data, byte xorKey)
+    {
+        using var compressed = Compress(data, xorKey);
+        FontType = GetFontType(data.Span) ?? throw new ArchiveCreationException("Font type not recognized.");
+        Stream = compressed;
+        compressed.Freeze();
+        compressed.IncRef();
+        decompressed = data;
+        decompressed.IncRef();
+    }
+
+    /// <summary>
     /// Decodes a PTF file from a binary stream.
     /// </summary>
     /// <param name="stream"></param>
@@ -219,7 +236,13 @@ public sealed class PtfFile : IArchive<PtfFile>
         return null;
     }
 
-    private static byte? InferXorKey(ReadOnlySpan<byte> data, out FontType fontType)
+    /// <summary>
+    /// Infers the XOR key from the PTF file data.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="fontType"></param>
+    /// <returns></returns>
+    public static byte? InferXorKey(ReadOnlySpan<byte> data, out FontType fontType)
     {
         var ft = GetFontType(data);
         if (ft == null)
@@ -330,7 +353,7 @@ public sealed class PtfFile : IArchive<PtfFile>
             outputBuffer[j] ^= xorKey;
         }
 
-        return new BinaryStream(outputBuffer.ToArray());
+        return new BinaryStream([.. outputBuffer]);
     }
 
     /// <summary>

@@ -32,11 +32,12 @@
             cancel_Button = new Button();
             searchText_TextBox = new TextBox();
             caseSensitive_CheckBox = new CheckBox();
+            matchWholeString_CheckBox = new CheckBox();
             SuspendLayout();
             // 
             // find_Button
             // 
-            find_Button.Location = new Point(208, 40);
+            find_Button.Location = new Point(263, 40);
             find_Button.Name = "find_Button";
             find_Button.Size = new Size(75, 23);
             find_Button.TabIndex = 5;
@@ -46,7 +47,7 @@
             // 
             // cancel_Button
             // 
-            cancel_Button.Location = new Point(289, 40);
+            cancel_Button.Location = new Point(344, 41);
             cancel_Button.Name = "cancel_Button";
             cancel_Button.Size = new Size(75, 23);
             cancel_Button.TabIndex = 4;
@@ -58,7 +59,7 @@
             // 
             searchText_TextBox.Location = new Point(11, 11);
             searchText_TextBox.Name = "searchText_TextBox";
-            searchText_TextBox.Size = new Size(353, 23);
+            searchText_TextBox.Size = new Size(408, 23);
             searchText_TextBox.TabIndex = 3;
             // 
             // caseSensitive_CheckBox
@@ -71,11 +72,22 @@
             caseSensitive_CheckBox.Text = "Case Sensitive";
             caseSensitive_CheckBox.UseVisualStyleBackColor = true;
             // 
+            // matchWholeString_CheckBox
+            // 
+            matchWholeString_CheckBox.AutoSize = true;
+            matchWholeString_CheckBox.Location = new Point(117, 44);
+            matchWholeString_CheckBox.Name = "matchWholeString_CheckBox";
+            matchWholeString_CheckBox.Size = new Size(94, 19);
+            matchWholeString_CheckBox.TabIndex = 10;
+            matchWholeString_CheckBox.Text = "Whole String";
+            matchWholeString_CheckBox.UseVisualStyleBackColor = true;
+            // 
             // FindReferencesWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(375, 75);
+            ClientSize = new Size(431, 75);
+            Controls.Add(matchWholeString_CheckBox);
             Controls.Add(caseSensitive_CheckBox);
             Controls.Add(find_Button);
             Controls.Add(cancel_Button);
@@ -97,5 +109,6 @@
         private Button cancel_Button;
         private TextBox searchText_TextBox;
         private CheckBox caseSensitive_CheckBox;
+        private CheckBox matchWholeString_CheckBox;
     }
 }

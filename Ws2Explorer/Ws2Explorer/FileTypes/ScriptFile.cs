@@ -82,12 +82,12 @@ internal sealed class ScriptFileBase : IDisposable
                                 return op.Arguments[0].Ws2ChoiceArray
                                     .Select(c => $"Choice: {c.Text}");
                             case Opcode.WS2_DISPLAY_NAME_15:
-                                currentName = op.Arguments[0].NameString.String;
+                                currentName = op.Arguments[0].AffixedString.String;
                                 return [];
                             case Opcode.WS2_DISPLAY_TEXT_14:
                                 var text = currentName.Length > 0
-                                    ? $"{currentName}: {op.Arguments[2].MessageString.String}"
-                                    : $"{op.Arguments[2].MessageString.String}";
+                                    ? $"{currentName}: {op.Arguments[2].AffixedString.String}"
+                                    : $"{op.Arguments[2].AffixedString.String}";
                                 return [text.Replace("\\n", " ")];
                             default:
                                 return [];
@@ -101,10 +101,10 @@ internal sealed class ScriptFileBase : IDisposable
                                 return op.Arguments[0].WscChoiceArray
                                     .Select(c => $"Choice: {c.Text}");
                             case Opcode.WSC_DISPLAY_TEXT_41:
-                                return [op.Arguments[3].MessageString.String.Replace("\\n", " ")];
+                                return [op.Arguments[3].AffixedString.String.Replace("\\n", " ")];
                             case Opcode.WSC_DISPLAY_TEXT_AND_NAME_42:
-                                var name = op.Arguments[3].NameString.String;
-                                var text = op.Arguments[4].MessageString.String.Replace("\\n", " ");
+                                var name = op.Arguments[3].AffixedString.String;
+                                var text = op.Arguments[4].AffixedString.String.Replace("\\n", " ");
                                 return [string.IsNullOrEmpty(name) ? text : $"{name}: {text}"];
                             default:
                                 return [];

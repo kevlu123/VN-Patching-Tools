@@ -1,20 +1,19 @@
 # Key for opcode formats in ws2_op_list.py and wsc_op_list.py
 #
-# Key    Type              C# Type
-# -----------------------------------------------
-# a      label             Label
-# r      relative label    RelativeLabel
-# b      int8              byte
-# h      int16             ushort
-# i      int32             uint
-# f      float             float
-# s      string            string
-# n      name string       NameString
-# m      message string    MessageString
-# H      int16 array       ImmutableArray<ushort>
-# S      string array      ImmutableArray<string>
-# C      WS2 choice array  ImmutableArray<Ws2Choice>
-# D      WSC choice array  ImmutableArray<WscChoice>
+# Key    Type                   C# Type
+# ----------------------------------------------------
+# a      label                  Label
+# r      relative label         RelativeLabel
+# b      int8                   byte
+# h      int16                  ushort
+# i      int32                  uint
+# f      float                  float
+# s      string                 string
+# t      name/message string    AffixedString
+# H      int16 array            ImmutableArray<ushort>
+# S      string array           ImmutableArray<string>
+# C      WS2 choice array       ImmutableArray<Ws2Choice>
+# D      WSC choice array       ImmutableArray<WscChoice>
 
 import ws2_op_list
 import wsc_op_list
@@ -108,7 +107,7 @@ internal sealed class OpFormat
         
         for name, formats in get_op_formats():
             f.write(f"            {name},\n")
-        f.write("        ];\n\n    }\n")
+        f.write("        ];\n    }\n\n")
 
         for name, formats in get_op_formats():
             f.write(f"    private static readonly ImmutableArray<OpFormat?> {name} = [\n")

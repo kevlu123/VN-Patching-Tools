@@ -1041,7 +1041,7 @@ class ApplicationState(string? openPath)
     }
 
     public void FindReferences(
-        Func<(string text, bool caseSensitive)?> searchTextPrompt,
+        Func<(string text, bool caseSensitive, bool matchWholeString)?> searchTextPrompt,
         Action<IDictionary<string, int>> onResult)
     {
         Protect(interruptable: false, async ct =>
@@ -1059,6 +1059,7 @@ class ApplicationState(string? openPath)
                     search.Value.caseSensitive
                         ? StringComparison.InvariantCulture
                         : StringComparison.InvariantCultureIgnoreCase,
+                    search.Value.matchWholeString,
                     progress,
                     ct));
             }

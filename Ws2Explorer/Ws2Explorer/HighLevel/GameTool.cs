@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Ws2Explorer.Compiler;
 using Ws2Explorer.FileTypes;
 using Directory = Ws2Explorer.FileTypes.Directory;
@@ -52,7 +54,8 @@ public static class GameTool
     /// <summary>
     /// Finds the game folder given a hierarchy which is
     /// descended from the game folder.
-    /// The game folder is found by looking for a file named "AdvHD.exe".
+    /// The game folder is found by looking for a file ending in ".exe"
+    /// and another file ending in ".arc".
     /// The game folder must be a real directory.
     /// </summary>
     /// <param name="hierarchy"></param>
@@ -62,7 +65,8 @@ public static class GameTool
         for (int i = hierarchy.Count - 1; i >= 0; i--)
         {
             if (hierarchy[i].Folder is Directory dir
-                && dir.ListFiles().Any(f => f.Filename.Equals("AdvHD.exe", StringComparison.InvariantCultureIgnoreCase)))
+                && dir.ListFiles().Any(f => f.Filename.EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase))
+                && dir.ListFiles().Any(f => f.Filename.EndsWith(".arc", StringComparison.InvariantCultureIgnoreCase)))
             {
                 return dir;
             }
@@ -78,6 +82,37 @@ public static class GameTool
     /// <param name="gameFolder"></param>
     /// <param name="str"></param>
     /// <param name="comparisonType"></param>
+    /// <param name="matchWholeString"></param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns>
+    /// The script filenames that contain the string and
+    /// the number of occurrences in that script.
+    /// </returns>
+    public static Task<Dictionary<string, int>> FindReferences(
+        Directory gameFolder,
+        string str,
+        StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase,
+        bool matchWholeString = false,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        return FindReferences(
+            gameFolder,
+            matchWholeString
+                ? (s => s.Equals(str, comparisonType))
+                : (s => s.Contains(str, comparisonType)),
+            progress,
+            ct);
+    }
+
+    /// <summary>
+    /// Finds all references to a string in the game's WS2/WSC scripts
+    /// Only string arguments of instructions are searched.
+    /// Only archives containing "rio" and ending with ".arc" are considered.
+    /// </summary>
+    /// <param name="gameFolder"></param>
+    /// <param name="match"></param>
     /// <param name="progress"></param>
     /// <param name="ct"></param>
     /// <returns>
@@ -86,8 +121,7 @@ public static class GameTool
     /// </returns>
     public static async Task<Dictionary<string, int>> FindReferences(
         Directory gameFolder,
-        string str,
-        StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase,
+        Func<string, bool> match,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
     {
@@ -100,15 +134,17 @@ public static class GameTool
             {
                 continue;
             }
-            
+
             using var files = await arc.LoadAllFiles(progress, ct);
             foreach (var (name, file) in files)
             {
                 ImmutableArray<Op> ops;
-                if (file is Ws2File ws2) {
+                if (file is Ws2File ws2)
+                {
                     ops = ws2.Ops;
                 }
-                else if (file is WscFile wsc) {
+                else if (file is WscFile wsc)
+                {
                     ops = wsc.Ops;
                 }
                 else
@@ -120,11 +156,10 @@ public static class GameTool
                 {
                     foreach (var arg in op.Arguments)
                     {
-                        if ((arg.Value is string s && s.Equals(str, comparisonType)) ||
-                            (arg.Value is NameString n && n.String.Equals(str, comparisonType)) ||
-                            (arg.Value is MessageString m && m.String.Equals(str, comparisonType)) ||
-                            (arg.Value is ImmutableArray<WscChoice> cs && cs.Any(c => c.Text.Equals(str, comparisonType))) ||
-                            (arg.Value is ImmutableArray<Ws2Choice> ds && ds.Any(c => c.Text.Equals(str, comparisonType))))
+                        if ((arg.Value is string s && match(s)) ||
+                            (arg.Value is AffixedString t && match(t.String)) ||
+                            (arg.Value is ImmutableArray<WscChoice> cs && cs.Select(c => c.Text).Any(match)) ||
+                            (arg.Value is ImmutableArray<Ws2Choice> ds && ds.Select(c => c.Text).Any(match)))
                         {
                             refs[name] = refs.GetValueOrDefault(name, 0) + 1;
                         }
@@ -504,13 +539,13 @@ end
                 {
                     names.UnionWith(ws2.Ops
                         .Where(op => op.Code == Opcode.WS2_DISPLAY_NAME_15)
-                        .Select(op => op.Arguments[0].NameString.String));
+                        .Select(op => op.Arguments[0].AffixedString.String));
                 }
                 else if (child is WscFile wsc)
                 {
                     names.UnionWith(wsc.Ops
                         .Where(op => op.Code == Opcode.WSC_DISPLAY_TEXT_AND_NAME_42)
-                        .Select(op => op.Arguments[3].NameString.String));
+                        .Select(op => op.Arguments[3].AffixedString.String));
                 }
             }
         }
@@ -528,7 +563,7 @@ end
             throw new Exception("Cannot map names to empty strings.");
         }
 
-        foreach (var (rioArc, (arcName, children)) in Enumerable.Zip(rioArcs, arcChildren))
+        foreach (var (rioArc, (arcName, children)) in rioArcs.Zip(arcChildren))
         {
             using var streams = new DisposingDictionary<string, BinaryStream>();
             foreach (var (childName, child) in children)
@@ -540,12 +575,12 @@ end
                     {
                         if (op.Code == Opcode.WS2_DISPLAY_NAME_15)
                         {
-                            var oldNameString = op.Arguments[0].NameString;
+                            var oldNameString = op.Arguments[0].AffixedString;
                             var oldName = oldNameString.String;
                             var newName = nameMapping.GetValueOrDefault(oldName, oldName);
                             var newOp = op.WithArgument(
                                 0,
-                                Argument.NewNameString(oldNameString.WithString(newName)));
+                                Argument.NewAffixedString(oldNameString.WithString(newName)));
                             newOps.Add(newOp);
                         }
                         else
@@ -562,12 +597,12 @@ end
                     {
                         if (op.Code == Opcode.WSC_DISPLAY_TEXT_AND_NAME_42)
                         {
-                            var oldNameString = op.Arguments[3].NameString;
+                            var oldNameString = op.Arguments[3].AffixedString;
                             var oldName = oldNameString.String;
                             var newName = nameMapping.GetValueOrDefault(oldName, oldName);
                             var newOp = op.WithArgument(
                                 3,
-                                Argument.NewNameString(oldNameString.WithString(newName)));
+                                Argument.NewAffixedString(oldNameString.WithString(newName)));
                             newOps.Add(newOp);
                         }
                         else

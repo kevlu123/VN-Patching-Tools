@@ -217,10 +217,8 @@ public static class ScriptCompiler
                 return Argument.NewFloat32(reader.ReadFloat32());
             case 's':
                 return Argument.NewString(reader.ReadSjisString());
-            case 'n':
-                return Argument.NewNameString(new(reader.ReadSjisString()));
-            case 'm':
-                return Argument.NewMessageString(new(reader.ReadSjisString()));
+            case 't':
+                return Argument.NewAffixedString(new(reader.ReadSjisString()));
             case 'H':
                 {
                     var len = reader.ReadUInt8();
@@ -436,10 +434,7 @@ public static class ScriptCompiler
             case string s:
                 writer.WriteSjisString(s);
                 break;
-            case NameString s:
-                writer.WriteSjisString(s.FullString);
-                break;
-            case MessageString s:
+            case AffixedString s:
                 writer.WriteSjisString(s.FullString);
                 break;
             case ImmutableArray<string> arr:

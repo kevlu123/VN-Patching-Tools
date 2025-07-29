@@ -1196,7 +1196,7 @@ partial class MainWindow : Form
                 using var dialog = new FindReferencesWindow();
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    return (dialog.SearchText, dialog.CaseSensitive);
+                    return (dialog.SearchText, dialog.CaseSensitive, dialog.MatchWholeString);
                 }
                 return null;
             },

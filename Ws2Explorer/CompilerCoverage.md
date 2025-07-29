@@ -16,7 +16,7 @@ dotnet run -c Release -- ws2/miazora_jp.arc/yozora_saya_106d.ws2
 
 ## WS2
 
-Sucessfully decompiled 3028/3033 WS2 scripts.
+Successfully decompiled 3028/3033 WS2 scripts.
 
 | Title                                       | VNDB                     | Status   |
 |---------------------------------------------|--------------------------|----------|
@@ -40,10 +40,10 @@ Sucessfully decompiled 3028/3033 WS2 scripts.
 
 ## WSC
 
-Sucessfully decompiled 453/730 WS2 scripts.
+Successfully decompiled 453/730 WSC scripts.
 
-| Title                                         | VNDB                    | Status   |
-|-----------------------------------------------|-------------------------|----------|
-| Otome ga Tsumugu Koi no Canvas (JP)           | https://vndb.org/r44726 | Pass     |
+| Title                                       | VNDB                    | Status   |
+|---------------------------------------------|-------------------------|----------|
+| Otome ga Tsumugu Koi no Canvas (JP)         | https://vndb.org/r44726 | Pass     |
 | Re:Birthday Song Koi o Utau Shinigami (JP)  | https://vndb.org/r33515 | **Fail** |
 | Tokoya no Oba-chan Oka no Ue no Barber (JP) | https://vndb.org/r71191 | Pass     |

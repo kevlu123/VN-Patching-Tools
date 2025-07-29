@@ -36,10 +36,10 @@ public readonly struct RelativeLabel(int relativeAddress, int computedAbsAddress
 }
 
 /// <summary>
-/// A string used by the engine for names.
-/// The string may contain a special prefix.
+/// A string used by the engine for names and messages.
+/// The string may contain a special prefix or suffix.
 /// </summary>
-public readonly struct NameString
+public readonly struct AffixedString
 {
     /// <summary>
     /// The full string, including the prefix.
@@ -52,49 +52,67 @@ public readonly struct NameString
     public string Prefix => FullString[..GetPrefixLength()];
 
     /// <summary>
-    /// The string without the prefix.
+    /// The string without the prefix or suffix.
     /// </summary>
-    public string String => FullString[GetPrefixLength()..];
+    public string String => FullString[GetPrefixLength()..^GetSuffixLength()];
 
     /// <summary>
-    /// Creates a new NameString with the given full string.
+    /// The suffix of the string.
+    /// </summary>
+    public string Suffix => FullString[^GetSuffixLength()..];
+
+    /// <summary>
+    /// Creates a new AffixedString with the given
+    /// full string including prefix and suffix.
     /// </summary>
     /// <param name="fullString"></param>
-    public NameString(string fullString)
+    public AffixedString(string fullString)
     {
         FullString = fullString;
     }
 
     /// <summary>
-    /// Creates a new NameString with the given prefix and string.
+    /// Creates a new AffixedString with the given prefix, string, and suffix.
     /// </summary>
     /// <param name="prefix"></param>
     /// <param name="str"></param>
-    public NameString(string prefix, string str)
+    /// <param name="suffix"></param>
+    public AffixedString(string prefix, string str, string suffix)
     {
-        FullString = prefix + str;
+        FullString = prefix + str + suffix;
     }
 
     /// <summary>
-    /// Creates a new NameString from this NameString
-    /// with a different prefix, but the same string.
+    /// Creates a new AffixedString from this AffixedString
+    /// with a different prefix, but the same string and suffix.
     /// </summary>
     /// <param name="prefix"></param>
     /// <returns></returns>
-    public NameString WithPrefix(string prefix)
+    public AffixedString WithPrefix(string prefix)
     {
-        return new NameString(prefix, String);
+        return new AffixedString(prefix, String, Suffix);
     }
 
     /// <summary>
-    /// Creates a new NameString from this NameString
-    /// with a different string, but the same prefix.
+    /// Creates a new AffixedString from this AffixedString
+    /// with a different string, but the same prefix and suffix.
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
-    public NameString WithString(string str)
+    public AffixedString WithString(string str)
     {
-        return new NameString(Prefix, str);
+        return new AffixedString(Prefix, str, Suffix);
+    }
+
+    /// <summary>
+    /// Creates a new AffixedString from this AffixedString
+    /// with a different suffix, but the same prefix and string.
+    /// </summary>
+    /// <param name="suffix"></param>
+    /// <returns></returns>
+    public AffixedString WithSuffix(string suffix)
+    {
+        return new AffixedString(Prefix, String, suffix);
     }
 
     private int GetPrefixLength()
@@ -105,85 +123,6 @@ public readonly struct NameString
             i += 3;
         }
         return i;
-    }
-
-    internal JsonNode ToJson()
-    {
-        return new JsonArray
-        {
-            Prefix,
-            String
-        };
-    }
-
-    internal static NameString FromJson(JsonNode array)
-    {
-        return new NameString(
-            array[0]!.GetValue<string>(),
-            array[1]!.GetValue<string>());
-    }
-}
-
-/// <summary>
-/// A string used by the engine for messages.
-/// The string may contain a special suffix.
-/// </summary>
-public readonly struct MessageString
-{
-    /// <summary>
-    /// The full string, including the suffix.
-    /// </summary>
-    public string FullString { get; }
-
-    /// <summary>
-    /// The string without the suffix.
-    /// </summary>
-    public string String => FullString[..^GetSuffixLength()];
-
-    /// <summary>
-    /// The suffix of the string.
-    /// </summary>
-    public string Suffix => FullString[^GetSuffixLength()..];
-
-    /// <summary>
-    /// Creates a new MessageString with the given full string.
-    /// </summary>
-    /// <param name="fullString"></param>
-    public MessageString(string fullString)
-    {
-        FullString = fullString;
-    }
-
-    /// <summary>
-    /// Creates a new MessageString with the given string and suffix.
-    /// </summary>
-    /// <param name="str"></param>
-    /// <param name="suffix"></param>
-    public MessageString(string str, string suffix)
-    {
-        FullString = str + suffix;
-    }
-
-    /// <summary>
-    /// Creates a new MessageString from this MessageString
-    /// with a different string, but the same suffix.
-    /// </summary>
-    /// <param name="str"></param>
-    /// <returns></returns>
-    public MessageString WithString(string str)
-    {
-        return new MessageString(str, Suffix);
-    }
-
-    /// <summary>
-    /// Creates a new MessageString from this MessageString
-    /// with a different suffix, but the same string.
-    /// </summary>
-    /// <param name="suffix"></param>
-    /// <returns></returns>
-    public MessageString WithSuffix(string suffix)
-    {
-        return new MessageString(String, suffix);
     }
 
     private int GetSuffixLength()
@@ -200,16 +139,18 @@ public readonly struct MessageString
     {
         return new JsonArray
         {
+            Prefix,
             String,
             Suffix
         };
     }
 
-    internal static MessageString FromJson(JsonNode array)
+    internal static AffixedString FromJson(JsonNode array)
     {
-        return new MessageString(
+        return new AffixedString(
             array[0]!.GetValue<string>(),
-            array[1]!.GetValue<string>());
+            array[1]!.GetValue<string>(),
+            array[2]!.GetValue<string>());
     }
 }
 
@@ -409,14 +350,9 @@ public readonly struct Argument
     public string String { get => (string)Value; }
 
     /// <summary>
-    /// The NameString value.
+    /// The AffixedString value.
     /// </summary>
-    public NameString NameString { get => (NameString)Value; }
-
-    /// <summary>
-    /// The MessageString value.
-    /// </summary>
-    public MessageString MessageString { get => (MessageString)Value; }
+    public AffixedString AffixedString { get => (AffixedString)Value; }
 
     /// <summary>
     /// The uint16 array value.
@@ -450,8 +386,7 @@ public readonly struct Argument
         uint => 4,
         float => 4,
         string => 1 + SjisEncoding.Encoding.GetByteCount(String),
-        NameString v => 1 + SjisEncoding.Encoding.GetByteCount(v.FullString),
-        MessageString v => 1 + SjisEncoding.Encoding.GetByteCount(v.FullString),
+        AffixedString v => 1 + SjisEncoding.Encoding.GetByteCount(v.FullString),
         ImmutableArray<ushort> v => 1 + (v.Length * 2),
         ImmutableArray<string> v => 1 + v.Sum(s => 1 + SjisEncoding.Encoding.GetByteCount(s)),
         ImmutableArray<Ws2Choice> v => 1 + v.Sum(c => 6 + SjisEncoding.Encoding.GetByteCount(c.Text) + c.JumpOp.Size),
@@ -509,18 +444,11 @@ public readonly struct Argument
     public static Argument NewString(string v) => new() { Value = v };
 
     /// <summary>
-    /// Creates a NameString argument.
+    /// Creates an AffixedString argument.
     /// </summary>
     /// <param name="v"></param>
     /// <returns></returns>
-    public static Argument NewNameString(NameString v) => new() { Value = v };
-
-    /// <summary>
-    /// Creates a MessageString argument.
-    /// </summary>
-    /// <param name="v"></param>
-    /// <returns></returns>
-    public static Argument NewMessageString(MessageString v) => new() { Value = v };
+    public static Argument NewAffixedString(AffixedString v) => new() { Value = v };
 
     /// <summary>
     /// Creates a uint16 array argument.
@@ -561,8 +489,7 @@ public readonly struct Argument
             uint v => v,
             float v => v,
             string v => v,
-            NameString v => v.ToJson(),
-            MessageString v => v.ToJson(),
+            AffixedString v => v.ToJson(),
             ImmutableArray<ushort> v => new JsonArray(v.Select(x => JsonValue.Create(x)).ToArray()),
             ImmutableArray<string> v => new JsonArray(v.Select(x => JsonValue.Create(x)).ToArray()),
             ImmutableArray<Ws2Choice> v => new JsonArray(v.Select(x => x.ToJson(version)).ToArray()),
@@ -582,8 +509,7 @@ public readonly struct Argument
             'i' => NewUInt32(node.GetValue<uint>()),
             'f' => NewFloat32(node.GetValue<float>()),
             's' => NewString(node.GetValue<string>()),
-            'n' => NewNameString(NameString.FromJson(node)),
-            'm' => NewMessageString(MessageString.FromJson(node)),
+            't' => NewAffixedString(AffixedString.FromJson(node)),
             'H' => NewUInt16Array(node.AsArray().Select(x => x!.GetValue<ushort>())),
             'S' => NewStringArray(node.AsArray().Select(x => x!.GetValue<string>())),
             'C' => NewWs2ChoiceArray(node.AsArray().Select(x => Ws2Choice.FromJson(x!, version))),

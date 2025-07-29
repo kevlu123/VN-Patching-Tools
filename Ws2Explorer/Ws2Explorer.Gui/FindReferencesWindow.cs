@@ -4,9 +4,11 @@ partial class FindReferencesWindow : Form
 {
     private static string lastSearchText = string.Empty;
     private static bool lastCaseSensitive;
+    private static bool lastMatchWholeString;
 
     public string SearchText { get; private set; } = string.Empty;
     public bool CaseSensitive { get; private set; }
+    public bool MatchWholeString { get; private set; }
 
     public FindReferencesWindow()
     {
@@ -14,6 +16,7 @@ partial class FindReferencesWindow : Form
 
         searchText_TextBox.Text = lastSearchText;
         caseSensitive_CheckBox.Checked = lastCaseSensitive;
+        matchWholeString_CheckBox.Checked = lastMatchWholeString;
     }
 
     private void Find_ButtonClicked(object sender, EventArgs e)
@@ -30,6 +33,8 @@ partial class FindReferencesWindow : Form
         }
 
         SearchText = text;
+        CaseSensitive = caseSensitive_CheckBox.Checked;
+        MatchWholeString = matchWholeString_CheckBox.Checked;
         SaveSettings();
         DialogResult = DialogResult.OK;
     }
@@ -61,5 +66,6 @@ partial class FindReferencesWindow : Form
     {
         lastSearchText = searchText_TextBox.Text;
         lastCaseSensitive = caseSensitive_CheckBox.Checked;
+        lastMatchWholeString = matchWholeString_CheckBox.Checked;
     }
 }

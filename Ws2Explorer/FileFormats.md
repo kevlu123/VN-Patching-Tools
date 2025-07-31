@@ -6,8 +6,9 @@ All types are little endian and all strings are null terminated in their respect
 - [ARC](#arc-archive-file)
 - [ARC (Legacy)](#arc-archive-file-legacy)
 - [PNA](#pna-png-array-file)
-- [WS2](#ws2-script-file)
+- [WS2/WSC](#ws2wsc-script-file)
 - [Pan.dat](#pandat-audio-panning-data)
+- [LNG](#lng-language-pack)
 - [PTF](#ptf-compressed-ttfotf-font)
 
 ## (ARC) Archive File
@@ -156,6 +157,16 @@ Each argument can be a
 | int8        | ?        |
 | sjis str    | Filename |
 
+## LNG (Language Pack)
+
+| Type                 | Field         | Description |
+|----------------------|---------------|-------------|
+| int32                | StringCount   | The number of strings. |
+| int16[N]             | StringLengths | The lengths of the strings in bytes including the null terminator. |
+| utf16 str[N] | Strings       | The strings. |
+
+The Strings field is XORed with an externally provided value. This value can be easily inferred because after XORing, the last byte in file will always be 00. This is the same value used for PTF files for the same game.
+
 ## (PTF) Compressed TTF/OTF Font
 
 | Type     | Field           |
@@ -183,7 +194,7 @@ track of the output history.
 
 After all output has been written, the output is XORed with an
 externally provided value. This value can be easily inferred
-by looking at the first few bytes of the output.
+because after XORing, the first 4 bytes should either be 00 01 00 00 or ASCII "OTTO". This is the same value used for LNG files for the same game.
 
 Format bits is an array of 8 bits corresponding to the mode
 of 8 'blocks' of data that follow. This bit array is read

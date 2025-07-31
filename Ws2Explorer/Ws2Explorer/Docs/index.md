@@ -46,13 +46,11 @@
 
 ## Ws2Explorer.Compiler
 
+[AffixedString](./ws2explorer.compiler.affixedstring.md)
+
 [Argument](./ws2explorer.compiler.argument.md)
 
 [Label](./ws2explorer.compiler.label.md)
-
-[MessageString](./ws2explorer.compiler.messagestring.md)
-
-[NameString](./ws2explorer.compiler.namestring.md)
 
 [Op](./ws2explorer.compiler.op.md)
 
@@ -93,6 +91,8 @@
 [LegacyArcGroupHeader](./ws2explorer.filetypes.legacyarcgroupheader.md)
 
 [LegacyArcSubHeader](./ws2explorer.filetypes.legacyarcsubheader.md)
+
+[LngFile](./ws2explorer.filetypes.lngfile.md)
 
 [LuacFile](./ws2explorer.filetypes.luacfile.md)
 

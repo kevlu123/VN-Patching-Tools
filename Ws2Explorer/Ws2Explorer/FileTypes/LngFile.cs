@@ -66,13 +66,19 @@ public sealed class LngFile : IArchive<LngFile>
             }
             strings.Add(new(Encoding.Unicode.GetString(buffer, 0, len - 2)));
         }
+        if (reader.Position != stream.Length)
+        {
+            throw new InvalidDataException("Trailing data in LNG file.");
+        }
 
         jsonStrings = FormatJsonStrings(strings);
 
         Stream = stream;
         stream.Freeze();
         stream.IncRef();
-        confidence = DecodeConfidence.High;
+        confidence = count > 0
+            ? DecodeConfidence.High
+            : DecodeConfidence.Low;
     }
 
     private LngFile(IDictionary<string, BinaryStream> contents)

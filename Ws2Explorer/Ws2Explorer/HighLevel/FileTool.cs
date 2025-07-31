@@ -620,7 +620,6 @@ public static class FileTool
 
     /// <summary>
     /// Compares the subfiles in two archives.
-    /// If a subfile appears twice in the same set, the result is unspecified.
     /// </summary>
     /// <param name="oldArchive"></param>
     /// <param name="newArchive"></param>

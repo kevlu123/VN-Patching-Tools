@@ -70,6 +70,26 @@ public FontType FontType { get; }
 
 [FontType](./ws2explorer.filetypes.fonttype.md)<br>
 
+## Constructors
+
+### **PtfFile(BinaryStream, Byte)**
+
+Creates a PTF file from a binary stream and an XOR key.
+
+```csharp
+public PtfFile(BinaryStream data, byte xorKey)
+```
+
+#### Parameters
+
+`data` [BinaryStream](./ws2explorer.binarystream.md)<br>
+
+`xorKey` [Byte](https://docs.microsoft.com/en-us/dotnet/api/system.byte)<br>
+
+#### Exceptions
+
+[ArchiveCreationException](./ws2explorer.archivecreationexception.md)<br>
+
 ## Methods
 
 ### **Decode(BinaryStream, DecodeConfidence&)**
@@ -157,6 +177,24 @@ public static Nullable<FontType> GetFontType(ReadOnlySpan<byte> data)
 #### Returns
 
 [Nullable&lt;FontType&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1)<br>
+
+### **InferXorKey(ReadOnlySpan&lt;Byte&gt;, FontType&)**
+
+Infers the XOR key from the PTF file data.
+
+```csharp
+public static Nullable<byte> InferXorKey(ReadOnlySpan<byte> data, FontType& fontType)
+```
+
+#### Parameters
+
+`data` [ReadOnlySpan&lt;Byte&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.readonlyspan-1)<br>
+
+`fontType` [FontType&](./ws2explorer.filetypes.fonttype&.md)<br>
+
+#### Returns
+
+[Nullable&lt;Byte&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1)<br>
 
 ### **Decompress(BinaryStream, Byte&, FontType&)**
 

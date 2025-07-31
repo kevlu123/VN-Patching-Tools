@@ -411,7 +411,7 @@ end
     }
 
     /// <summary>
-    /// Gets the flow of the WS2/WSC scripts in an <see cref="ArcFile"/>/<see cref="LegacyArc8File"/>/<see cref="LegacyArc12File"/>.
+    /// Gets the flow of the WS2/WSC scripts.
     /// Not necessarily all the paths will be reachable and
     /// sometimes the scripts will reference non-existent scripts.
     /// </summary>

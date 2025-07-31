@@ -31,6 +31,7 @@ and perform common operations to modify the game.
 | .dat    | Video                           |
 | .ogg    | Audio                           |
 | .lua    | Compiled Lua                    |
+| .lng    | Language pack                   |
 | .ptf    | Compressed font                 |
 | .otf    | Open type font                  |
 | .ttf    | True type font                  |

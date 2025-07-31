@@ -17,7 +17,8 @@ Attributes [NullableContextAttribute](https://docs.microsoft.com/en-us/dotnet/ap
 
 Finds the game folder given a hierarchy which is
  descended from the game folder.
- The game folder is found by looking for a file named "AdvHD.exe".
+ The game folder is found by looking for a file ending in ".exe"
+ and another file ending in ".arc".
  The game folder must be a real directory.
 
 ```csharp
@@ -33,14 +34,14 @@ public static Directory FindGameFolder(IList<NamedFolder> hierarchy)
 [Directory](./ws2explorer.filetypes.directory.md)<br>
 The game folder or null if it is not found.
 
-### **FindReferences(Directory, String, StringComparison, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
+### **FindReferences(Directory, String, StringComparison, Boolean, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
 
 Finds all references to a string in the game's WS2/WSC scripts
  Only string arguments of instructions are searched.
  Only archives containing "rio" and ending with ".arc" are considered.
 
 ```csharp
-public static Task<Dictionary<string, int>> FindReferences(Directory gameFolder, string str, StringComparison comparisonType, IProgress<TaskProgressInfo> progress, CancellationToken ct)
+public static Task<Dictionary<string, int>> FindReferences(Directory gameFolder, string str, StringComparison comparisonType, bool matchWholeString, IProgress<TaskProgressInfo> progress, CancellationToken ct)
 ```
 
 #### Parameters
@@ -50,6 +51,34 @@ public static Task<Dictionary<string, int>> FindReferences(Directory gameFolder,
 `str` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
 `comparisonType` [StringComparison](https://docs.microsoft.com/en-us/dotnet/api/system.stringcomparison)<br>
+
+`matchWholeString` [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+
+`progress` [IProgress&lt;TaskProgressInfo&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.iprogress-1)<br>
+
+`ct` [CancellationToken](https://docs.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken)<br>
+
+#### Returns
+
+[Task&lt;Dictionary&lt;String, Int32&gt;&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1)<br>
+The script filenames that contain the string and
+ the number of occurrences in that script.
+
+### **FindReferences(Directory, Func&lt;String, Boolean&gt;, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
+
+Finds all references to a string in the game's WS2/WSC scripts
+ Only string arguments of instructions are searched.
+ Only archives containing "rio" and ending with ".arc" are considered.
+
+```csharp
+public static Task<Dictionary<string, int>> FindReferences(Directory gameFolder, Func<string, bool> match, IProgress<TaskProgressInfo> progress, CancellationToken ct)
+```
+
+#### Parameters
+
+`gameFolder` [Directory](./ws2explorer.filetypes.directory.md)<br>
+
+`match` [Func&lt;String, Boolean&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.func-2)<br>
 
 `progress` [IProgress&lt;TaskProgressInfo&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.iprogress-1)<br>
 

@@ -109,29 +109,17 @@ public string String { get; }
 
 [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
-### **NameString**
+### **AffixedString**
 
-The NameString value.
+The AffixedString value.
 
 ```csharp
-public NameString NameString { get; }
+public AffixedString AffixedString { get; }
 ```
 
 #### Property Value
 
-[NameString](./ws2explorer.compiler.namestring.md)<br>
-
-### **MessageString**
-
-The MessageString value.
-
-```csharp
-public MessageString MessageString { get; }
-```
-
-#### Property Value
-
-[MessageString](./ws2explorer.compiler.messagestring.md)<br>
+[AffixedString](./ws2explorer.compiler.affixedstring.md)<br>
 
 ### **UInt16Array**
 
@@ -307,33 +295,17 @@ Argument NewString(string v)
 
 [Argument](./ws2explorer.compiler.argument.md)<br>
 
-### **NewNameString(NameString)**
+### **NewAffixedString(AffixedString)**
 
-Creates a NameString argument.
+Creates an AffixedString argument.
 
 ```csharp
-Argument NewNameString(NameString v)
+Argument NewAffixedString(AffixedString v)
 ```
 
 #### Parameters
 
-`v` [NameString](./ws2explorer.compiler.namestring.md)<br>
-
-#### Returns
-
-[Argument](./ws2explorer.compiler.argument.md)<br>
-
-### **NewMessageString(MessageString)**
-
-Creates a MessageString argument.
-
-```csharp
-Argument NewMessageString(MessageString v)
-```
-
-#### Parameters
-
-`v` [MessageString](./ws2explorer.compiler.messagestring.md)<br>
+`v` [AffixedString](./ws2explorer.compiler.affixedstring.md)<br>
 
 #### Returns
 

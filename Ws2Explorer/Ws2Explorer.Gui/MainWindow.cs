@@ -500,6 +500,11 @@ partial class MainWindow : Form
         });
     }
 
+    private void EditScriptInApp_MenuItemClicked(object sender, EventArgs e)
+    {
+        state.EditScriptTextInApp(config.TextEditorPath, config.TextEditorArgs);
+    }
+
     private void EditAsText_MenuItemClicked(object sender, EventArgs e)
     {
         state.EditSelectedFileInApp(_ =>

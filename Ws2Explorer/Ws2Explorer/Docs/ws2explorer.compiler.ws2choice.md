@@ -85,3 +85,37 @@ public Op JumpOp { get; set; }
 #### Property Value
 
 [Op](./ws2explorer.compiler.op.md)<br>
+
+## Methods
+
+### **WithText(String)**
+
+Create a new Ws2Choice from this Ws2Choice but with different text.
+
+```csharp
+Ws2Choice WithText(string text)
+```
+
+#### Parameters
+
+`text` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+#### Returns
+
+[Ws2Choice](./ws2explorer.compiler.ws2choice.md)<br>
+
+### **WithJumpOp(Op)**
+
+Create a new Ws2Choice from this Ws2Choice but with a different jump op.
+
+```csharp
+Ws2Choice WithJumpOp(Op jumpOp)
+```
+
+#### Parameters
+
+`jumpOp` [Op](./ws2explorer.compiler.op.md)<br>
+
+#### Returns
+
+[Ws2Choice](./ws2explorer.compiler.ws2choice.md)<br>

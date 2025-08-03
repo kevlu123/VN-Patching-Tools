@@ -383,7 +383,6 @@ The paths of the extracted files relative to the source folder.
 ### **Diff(IFolder, IFolder, DiffPartitionMode, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
 
 Compares the subfiles in two archives.
- If a subfile appears twice in the same set, the result is unspecified.
 
 ```csharp
 public static Task<DisposingDictionary<string, BinaryStream>> Diff(IFolder oldArchive, IFolder newArchive, DiffPartitionMode partitionMode, IProgress<TaskProgressInfo> progress, CancellationToken ct)

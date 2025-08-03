@@ -124,6 +124,7 @@
             mermaidFlowchart_MenuItem = new ToolStripMenuItem();
             jsonFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
+            editScript_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -536,7 +537,7 @@
             // 
             // edit_MenuItem
             // 
-            edit_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { editInApp_MenuItem, editAs_MenuItem, toolStripSeparator4, rename_MenuItem, delete_MenuItem, duplicate_MenuItem, toolStripSeparator5, copy_MenuItem, paste_MenuItem, toolStripSeparator6, changePath_MenuItem, toolStripSeparator13, editPna_MenuItem });
+            edit_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { editInApp_MenuItem, editAs_MenuItem, editScript_MenuItem, toolStripSeparator4, rename_MenuItem, delete_MenuItem, duplicate_MenuItem, toolStripSeparator5, copy_MenuItem, paste_MenuItem, toolStripSeparator6, changePath_MenuItem, toolStripSeparator13, editPna_MenuItem });
             edit_MenuItem.Name = "edit_MenuItem";
             edit_MenuItem.Size = new Size(39, 20);
             edit_MenuItem.Text = "Edit";
@@ -545,7 +546,7 @@
             // 
             editInApp_MenuItem.Name = "editInApp_MenuItem";
             editInApp_MenuItem.ShortcutKeys = Keys.Control | Keys.E;
-            editInApp_MenuItem.Size = new Size(220, 22);
+            editInApp_MenuItem.Size = new Size(246, 22);
             editInApp_MenuItem.Text = "Edit in Application...";
             editInApp_MenuItem.Click += EditInApp_MenuItemClicked;
             // 
@@ -553,7 +554,7 @@
             // 
             editAs_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { editAsText_MenuItem, editAsImage_MenuItem, editAsHex_MenuItem });
             editAs_MenuItem.Name = "editAs_MenuItem";
-            editAs_MenuItem.Size = new Size(220, 22);
+            editAs_MenuItem.Size = new Size(246, 22);
             editAs_MenuItem.Text = "Edit As";
             // 
             // editAsText_MenuItem
@@ -583,13 +584,13 @@
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new Size(217, 6);
+            toolStripSeparator4.Size = new Size(243, 6);
             // 
             // rename_MenuItem
             // 
             rename_MenuItem.Name = "rename_MenuItem";
             rename_MenuItem.ShortcutKeys = Keys.F2;
-            rename_MenuItem.Size = new Size(220, 22);
+            rename_MenuItem.Size = new Size(246, 22);
             rename_MenuItem.Text = "Rename...";
             rename_MenuItem.Click += Rename_MenuItemClicked;
             // 
@@ -597,7 +598,7 @@
             // 
             delete_MenuItem.Name = "delete_MenuItem";
             delete_MenuItem.ShortcutKeyDisplayString = "Delete";
-            delete_MenuItem.Size = new Size(220, 22);
+            delete_MenuItem.Size = new Size(246, 22);
             delete_MenuItem.Text = "Delete";
             delete_MenuItem.Click += Delete_MenuItemClicked;
             // 
@@ -605,20 +606,20 @@
             // 
             duplicate_MenuItem.Name = "duplicate_MenuItem";
             duplicate_MenuItem.ShortcutKeys = Keys.Control | Keys.D;
-            duplicate_MenuItem.Size = new Size(220, 22);
+            duplicate_MenuItem.Size = new Size(246, 22);
             duplicate_MenuItem.Text = "Duplicate";
             duplicate_MenuItem.Click += Duplicate_MenuItemClicked;
             // 
             // toolStripSeparator5
             // 
             toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new Size(217, 6);
+            toolStripSeparator5.Size = new Size(243, 6);
             // 
             // copy_MenuItem
             // 
             copy_MenuItem.Name = "copy_MenuItem";
             copy_MenuItem.ShortcutKeyDisplayString = "Ctrl+C";
-            copy_MenuItem.Size = new Size(220, 22);
+            copy_MenuItem.Size = new Size(246, 22);
             copy_MenuItem.Text = "Copy";
             copy_MenuItem.Click += Copy_MenuItemClicked;
             // 
@@ -626,33 +627,33 @@
             // 
             paste_MenuItem.Name = "paste_MenuItem";
             paste_MenuItem.ShortcutKeyDisplayString = "Ctrl+V";
-            paste_MenuItem.Size = new Size(220, 22);
+            paste_MenuItem.Size = new Size(246, 22);
             paste_MenuItem.Text = "Paste";
             paste_MenuItem.Click += Paste_MenuItemClicked;
             // 
             // toolStripSeparator6
             // 
             toolStripSeparator6.Name = "toolStripSeparator6";
-            toolStripSeparator6.Size = new Size(217, 6);
+            toolStripSeparator6.Size = new Size(243, 6);
             // 
             // changePath_MenuItem
             // 
             changePath_MenuItem.Name = "changePath_MenuItem";
             changePath_MenuItem.ShortcutKeys = Keys.Control | Keys.Q;
-            changePath_MenuItem.Size = new Size(220, 22);
+            changePath_MenuItem.Size = new Size(246, 22);
             changePath_MenuItem.Text = "Change Path";
             changePath_MenuItem.Click += ChangePath_MenuItemClicked;
             // 
             // toolStripSeparator13
             // 
             toolStripSeparator13.Name = "toolStripSeparator13";
-            toolStripSeparator13.Size = new Size(217, 6);
+            toolStripSeparator13.Size = new Size(243, 6);
             // 
             // editPna_MenuItem
             // 
             editPna_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { pnaAddEntry_MenuItem, swap_MenuItem });
             editPna_MenuItem.Name = "editPna_MenuItem";
-            editPna_MenuItem.Size = new Size(220, 22);
+            editPna_MenuItem.Size = new Size(246, 22);
             editPna_MenuItem.Text = "PNA";
             // 
             // pnaAddEntry_MenuItem
@@ -860,6 +861,14 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
+            // editScript_MenuItem
+            // 
+            editScript_MenuItem.Name = "editScript_MenuItem";
+            editScript_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.E;
+            editScript_MenuItem.Size = new Size(246, 22);
+            editScript_MenuItem.Text = "Edit WS2/WSC Text";
+            editScript_MenuItem.Click += EditScriptInApp_MenuItemClicked;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -985,5 +994,6 @@
         private ToolStripMenuItem openAsWsc_MenuItem;
         private ToolStripMenuItem createLng_MenuItem;
         private ToolStripMenuItem openAsLng_MenuItem;
+        private ToolStripMenuItem editScript_MenuItem;
     }
 }

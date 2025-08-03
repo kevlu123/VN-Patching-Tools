@@ -5,32 +5,12 @@ Namespace: Ws2Explorer.FileTypes
 A WSC script file.
 
 ```csharp
-public sealed class WscFile : Ws2Explorer.IArchive`1[[Ws2Explorer.FileTypes.WscFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], Ws2Explorer.IArchive, Ws2Explorer.IFile, System.IDisposable, Ws2Explorer.IFolder, Ws2Explorer.IFile`1[[Ws2Explorer.FileTypes.WscFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+public sealed class WscFile : ScriptFile, Ws2Explorer.IArchive, Ws2Explorer.IFile, System.IDisposable, Ws2Explorer.IFolder, Ws2Explorer.IArchive`1[[Ws2Explorer.FileTypes.WscFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], Ws2Explorer.IFile`1[[Ws2Explorer.FileTypes.WscFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
 ```
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [WscFile](./ws2explorer.filetypes.wscfile.md)<br>
-Implements [IArchive&lt;WscFile&gt;](./ws2explorer.iarchive-1.md), [IArchive](./ws2explorer.iarchive.md), [IFile](./ws2explorer.ifile.md), [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable), [IFolder](./ws2explorer.ifolder.md), [IFile&lt;WscFile&gt;](./ws2explorer.ifile-1.md)<br>
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ScriptFile](./ws2explorer.filetypes.scriptfile.md) → [WscFile](./ws2explorer.filetypes.wscfile.md)<br>
+Implements [IArchive](./ws2explorer.iarchive.md), [IFile](./ws2explorer.ifile.md), [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable), [IFolder](./ws2explorer.ifolder.md), [IArchive&lt;WscFile&gt;](./ws2explorer.iarchive-1.md), [IFile&lt;WscFile&gt;](./ws2explorer.ifile-1.md)<br>
 Attributes [NullableContextAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullablecontextattribute), [NullableAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullableattribute)
-
-## Fields
-
-### **SUMMARY_FILENAME**
-
-The filename of the summary file.
- The summary file contains a human-readable summary of the script.
-
-```csharp
-public static string SUMMARY_FILENAME;
-```
-
-### **OPS_FILENAME**
-
-The filename of the ops file.
- The ops file contains the script instructions in JSON format.
-
-```csharp
-public static string OPS_FILENAME;
-```
 
 ## Properties
 
@@ -70,6 +50,18 @@ public bool HasUnresolvedLabels { get; }
 
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
+### **Text**
+
+Get the message and choice text.
+
+```csharp
+public ScriptText[] Text { get; }
+```
+
+#### Property Value
+
+[ScriptText[]](./ws2explorer.filetypes.scripttext.md)<br>
+
 ### **Version**
 
 The version of the script.
@@ -98,6 +90,22 @@ public WscFile(IEnumerable<Op> ops)
 
 ## Methods
 
+### **WithText(String[])**
+
+Create a new WSC file with the message and choice text replaced.
+
+```csharp
+public WscFile WithText(String[] text)
+```
+
+#### Parameters
+
+`text` [String[]](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+#### Returns
+
+[WscFile](./ws2explorer.filetypes.wscfile.md)<br>
+
 ### **Decode(BinaryStream, DecodeConfidence&)**
 
 Decodes a WSC file from a binary stream.
@@ -119,10 +127,12 @@ public static WscFile Decode(BinaryStream stream, DecodeConfidence& confidence)
 ### **Create(IDictionary&lt;String, BinaryStream&gt;)**
 
 Constructs a WSC file from subfiles.
- Only [WscFile.OPS_FILENAME](./ws2explorer.filetypes.wscfile.md#ops_filename) is required.
+ Only [ScriptFile.OPS_FILENAME](./ws2explorer.filetypes.scriptfile.md#ops_filename) is required.
+ If [ScriptFile.NEW_TEXT_FILENAME](./ws2explorer.filetypes.scriptfile.md#new_text_filename) is present,
+ that file is used to overwrite the message and choice text.
 
 ```csharp
-public static WscFile Create(IDictionary<string, BinaryStream> contents)
+public IArchive Create(IDictionary<string, BinaryStream> contents)
 ```
 
 #### Parameters
@@ -131,46 +141,4 @@ public static WscFile Create(IDictionary<string, BinaryStream> contents)
 
 #### Returns
 
-[WscFile](./ws2explorer.filetypes.wscfile.md)<br>
-
-### **ListFiles()**
-
-Lists the virtual subfiles.
-
-```csharp
-public List<FileInfo> ListFiles()
-```
-
-#### Returns
-
-[List&lt;FileInfo&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1)<br>
-
-### **OpenFile(String, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
-
-Opens a virtual subfile.
- The filename is case-insensitive and can be
- [WscFile.SUMMARY_FILENAME](./ws2explorer.filetypes.wscfile.md#summary_filename) or [WscFile.OPS_FILENAME](./ws2explorer.filetypes.wscfile.md#ops_filename).
-
-```csharp
-public Task<BinaryStream> OpenFile(string filename, IProgress<TaskProgressInfo> progress, CancellationToken ct)
-```
-
-#### Parameters
-
-`filename` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
-
-`progress` [IProgress&lt;TaskProgressInfo&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.iprogress-1)<br>
-
-`ct` [CancellationToken](https://docs.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken)<br>
-
-#### Returns
-
-[Task&lt;BinaryStream&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1)<br>
-
-### **Dispose()**
-
-Disposes the WSC file.
-
-```csharp
-public void Dispose()
-```
+[IArchive](./ws2explorer.iarchive.md)<br>

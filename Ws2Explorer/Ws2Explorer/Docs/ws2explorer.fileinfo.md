@@ -60,6 +60,20 @@ public bool IsDirectory { get; set; }
 
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
+### **IsReadOnly**
+
+Whether the file is read-only.
+ Typically, this is true for virtual files which only exist to present
+ information in some convenient form and not for editing.
+
+```csharp
+public bool IsReadOnly { get; set; }
+```
+
+#### Property Value
+
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+
 ## Constructors
 
 ### **FileInfo(FileInfo)**

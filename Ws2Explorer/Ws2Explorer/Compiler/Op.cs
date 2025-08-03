@@ -118,7 +118,7 @@ public readonly struct AffixedString
     private int GetPrefixLength()
     {
         int i = 0;
-        while (i + 3 < FullString.Length && FullString[i] == '%')
+        while (i + 3 <= FullString.Length && FullString[i] == '%')
         {
             i += 3;
         }
@@ -128,9 +128,19 @@ public readonly struct AffixedString
     private int GetSuffixLength()
     {
         int i = FullString.Length;
-        while (i > 2 && FullString[i - 2] == '%')
+        while (true)
         {
-            i -= 2;
+            if (i >= 2 && FullString[i - 2] == '%')
+            {
+                i -= 2;
+                continue;
+            }
+            else if (i >= 3 && FullString[i - 3] == '%')
+            {
+                i -= 3;
+                continue;
+            }
+            break;
         }
         return FullString.Length - i;
     }
@@ -201,6 +211,42 @@ public readonly struct Ws2Choice
         }
     }
     private readonly Op jumpOp;
+
+    /// <summary>
+    /// Create a new Ws2Choice from this Ws2Choice but with different text.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public Ws2Choice WithText(string text)
+    {
+        return new Ws2Choice
+        {
+            Id = Id,
+            Text = text,
+            Arg3 = Arg3,
+            Arg4 = Arg4,
+            Arg5 = Arg5,
+            JumpOp = JumpOp,
+        };
+    }
+
+    /// <summary>
+    /// Create a new Ws2Choice  from this Ws2Choice  but with a different jump op.
+    /// </summary>
+    /// <param name="jumpOp"></param>
+    /// <returns></returns>
+    public Ws2Choice WithJumpOp(Op jumpOp)
+    {
+        return new Ws2Choice
+        {
+            Id = Id,
+            Text = Text,
+            Arg3 = Arg3,
+            Arg4 = Arg4,
+            Arg5 = Arg5,
+            JumpOp = jumpOp,
+        };
+    }
 
     internal JsonNode ToJson(ScriptVersion version)
     {
@@ -276,6 +322,42 @@ public readonly struct WscChoice
         }
     }
     private readonly Op jumpOp;
+
+    /// <summary>
+    /// Create a new WscChoice from this WscChoice but with different text.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public WscChoice WithText(string text)
+    {
+        return new WscChoice
+        {
+            Id = Id,
+            Text = text,
+            Arg3 = Arg3,
+            Arg4 = Arg4,
+            Arg5 = Arg5,
+            JumpOp = JumpOp,
+        };
+    }
+
+    /// <summary>
+    /// Create a new WscChoice from this WscChoice but with a different jump op.
+    /// </summary>
+    /// <param name="jumpOp"></param>
+    /// <returns></returns>
+    public WscChoice WithJumpOp(Op jumpOp)
+    {
+        return new WscChoice
+        {
+            Id = Id,
+            Text = Text,
+            Arg3 = Arg3,
+            Arg4 = Arg4,
+            Arg5 = Arg5,
+            JumpOp = jumpOp,
+        };
+    }
 
     internal JsonNode ToJson(ScriptVersion version)
     {

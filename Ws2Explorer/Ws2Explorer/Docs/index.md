@@ -118,6 +118,10 @@
 
 [PtfFile](./ws2explorer.filetypes.ptffile.md)
 
+[ScriptFile](./ws2explorer.filetypes.scriptfile.md)
+
+[ScriptText](./ws2explorer.filetypes.scripttext.md)
+
 [TextFile](./ws2explorer.filetypes.textfile.md)
 
 [TtfFile](./ws2explorer.filetypes.ttffile.md)

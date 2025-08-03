@@ -12,6 +12,16 @@ Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) 
 Implements [IFile&lt;TtfFile&gt;](./ws2explorer.ifile-1.md), [IFile](./ws2explorer.ifile.md), [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable)<br>
 Attributes [NullableContextAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullablecontextattribute), [NullableAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullableattribute)
 
+## Fields
+
+### **SIGNATURE**
+
+TTF file signature as little-endian int.
+
+```csharp
+public static int SIGNATURE;
+```
+
 ## Properties
 
 ### **Stream**

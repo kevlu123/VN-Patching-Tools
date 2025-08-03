@@ -40,4 +40,20 @@ public class ArchiveCreationException : Exception
             throw new ArchiveCreationException("An error occurred while creating the archive.", ex);
         }
     }
+
+    internal static void Wrap(Action fn)
+    {
+        try
+        {
+            fn();
+        }
+        catch (ArchiveCreationException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new ArchiveCreationException("An error occurred while creating the archive.", ex);
+        }
+    }
 }

@@ -71,7 +71,7 @@ public sealed class TextFile : IFile<TextFile>
                 Stream = stream;
                 stream.Freeze();
                 stream.IncRef();
-                confidence = DecodeConfidence.Low;
+                confidence = encoding == Encoding.UTF8 ? DecodeConfidence.High : DecodeConfidence.Low;
                 return;
             }
             catch (DecoderFallbackException) { }

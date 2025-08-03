@@ -19,4 +19,11 @@ public record FileInfo
     /// Whether the file is a real directory.
     /// </summary>
     public bool IsDirectory { get; init; }
+
+    /// <summary>
+    /// Whether the file is read-only.
+    /// Typically, this is true for virtual files which only exist to present
+    /// information in some convenient form and not for editing.
+    /// </summary>
+    public bool IsReadOnly { get; init; }
 }

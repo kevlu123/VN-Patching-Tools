@@ -190,7 +190,7 @@ A map of where a script leads.
 
 ### **GetFlowchart(IArchive, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
 
-Gets the flow of the WS2/WSC scripts in an [ArcFile](./ws2explorer.filetypes.arcfile.md)/[LegacyArc8File](./ws2explorer.filetypes.legacyarc8file.md)/[LegacyArc12File](./ws2explorer.filetypes.legacyarc12file.md).
+Gets the flow of the WS2/WSC scripts.
  Not necessarily all the paths will be reachable and
  sometimes the scripts will reference non-existent scripts.
 

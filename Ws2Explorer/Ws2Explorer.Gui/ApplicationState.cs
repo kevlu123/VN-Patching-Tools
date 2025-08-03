@@ -107,7 +107,7 @@ class ApplicationState(string? openPath)
     {
         while (tempFiles.Count > 0)
         {
-            DeleteTempFile(tempFiles[0]);
+            DeleteTempFileInternal(tempFiles[0]);
         }
     }
 
@@ -160,7 +160,7 @@ class ApplicationState(string? openPath)
         {
             null => string.Empty,
             { File: null } => "DIRECTORY",
-            { File: IFile file } => GetFileShortDescriptionInternal(file),
+            { File: IFile file } => GetFileShortDescriptionInternal(file, selectedFile.Info),
         };
 
         if (ct.IsCancellationRequested)
@@ -613,6 +613,111 @@ class ApplicationState(string? openPath)
         });
     }
 
+    public void EditScriptTextInApp(string editor, string editorArgs)
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            ScriptFile script;
+            string scriptName;
+            bool insideScript;
+            if (folderStack[^1].Folder is ScriptFile scriptFile)
+            {
+                script = scriptFile;
+                scriptName = folderStack[^1].Name;
+                insideScript = true;
+            }
+            else if (selectedFileNonParent?.File == null)
+            {
+                throw new QuietError("Select one script file to edit.");
+            }
+            else if (selectedFileNonParent.File is ScriptFile scriptFile2)
+            {
+                script = scriptFile2;
+                scriptName = selectedFileNonParent.Info.Filename;
+                insideScript = false;
+            }
+            else
+            {
+                throw new QuietError("Select a script file to edit.");
+            }
+
+            if (editor.Trim().Length == 0)
+            {
+                throw new InvalidOperationException("No editor configured for this file type.");
+            }
+
+            var tempFilename = Path.Combine(
+                Path.GetTempPath(),
+                Random.Shared.Next().ToString("X8") + "_" +
+                scriptName + ".json");
+            using var oldStream = await script.OpenFile(ScriptFile.TEXT_FILENAME, progress, ct);
+            {
+                tempFiles.Add(tempFilename);
+                await using var tempFile = File.Create(tempFilename);
+                await oldStream.CopyTo(
+                    tempFile,
+                    tempFilename,
+                    progress,
+                    ct);
+            }
+
+            using Process proc = Process.Start(editor, $"{editorArgs} \"{tempFilename}\"");
+            await proc.WaitForExitAsync(ct);
+
+            using var newStream = await FileTool.ReadFile(tempFilename, progress, ct);
+            if (BinaryStream.StreamEquals(oldStream, newStream))
+            {
+                DeleteTempFileInternal(tempFilename);
+                OnStatus?.Invoke("No changes made.");
+                return;
+            }
+
+            try
+            {
+                var newScript = await FileTool.Insert(
+                    script,
+                    new Dictionary<string, BinaryStream> {
+                        { ScriptFile.NEW_TEXT_FILENAME, newStream },
+                    },
+                    OverwriteMode.Overwrite,
+                    progress,
+                    ct);
+                if (insideScript)
+                {
+                    folderStack[^1] = folderStack[^1] with
+                    {
+                        Folder = newScript,
+                    };
+                    await FileTool.PropagateModifications(folderStack, progress, ct);
+                }
+                else
+                {
+                    try
+                    {
+                        await FileTool.Insert(
+                            folderStack,
+                            new Dictionary<string, BinaryStream> {
+                            { scriptName, newScript.Stream },
+                            },
+                            OverwriteMode.Overwrite,
+                            progress,
+                            ct);
+                    }
+                    finally
+                    {
+                        newScript.Dispose();
+                    }
+                }
+                await RefreshFolderInternal(ct);
+                OnStatus?.Invoke("Changes applied.");
+            }
+            finally
+            {
+                DeleteTempFileInternal(tempFilename);
+            }
+        });
+    }
+
     public void EditSelectedFileInApp(Func<EditorType, (string editor, string args)> getEditor)
     {
         Protect(interruptable: false, async ct =>
@@ -654,7 +759,7 @@ class ApplicationState(string? openPath)
             using var newStream = await FileTool.ReadFile(tempFilename, progress, ct);
             if (BinaryStream.StreamEquals(oldStream, newStream))
             {
-                DeleteTempFile(tempFilename);
+                DeleteTempFileInternal(tempFilename);
                 OnStatus?.Invoke("No changes made.");
                 return;
             }
@@ -664,7 +769,7 @@ class ApplicationState(string? openPath)
                 await FileTool.Insert(
                     folderStack,
                     new Dictionary<string, BinaryStream> {
-                    { selectedFileNonParent.Info.Filename, newStream },
+                { selectedFileNonParent.Info.Filename, newStream },
                     },
                     OverwriteMode.Overwrite,
                     progress,
@@ -674,12 +779,12 @@ class ApplicationState(string? openPath)
             }
             finally
             {
-                DeleteTempFile(tempFilename);
+                DeleteTempFileInternal(tempFilename);
             }
         });
     }
 
-    private void DeleteTempFile(string filename)
+    private void DeleteTempFileInternal(string filename)
     {
         try
         {
@@ -1153,7 +1258,7 @@ class ApplicationState(string? openPath)
 
     public void ExtractSelectedFilesToTemp(Action<string[]> filenamesCallback)
     {
-        Protect(false, async ct =>
+        Protect(interruptable: false, async ct =>
         {
             var src = GetSelectedFilenamesInternal();
             if (src.Count == 0)
@@ -1247,7 +1352,7 @@ class ApplicationState(string? openPath)
         }
     }
 
-    private static string GetFileShortDescriptionInternal(IFile file)
+    private static string GetFileShortDescriptionInternal(IFile file, FileInfo info)
     {
         return file switch
         {
@@ -1273,7 +1378,7 @@ class ApplicationState(string? openPath)
                 ? $"WSC ({wsc.Version}; WARNING UNRESOLVED LABELS)"
                 : $"WSC ({wsc.Version})",
             _ => "UNKNOWN",
-        };
+        } + (info.IsReadOnly ? " [READONLY]" : "");
     }
 
     private static string GetFileLongDescriptionInternal(IFile file)

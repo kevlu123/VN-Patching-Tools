@@ -70,26 +70,6 @@ public ReadOnlyCollection<AffixedString> Strings { get; }
 
 [ReadOnlyCollection&lt;AffixedString&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.objectmodel.readonlycollection-1)<br>
 
-## Constructors
-
-### **LngFile(IEnumerable&lt;AffixedString&gt;, Byte)**
-
-Creates a LNG file from a binary stream and an XOR key.
-
-```csharp
-public LngFile(IEnumerable<AffixedString> strings, byte xorKey)
-```
-
-#### Parameters
-
-`strings` [IEnumerable&lt;AffixedString&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1)<br>
-
-`xorKey` [Byte](https://docs.microsoft.com/en-us/dotnet/api/system.byte)<br>
-
-#### Exceptions
-
-[ArchiveCreationException](./ws2explorer.archivecreationexception.md)<br>
-
 ## Methods
 
 ### **Decode(BinaryStream, DecodeConfidence&)**
@@ -123,6 +103,24 @@ public static LngFile Create(IDictionary<string, BinaryStream> contents)
 #### Parameters
 
 `contents` [IDictionary&lt;String, BinaryStream&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.idictionary-2)<br>
+
+#### Returns
+
+[LngFile](./ws2explorer.filetypes.lngfile.md)<br>
+
+### **Create(IEnumerable&lt;AffixedString&gt;, Byte)**
+
+Creates a LNG file from a binary stream and an XOR key.
+
+```csharp
+public static LngFile Create(IEnumerable<AffixedString> strings, byte xorKey)
+```
+
+#### Parameters
+
+`strings` [IEnumerable&lt;AffixedString&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1)<br>
+
+`xorKey` [Byte](https://docs.microsoft.com/en-us/dotnet/api/system.byte)<br>
 
 #### Returns
 

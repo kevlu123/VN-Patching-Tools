@@ -145,6 +145,7 @@
             files_ListView.View = View.Details;
             files_ListView.ColumnClick += Files_ListViewColumnClicked;
             files_ListView.ColumnWidthChanged += Files_ListViewColumnWidthChanged;
+            files_ListView.ItemDrag += Files_ListViewItemDragged;
             files_ListView.SelectedIndexChanged += Files_ListViewSelectedIndexChanged;
             files_ListView.ClientSizeChanged += Files_ListViewClientSizeChanged;
             files_ListView.DragDrop += Files_ListViewDragDropped;

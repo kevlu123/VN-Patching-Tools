@@ -24,6 +24,7 @@ class ApplicationState(string? openPath)
     private bool showEmptyPnaFiles = true;
     private readonly Stack<string> backHistory = [];
     private readonly Stack<string> forwardHistory = [];
+    private readonly List<string> tempFiles = [];
 
     public IProgress<TaskProgressInfo>? Progress { get; set; }
     public Action<Exception>? OnError { get; set; }
@@ -100,6 +101,14 @@ class ApplicationState(string? openPath)
             Progress?.Report(info);
         });
         initialised = true;
+    }
+
+    public void Close()
+    {
+        while (tempFiles.Count > 0)
+        {
+            DeleteTempFile(tempFiles[0]);
+        }
     }
 
     public void CancelTask()
@@ -613,20 +622,6 @@ class ApplicationState(string? openPath)
                 throw new QuietError("Select exactly one file to edit.");
             }
 
-            var tempFilename = Path.Combine(
-                Path.GetTempPath(),
-                Random.Shared.Next().ToString("X8") + "_" +
-                selectedFileNonParent.Info.Filename);
-            var oldStream = selectedFileNonParent.File.Stream;
-            {
-                await using var tempFile = File.Create(tempFilename);
-                await oldStream.CopyTo(
-                    tempFile,
-                    tempFilename,
-                    progress,
-                    ct);
-            }
-
             var (editor, args) = getEditor(selectedFileNonParent.File switch
             {
                 PngFile => EditorType.Image,
@@ -638,27 +633,60 @@ class ApplicationState(string? openPath)
                 throw new InvalidOperationException("No editor configured for this file type.");
             }
 
+            var tempFilename = Path.Combine(
+                Path.GetTempPath(),
+                Random.Shared.Next().ToString("X8") + "_" +
+                selectedFileNonParent.Info.Filename);
+            var oldStream = selectedFileNonParent.File.Stream;
+            {
+                tempFiles.Add(tempFilename);
+                await using var tempFile = File.Create(tempFilename);
+                await oldStream.CopyTo(
+                    tempFile,
+                    tempFilename,
+                    progress,
+                    ct);
+            }
+
             using Process proc = Process.Start(editor, $"{args} \"{tempFilename}\"");
             await proc.WaitForExitAsync(ct);
 
             using var newStream = await FileTool.ReadFile(tempFilename, progress, ct);
             if (BinaryStream.StreamEquals(oldStream, newStream))
             {
+                DeleteTempFile(tempFilename);
                 OnStatus?.Invoke("No changes made.");
                 return;
             }
 
-            await FileTool.Insert(
-                folderStack,
-                new Dictionary<string, BinaryStream> {
+            try
+            {
+                await FileTool.Insert(
+                    folderStack,
+                    new Dictionary<string, BinaryStream> {
                     { selectedFileNonParent.Info.Filename, newStream },
-                },
-                OverwriteMode.Overwrite,
-                progress,
-                ct);
-            await RefreshFolderInternal(ct);
-            OnStatus?.Invoke("Changes applied.");
+                    },
+                    OverwriteMode.Overwrite,
+                    progress,
+                    ct);
+                await RefreshFolderInternal(ct);
+                OnStatus?.Invoke("Changes applied.");
+            }
+            finally
+            {
+                DeleteTempFile(tempFilename);
+            }
         });
+    }
+
+    private void DeleteTempFile(string filename)
+    {
+        try
+        {
+            File.Delete(filename);
+        }
+        catch { }
+        tempFiles.Remove(filename);
     }
 
     public void RevealInFileExplorer()
@@ -1120,6 +1148,37 @@ class ApplicationState(string? openPath)
             {
                 throw new QuietError("Navigate to the game directory.");
             }
+        });
+    }
+
+    public void ExtractSelectedFilesToTemp(Action<string[]> filenamesCallback)
+    {
+        Protect(false, async ct =>
+        {
+            var src = GetSelectedFilenamesInternal();
+            if (src.Count == 0)
+            {
+                return;
+            }
+
+            using var streams = new DisposingList<BinaryStream>();
+            var filenames = GetSelectedFilenamesInternal();
+            var folder = folderStack[^1].Folder;
+            foreach (var filename in filenames)
+            {
+                streams.Add(await folder.OpenFile(
+                    filename,
+                    progress,
+                    ct));
+            }
+            var dst = filenames.Select(s => Path.Combine(Path.GetTempPath(), s)).ToArray();
+            tempFiles.AddRange(dst);
+            foreach (var (stream, name) in streams.Zip(dst))
+            {
+                await using var dstStream = File.Create(name);
+                await stream.CopyTo(dstStream, name, progress, ct);
+            }
+            filenamesCallback(dst);
         });
     }
 

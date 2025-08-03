@@ -648,6 +648,7 @@ partial class MainWindow : Form
 
     private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
     {
+        state.Close();
         config.Save();
     }
 
@@ -1240,5 +1241,14 @@ partial class MainWindow : Form
                     string.Join("\r\n", refs.Select(r => $"({r.Value}) {r.Key}")));
                 dialog.ShowDialog();
             });
+    }
+
+    private void Files_ListViewItemDragged(object sender, ItemDragEventArgs e)
+    {
+        state.ExtractSelectedFilesToTemp(filenames =>
+        {
+            var data = new DataObject(DataFormats.FileDrop, filenames);
+            files_ListView.DoDragDrop(data, DragDropEffects.Copy);
+        });
     }
 }

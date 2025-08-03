@@ -1,8 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Text.Json.Nodes;
 using Ws2Explorer.HighLevel;
 using Ws2Explorer.FileTypes;
+using Ws2Explorer.Compiler;
 using Flowchart = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>;
 using Ws2Directory = Ws2Explorer.FileTypes.Directory;
 
@@ -234,8 +236,11 @@ class ApplicationState(string? openPath)
                 throw new QuietError("No folder selected.");
             }
 
-            var folder = await selectedFileNonParent.File.Stream
-                .Decode<T>(decRef: false);
+            var folder = await selectedFileNonParent.File.Stream.Decode<T>(decRef: false);
+            if (folder == null)
+            {
+                return;
+            }
             folderStack.Add(new NamedFolder
             {
                 Folder = folder,
@@ -262,6 +267,54 @@ class ApplicationState(string? openPath)
                     ct));
             }
             using var archive = T.Create(filenames.Zip(streams).ToDictionary());
+            await using var dstStream = File.Create(dst);
+            await archive.Stream.CopyTo(dstStream, dst, progress, ct);
+            OnStatus?.Invoke($"Created archive '{dst}'.");
+        });
+    }
+
+    public void CreatePtf(string dst, byte xorKey)
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            var filenames = GetSelectedFilenamesInternal();
+            if (filenames.Count != 1)
+            {
+                throw new QuietError("Select exactly one file.");
+            }
+            var folder = folderStack[^1].Folder;
+            using var stream = await folder.OpenFile(
+                filenames[0],
+                progress,
+                ct);
+            using var archive = PtfFile.Create(stream, xorKey);
+            await using var dstStream = File.Create(dst);
+            await archive.Stream.CopyTo(dstStream, dst, progress, ct);
+            OnStatus?.Invoke($"Created archive '{dst}'.");
+        });
+    }
+
+    public void CreateLng(string dst, byte xorKey)
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            var filenames = GetSelectedFilenamesInternal();
+            if (filenames.Count != 1)
+            {
+                throw new QuietError("Select exactly one file.");
+            }
+            var folder = folderStack[^1].Folder;
+            using var stream = await folder.OpenFile(
+                filenames[0],
+                progress,
+                ct);
+            var json = JsonNode.Parse(stream.Span);
+            var strings = json!.AsArray()
+                .Select(x => new AffixedString(
+                    x![0]!.GetValue<string>(),
+                    x![1]!.GetValue<string>(),
+                    x![2]!.GetValue<string>()));
+            using var archive = LngFile.Create(strings, xorKey);
             await using var dstStream = File.Create(dst);
             await archive.Stream.CopyTo(dstStream, dst, progress, ct);
             OnStatus?.Invoke($"Created archive '{dst}'.");

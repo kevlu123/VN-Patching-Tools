@@ -25,6 +25,26 @@ public class DecodeException : Exception
     public DecodeException(string? message, Exception? innerException)
         : base(message, innerException) { }
 
+    internal static T Wrap<T>(Func<T> fn)
+    {
+        try
+        {
+            return fn();
+        }
+        catch (DecodeException)
+        {
+            throw;
+        }
+        catch (IndexOutOfRangeException ex)
+        {
+            throw new DecodeException("File is too short.", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new DecodeException("An error occurred while decoding the file.", ex);
+        }
+    }
+
     internal static T Wrap<T>(Func<(T, DecodeConfidence)> fn, out DecodeConfidence confidence)
     {
         try

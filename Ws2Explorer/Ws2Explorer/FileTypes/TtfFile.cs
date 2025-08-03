@@ -5,7 +5,10 @@
 /// </summary>
 public sealed class TtfFile : IFile<TtfFile>
 {
-    private const int SIGNATURE = 0x00000100;
+    /// <summary>
+    /// TTF file signature as little-endian int.
+    /// </summary>
+    public const int SIGNATURE = 0x00000100;
 
     private bool disposedValue;
 

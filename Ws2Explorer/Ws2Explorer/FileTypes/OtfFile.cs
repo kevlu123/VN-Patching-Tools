@@ -5,7 +5,10 @@
 /// </summary>
 public sealed class OtfFile : IFile<OtfFile>
 {
-    private const int SIGNATURE = 0x4F54544F;
+    /// <summary>
+    /// OTF file signature as little-endian int.
+    /// </summary>
+    public const int SIGNATURE = 0x4F54544F;
 
     private bool disposedValue;
 

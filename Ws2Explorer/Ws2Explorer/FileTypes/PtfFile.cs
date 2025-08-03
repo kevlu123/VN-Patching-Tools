@@ -115,14 +115,20 @@ public sealed class PtfFile : IArchive<PtfFile>
         decompressed.IncRef();
     }
 
-    /// <summary>
-    /// Creates a PTF file from a binary stream and an XOR key.
-    /// </summary>
-    /// <param name="data"></param>
-    /// <param name="xorKey"></param>
-    /// <exception cref="ArchiveCreationException"></exception>
-    public PtfFile(BinaryStream data, byte xorKey)
+    private PtfFile(BinaryStream data, byte xorKey)
     {
+        if (data.Length < 4)
+        {
+            throw new ArchiveCreationException("Data too short to be a valid PTF file.");
+        }
+        var reader = new BinaryReader(data);
+        var signature = reader.ReadInt32();
+        if (signature != OtfFile.SIGNATURE &&
+            signature != TtfFile.SIGNATURE)
+        {
+            throw new ArchiveCreationException("Invalid PTF file signature.");
+        }
+
         using var compressed = Compress(data, xorKey);
         FontType = GetFontType(data.Span) ?? throw new ArchiveCreationException("Font type not recognized.");
         Stream = compressed;
@@ -166,6 +172,17 @@ public sealed class PtfFile : IArchive<PtfFile>
     IArchive IArchive.Create(IDictionary<string, BinaryStream> contents)
     {
         return Create(contents);
+    }
+
+    /// <summary>
+    /// Creates a PTF file from the font file data and an XOR key.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="xorKey"></param>
+    /// <exception cref="ArchiveCreationException"></exception>
+    public static PtfFile Create(BinaryStream data, byte xorKey)
+    {
+        return ArchiveCreationException.Wrap(() => new PtfFile(data, xorKey));
     }
 
     /// <summary>
@@ -236,13 +253,7 @@ public sealed class PtfFile : IArchive<PtfFile>
         return null;
     }
 
-    /// <summary>
-    /// Infers the XOR key from the PTF file data.
-    /// </summary>
-    /// <param name="data"></param>
-    /// <param name="fontType"></param>
-    /// <returns></returns>
-    public static byte? InferXorKey(ReadOnlySpan<byte> data, out FontType fontType)
+    private static byte? InferXorKey(ReadOnlySpan<byte> data, out FontType fontType)
     {
         var ft = GetFontType(data);
         if (ft == null)

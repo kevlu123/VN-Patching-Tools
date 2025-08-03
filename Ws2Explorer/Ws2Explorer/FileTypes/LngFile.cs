@@ -124,13 +124,7 @@ public sealed class LngFile : IArchive<LngFile>
         Stream = Encode(strings, XorKey);
     }
 
-    /// <summary>
-    /// Creates a LNG file from a binary stream and an XOR key.
-    /// </summary>
-    /// <param name="strings"></param>
-    /// <param name="xorKey"></param>
-    /// <exception cref="ArchiveCreationException"></exception>
-    public LngFile(IEnumerable<AffixedString> strings, byte xorKey)
+    private LngFile(IEnumerable<AffixedString> strings, byte xorKey)
     {
         var strs = strings.ToList();
         jsonStrings = FormatJsonStrings(strs);
@@ -170,6 +164,16 @@ public sealed class LngFile : IArchive<LngFile>
     IArchive IArchive.Create(IDictionary<string, BinaryStream> contents)
     {
         return Create(contents);
+    }
+
+    /// <summary>
+    /// Creates a LNG file from a binary stream and an XOR key.
+    /// </summary>
+    /// <param name="strings"></param>
+    /// <param name="xorKey"></param>
+    public static LngFile Create(IEnumerable<AffixedString> strings, byte xorKey)
+    {
+        return ArchiveCreationException.Wrap(() => new LngFile(strings, xorKey));
     }
 
     /// <summary>

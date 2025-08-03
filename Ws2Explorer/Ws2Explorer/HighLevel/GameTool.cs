@@ -16,8 +16,8 @@ public static class GameTool
     {
         return gameFolder.ListFiles()
             .Select(fi => fi.Filename)
-            .Where(f => f.Contains("rio", StringComparison.OrdinalIgnoreCase)
-                && f.EndsWith(".arc", StringComparison.OrdinalIgnoreCase))
+            .Where(f => f.Contains("rio", StringComparison.InvariantCultureIgnoreCase)
+                && f.EndsWith(".arc", StringComparison.InvariantCultureIgnoreCase))
             .ToList();
     }
 
@@ -270,7 +270,7 @@ public static class GameTool
         CancellationToken ct = default)
     {
         var scriptFilename = gameFolder.ListFiles()
-            .Single(fi => fi.Filename.Equals("script.arc", StringComparison.OrdinalIgnoreCase),
+            .Single(fi => fi.Filename.Equals("script.arc", StringComparison.InvariantCultureIgnoreCase),
             "'script.arc' not found.",
             "Multiple 'script.arc' found.");
         using var scriptArc = await gameFolder.OpenFile(scriptFilename.Filename, progress, ct)
@@ -326,7 +326,7 @@ end
 
             var ws2Filenames = arc.ListFiles()
                 .Select(fi => fi.Filename)
-                .Where(f => f.EndsWith(".ws2", StringComparison.OrdinalIgnoreCase));
+                .Where(f => f.EndsWith(".ws2", StringComparison.InvariantCultureIgnoreCase));
             foreach (var ws2Filename in ws2Filenames)
             {
                 try
@@ -347,7 +347,7 @@ end
 
             var wscFilenames = arc.ListFiles()
                 .Select(fi => fi.Filename)
-                .Where(f => f.EndsWith(".wsc", StringComparison.OrdinalIgnoreCase));
+                .Where(f => f.EndsWith(".wsc", StringComparison.InvariantCultureIgnoreCase));
             foreach (var wscFilename in wscFilenames)
             {
                 try
@@ -432,7 +432,7 @@ end
 
         var ws2Filenames = arc.ListFiles()
             .Select(fi => fi.Filename)
-            .Where(f => f.EndsWith(".ws2", StringComparison.OrdinalIgnoreCase));
+            .Where(f => f.EndsWith(".ws2", StringComparison.InvariantCultureIgnoreCase));
         foreach (var ws2Filename in ws2Filenames)
         {
             var nameNoExt = ws2Filename[..^4].ToLowerInvariant();
@@ -462,7 +462,7 @@ end
 
         var wscFilenames = arc.ListFiles()
             .Select(fi => fi.Filename)
-            .Where(f => f.EndsWith(".wsc", StringComparison.OrdinalIgnoreCase));
+            .Where(f => f.EndsWith(".wsc", StringComparison.InvariantCultureIgnoreCase));
         foreach (var wscFilename in wscFilenames)
         {
             var nameNoExt = wscFilename[..^4].ToLowerInvariant();

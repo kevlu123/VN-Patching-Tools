@@ -63,6 +63,7 @@
             createPtf_MenuItem = new ToolStripMenuItem();
             createWs2_MenuItem = new ToolStripMenuItem();
             createWsc_MenuItem = new ToolStripMenuItem();
+            createLng_MenuItem = new ToolStripMenuItem();
             openArchiveAs_MenuItem = new ToolStripMenuItem();
             openAsArc_MenuItem = new ToolStripMenuItem();
             openAsLegacyArc8_MenuItem = new ToolStripMenuItem();
@@ -72,6 +73,7 @@
             openAsPtf_MenuItem = new ToolStripMenuItem();
             openAsWs2_MenuItem = new ToolStripMenuItem();
             openAsWsc_MenuItem = new ToolStripMenuItem();
+            openAsLng_MenuItem = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
             reveal_MenuItem = new ToolStripMenuItem();
             setEditors_MenuItem = new ToolStripMenuItem();
@@ -122,8 +124,6 @@
             mermaidFlowchart_MenuItem = new ToolStripMenuItem();
             jsonFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
-            createLng_MenuItem = new ToolStripMenuItem();
-            openAsLng_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -384,7 +384,7 @@
             createPtf_MenuItem.Name = "createPtf_MenuItem";
             createPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.F6;
             createPtf_MenuItem.Size = new Size(235, 22);
-            createPtf_MenuItem.Text = "PTF";
+            createPtf_MenuItem.Text = "PTF...";
             createPtf_MenuItem.Click += CreatePtf_MenuItemClicked;
             // 
             // createWs2_MenuItem
@@ -402,6 +402,14 @@
             createWsc_MenuItem.Size = new Size(235, 22);
             createWsc_MenuItem.Text = "WSC";
             createWsc_MenuItem.Click += CreateWsc_MenuItemClicked;
+            // 
+            // createLng_MenuItem
+            // 
+            createLng_MenuItem.Name = "createLng_MenuItem";
+            createLng_MenuItem.ShortcutKeys = Keys.Control | Keys.F9;
+            createLng_MenuItem.Size = new Size(235, 22);
+            createLng_MenuItem.Text = "LNG...";
+            createLng_MenuItem.Click += CreateLng_MenuItemClicked;
             // 
             // openArchiveAs_MenuItem
             // 
@@ -473,6 +481,14 @@
             openAsWsc_MenuItem.Size = new Size(267, 22);
             openAsWsc_MenuItem.Text = "WSC";
             openAsWsc_MenuItem.Click += OpenAsWsc_MenuItemClicked;
+            // 
+            // openAsLng_MenuItem
+            // 
+            openAsLng_MenuItem.Name = "openAsLng_MenuItem";
+            openAsLng_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F9;
+            openAsLng_MenuItem.Size = new Size(267, 22);
+            openAsLng_MenuItem.Text = "LNG";
+            openAsLng_MenuItem.Click += OpenAsLng_MenuItemClicked;
             // 
             // toolStripSeparator2
             // 
@@ -842,22 +858,6 @@
             back_Panel.Name = "back_Panel";
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
-            // 
-            // createLng_MenuItem
-            // 
-            createLng_MenuItem.Name = "createLng_MenuItem";
-            createLng_MenuItem.ShortcutKeys = Keys.Control | Keys.F9;
-            createLng_MenuItem.Size = new Size(235, 22);
-            createLng_MenuItem.Text = "LNG";
-            createLng_MenuItem.Click += CreateLng_MenuItemClicked;
-            // 
-            // openAsLng_MenuItem
-            // 
-            openAsLng_MenuItem.Name = "openAsLng_MenuItem";
-            openAsLng_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F9;
-            openAsLng_MenuItem.Size = new Size(267, 22);
-            openAsLng_MenuItem.Text = "LNG";
-            openAsLng_MenuItem.Click += OpenAsLng_MenuItemClicked;
             // 
             // MainWindow
             // 

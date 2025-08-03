@@ -803,7 +803,13 @@ partial class MainWindow : Form
 
     private void CreatePtf_MenuItemClicked(object sender, EventArgs e)
     {
-        CreateArchive<PtfFile>(new CommonFileDialogFilter("PTF file", "*.ptf"));
+        using var dialog = new XorKeyWindow();
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            CreateArchive<PtfFile>(
+                new CommonFileDialogFilter("PTF file", "*.ptf"),
+                dst => state.CreatePtf(dst, dialog.XorKey));
+        }
     }
 
     private void CreateWs2_MenuItemClicked(object sender, EventArgs e)
@@ -818,10 +824,16 @@ partial class MainWindow : Form
 
     private void CreateLng_MenuItemClicked(object sender, EventArgs e)
     {
-        CreateArchive<LngFile>(new CommonFileDialogFilter("LNG file", "*.lng"));
+        using var dialog = new XorKeyWindow();
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            CreateArchive<PtfFile>(
+                new CommonFileDialogFilter("LNG file", "*.lng"),
+                dst => state.CreateLng(dst, dialog.XorKey));
+        }
     }
 
-    private void CreateArchive<T>(CommonFileDialogFilter filter)
+    private void CreateArchive<T>(CommonFileDialogFilter filter, Action<string>? create = null)
         where T : class, IArchive<T>
     {
         using var saveFileDialog = new CommonSaveFileDialog();
@@ -830,7 +842,14 @@ partial class MainWindow : Form
         if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
         {
             var dst = saveFileDialog.FileName;
-            state.CreateArchive<T>(dst);
+            if (create == null)
+            {
+                state.CreateArchive<T>(dst);
+            }
+            else
+            {
+                create(dst);
+            }
         }
     }
 

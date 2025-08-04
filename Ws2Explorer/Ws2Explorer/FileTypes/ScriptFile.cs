@@ -153,7 +153,9 @@ public abstract class ScriptFile : IArchive
         {
             case SUMMARY_FILENAME:
                 var texts = Text;
-                var maxPrefixLen = Math.Max("Choice: ".Length, texts.Max(t => t.Name.Length + 2));
+                var maxPrefixLen = Math.Max(
+                    "Choice: ".Length,
+                    texts.Length > 0 ? texts.Max(t => t.Name.Length + 2) : 0);
                 var summary = texts.Select(t =>
                 {
                     var prefix = "";

@@ -35,7 +35,7 @@ foreach (Op op in ws2File.Ops)
     if (op.Code == Opcode.WS2_JUMP_FILE_07)
     {
         // Create a new op with argument 0 replaced.
-        // Argument 0 is the  target file name to jump to (see Instructions.md).
+        // Argument 0 is the target file name to jump to (see Instructions.md).
         Op newOp = op.WithArgument(0, Argument.NewString(jumpTarget));
         newOps.Add(newOp);
     }
@@ -46,8 +46,15 @@ foreach (Op op in ws2File.Ops)
         ImmutableArray<Ws2Choice> choices = op.Arguments[0].Ws2ChoiceArray;
         var newChoices = choices.Select(choice =>
         {
-            var newJump = choice.JumpOp.WithArgument(0, Argument.NewString(jumpTarget));
-            return choice.WithJumpOp(newJump);
+            if (choice.JumpOp.Code == Opcode.WS2_JUMP_FILE_07)
+            {
+                var newJump = choice.JumpOp.WithArgument(0, Argument.NewString(jumpTarget));
+                return choice.WithJumpOp(newJump);
+            }
+            else
+            {
+                return choice;
+            }
         });
         Op newOp = op.WithArgument(0, Argument.NewWs2ChoiceArray(newChoices));
         newOps.Add(newOp);

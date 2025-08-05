@@ -27,19 +27,30 @@ public class ScriptText
 
     internal JsonNode ToJson()
     {
-        return new JsonObject
+        if (IsChoice)
         {
-            ["choice"] = IsChoice,
-            ["name"] = Name,
-            ["text"] = Text,
-        };
+            return new JsonObject
+            {
+                ["choice"] = true,
+                ["name"] = Name,
+                ["text"] = Text,
+            };
+        }
+        else
+        {
+            return new JsonObject
+            {
+                ["name"] = Name,
+                ["text"] = Text,
+            };
+        }
     }
 
     internal static ScriptText FromJson(JsonNode json)
     {
         return new ScriptText
         {
-            IsChoice = json["choice"]!.GetValue<bool>(),
+            IsChoice = json["choice"]?.GetValue<bool>() ?? false,
             Name = json["name"]!.GetValue<string>(),
             Text = json["text"]!.GetValue<string>(),
         };
@@ -278,10 +289,21 @@ public sealed class Ws2File : ScriptFile, IArchive<Ws2File>
             switch (op.Code)
             {
                 case Opcode.WS2_SHOW_CHOICE_0F:
-                    var newChoices = op.Arguments[0].Ws2ChoiceArray.Select(c => c.WithText(text[i++]));
+                    var newChoices = op.Arguments[0].Ws2ChoiceArray.Select(c =>
+                    {
+                        if (i >= text.Length)
+                        {
+                            throw new ArgumentException("Not enough strings supplied");
+                        }
+                        return c.WithText(text[i++]);
+                    });
                     newOps.Add(op.WithArgument(0, Argument.NewWs2ChoiceArray(newChoices)));
                     break;
                 case Opcode.WS2_DISPLAY_TEXT_14:
+                    if (i >= text.Length)
+                    {
+                        throw new ArgumentException("Not enough strings supplied");
+                    }
                     var newArg = op.Arguments[2].AffixedString.WithString(text[i++]);
                     newOps.Add(op.WithArgument(2, Argument.NewAffixedString(newArg)));
                     break;
@@ -443,14 +465,29 @@ public sealed class WscFile : ScriptFile, IArchive<WscFile>
             switch (op.Code)
             {
                 case Opcode.WSC_SHOW_CHOICE_02:
-                    var newChoices = op.Arguments[0].WscChoiceArray.Select(c => c.WithText(text[i++]));
+                    var newChoices = op.Arguments[0].WscChoiceArray.Select(c =>
+                    {
+                        if (i >= text.Length)
+                        {
+                            throw new ArgumentException("Not enough strings supplied");
+                        }
+                        return c.WithText(text[i++]);
+                    });
                     newOps.Add(op.WithArgument(0, Argument.NewWscChoiceArray(newChoices)));
                     break;
                 case Opcode.WSC_DISPLAY_TEXT_41:
+                    if (i >= text.Length)
+                    {
+                        throw new ArgumentException("Not enough strings supplied");
+                    }
                     var newArg = op.Arguments[3].AffixedString.WithString(text[i++]);
                     newOps.Add(op.WithArgument(3, Argument.NewAffixedString(newArg)));
                     break;
                 case Opcode.WSC_DISPLAY_TEXT_AND_NAME_42:
+                    if (i >= text.Length)
+                    {
+                        throw new ArgumentException("Not enough strings supplied");
+                    }
                     var newArg2 = op.Arguments[4].AffixedString.WithString(text[i++]);
                     newOps.Add(op.WithArgument(4, Argument.NewAffixedString(newArg2)));
                     break;

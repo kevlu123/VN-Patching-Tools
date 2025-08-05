@@ -537,15 +537,11 @@ end
             {
                 if (child is Ws2File ws2)
                 {
-                    names.UnionWith(ws2.Ops
-                        .Where(op => op.Code == Opcode.WS2_DISPLAY_NAME_15)
-                        .Select(op => op.Arguments[0].AffixedString.String));
+                    names.UnionWith(ws2.Names);
                 }
                 else if (child is WscFile wsc)
                 {
-                    names.UnionWith(wsc.Ops
-                        .Where(op => op.Code == Opcode.WSC_DISPLAY_TEXT_AND_NAME_42)
-                        .Select(op => op.Arguments[3].AffixedString.String));
+                    names.UnionWith(wsc.Names);
                 }
             }
         }
@@ -570,47 +566,15 @@ end
             {
                 if (child is Ws2File ws2)
                 {
-                    var newOps = new List<Op>();
-                    foreach (var op in ws2.Ops)
-                    {
-                        if (op.Code == Opcode.WS2_DISPLAY_NAME_15)
-                        {
-                            var oldNameString = op.Arguments[0].AffixedString;
-                            var oldName = oldNameString.String;
-                            var newName = nameMapping.GetValueOrDefault(oldName, oldName);
-                            var newOp = op.WithArgument(
-                                0,
-                                Argument.NewAffixedString(oldNameString.WithString(newName)));
-                            newOps.Add(newOp);
-                        }
-                        else
-                        {
-                            newOps.Add(op);
-                        }
-                    }
-                    streams.Add(childName, ScriptCompiler.Compile(newOps));
+                    using var newWs2 = ws2.WithNames(nameMapping);
+                    newWs2.Stream.IncRef();
+                    streams.Add(childName, newWs2.Stream);
                 }
                 else if (child is WscFile wsc)
                 {
-                    var newOps = new List<Op>();
-                    foreach (var op in wsc.Ops)
-                    {
-                        if (op.Code == Opcode.WSC_DISPLAY_TEXT_AND_NAME_42)
-                        {
-                            var oldNameString = op.Arguments[3].AffixedString;
-                            var oldName = oldNameString.String;
-                            var newName = nameMapping.GetValueOrDefault(oldName, oldName);
-                            var newOp = op.WithArgument(
-                                3,
-                                Argument.NewAffixedString(oldNameString.WithString(newName)));
-                            newOps.Add(newOp);
-                        }
-                        else
-                        {
-                            newOps.Add(op);
-                        }
-                    }
-                    streams.Add(childName, ScriptCompiler.Compile(newOps));
+                    using var newWsc = wsc.WithNames(nameMapping);
+                    newWsc.Stream.IncRef();
+                    streams.Add(childName, newWsc.Stream);
                 }
                 else
                 {

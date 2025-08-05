@@ -120,11 +120,24 @@ public abstract class ScriptFile : IArchive
     public abstract ScriptText[] Text { get; }
 
     /// <summary>
+    /// Get the list of unique speaker names in this script.
+    /// </summary>
+    public abstract string[] Names { get; }
+
+    /// <summary>
     /// Create a new script file with the message and choice text replaced.
     /// </summary>
     /// <param name="text"></param>
     /// <returns></returns>
     public abstract ScriptFile WithText(string[] text);
+
+    /// <summary>
+    /// Create a new script file with the names replaced according to the given mapping.
+    /// Names not in the mapping are left unchanged.
+    /// </summary>
+    /// <param name="mapping"></param>
+    /// <returns></returns>
+    public abstract ScriptFile WithNames(IDictionary<string, string> mapping);
 
     /// <summary>
     /// Constructs a script file from subfiles.
@@ -271,6 +284,15 @@ public sealed class Ws2File : ScriptFile, IArchive<Ws2File>
     }
 
     /// <summary>
+    /// Get the list of unique speaker names in this script.
+    /// </summary>
+    public override string[] Names => Ops
+        .Where(op => op.Code == Opcode.WS2_DISPLAY_NAME_15)
+        .Select(op => op.Arguments[0].AffixedString.String)
+        .Distinct()
+        .ToArray();
+
+    /// <summary>
     /// Create a new WS2 file with the message and choice text replaced.
     /// </summary>
     /// <param name="text"></param>
@@ -317,6 +339,35 @@ public sealed class Ws2File : ScriptFile, IArchive<Ws2File>
             throw new ArgumentException("Too many strings supplied");
         }
         return newOps;
+    }
+
+    /// <summary>
+    /// Create a new WS2 file with the names replaced according to the given mapping.
+    /// Names not in the mapping are left unchanged.
+    /// </summary>
+    /// <param name="mapping"></param>
+    /// <returns></returns>
+    public override Ws2File WithNames(IDictionary<string, string> mapping)
+    {
+        var newOps = new List<Op>();
+        foreach (var op in Ops)
+        {
+            if (op.Code == Opcode.WS2_DISPLAY_NAME_15)
+            {
+                var oldNameString = op.Arguments[0].AffixedString;
+                var oldName = oldNameString.String;
+                var newName = mapping.TryGetValue(oldName, out var value) ? value : oldName;
+                var newOp = op.WithArgument(
+                    0,
+                    Argument.NewAffixedString(oldNameString.WithString(newName)));
+                newOps.Add(newOp);
+            }
+            else
+            {
+                newOps.Add(op);
+            }
+        }
+        return ArchiveCreationException.Wrap(() => new Ws2File(newOps));
     }
 
     /// <summary>
@@ -447,6 +498,15 @@ public sealed class WscFile : ScriptFile, IArchive<WscFile>
         }).ToArray();
 
     /// <summary>
+    /// Get the list of unique speaker names in this script.
+    /// </summary>
+    public override string[] Names => Ops
+        .Where(op => op.Code == Opcode.WSC_DISPLAY_TEXT_AND_NAME_42)
+        .Select(op => op.Arguments[3].AffixedString.String)
+        .Distinct()
+        .ToArray();
+
+    /// <summary>
     /// Create a new WSC file with the message and choice text replaced.
     /// </summary>
     /// <param name="text"></param>
@@ -501,6 +561,35 @@ public sealed class WscFile : ScriptFile, IArchive<WscFile>
             throw new ArgumentException("Too many strings supplied");
         }
         return newOps;
+    }
+
+    /// <summary>
+    /// Create a new WSC file with the names replaced according to the given mapping.
+    /// Names not in the mapping are left unchanged.
+    /// </summary>
+    /// <param name="mapping"></param>
+    /// <returns></returns>
+    public override WscFile WithNames(IDictionary<string, string> mapping)
+    {
+        var newOps = new List<Op>();
+        foreach (var op in Ops)
+        {
+            if (op.Code == Opcode.WSC_DISPLAY_TEXT_AND_NAME_42)
+            {
+                var oldNameString = op.Arguments[3].AffixedString;
+                var oldName = oldNameString.String;
+                var newName = mapping.TryGetValue(oldName, out var value) ? value : oldName;
+                var newOp = op.WithArgument(
+                    3,
+                    Argument.NewAffixedString(oldNameString.WithString(newName)));
+                newOps.Add(newOp);
+            }
+            else
+            {
+                newOps.Add(op);
+            }
+        }
+        return ArchiveCreationException.Wrap(() => new WscFile(newOps));
     }
 
     /// <summary>

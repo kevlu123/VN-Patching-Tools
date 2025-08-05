@@ -697,7 +697,7 @@ class ApplicationState(string? openPath)
                         await FileTool.Insert(
                             folderStack,
                             new Dictionary<string, BinaryStream> {
-                            { scriptName, newScript.Stream },
+                                { scriptName, newScript.Stream },
                             },
                             OverwriteMode.Overwrite,
                             progress,
@@ -769,7 +769,7 @@ class ApplicationState(string? openPath)
                 await FileTool.Insert(
                     folderStack,
                     new Dictionary<string, BinaryStream> {
-                { selectedFileNonParent.Info.Filename, newStream },
+                        { selectedFileNonParent.Info.Filename, newStream },
                     },
                     OverwriteMode.Overwrite,
                     progress,
@@ -998,9 +998,16 @@ class ApplicationState(string? openPath)
         });
     }
 
+    private IFolder GetGameFolderOrCurrentInternal(out bool found)
+    {
+        var folder = GameTool.FindGameFolder(folderStack);
+        found = folder != null;
+        return folder ?? folderStack[^1].Folder;
+    }
+
     private IFolder GetGameFolderOrCurrentInternal()
     {
-        return GameTool.FindGameFolder(folderStack) ?? folderStack[^1].Folder;
+        return GetGameFolderOrCurrentInternal(out _);
     }
 
     public void SetEntry(Func<string, IEnumerable<string>, string> setEntryPrompt)
@@ -1077,9 +1084,31 @@ class ApplicationState(string? openPath)
     {
         Protect(interruptable: false, async ct =>
         {
-            if (GetGameFolderOrCurrentInternal() is Ws2Directory dir)
+            if (GetGameFolderOrCurrentInternal(out var found) is Ws2Directory dir && found)
             {
                 await GameTool.ModifyNames(dir, modifyNamesPrompt, progress, ct);
+                await RefreshFolderInternal(ct);
+            }
+            else if (folderStack[^1].Folder is ScriptFile scriptFile)
+            {
+                var nameMapping = modifyNamesPrompt(scriptFile.Names);
+                using var newScript = scriptFile.WithNames(nameMapping);
+                folderStack[^1] = folderStack[^1] with { Folder = newScript };
+                await FileTool.PropagateModifications(folderStack, progress, ct);
+                await RefreshFolderInternal(ct);
+            }
+            else if (selectedFileNonParent?.File is ScriptFile selectedScriptFile)
+            {
+                var nameMapping = modifyNamesPrompt(selectedScriptFile.Names);
+                using var newScript = selectedScriptFile.WithNames(nameMapping);
+                await FileTool.Insert(
+                    folderStack,
+                    new Dictionary<string, BinaryStream> {
+                        { selectedFileNonParent.Info.Filename, newScript.Stream },
+                    },
+                    OverwriteMode.Overwrite,
+                    progress,
+                    ct);
                 await RefreshFolderInternal(ct);
             }
             else

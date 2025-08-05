@@ -52,28 +52,30 @@ namespace Ws2Explorer.Compiler;
 /// <summary>
 /// List of opcodes and pseudo-opcodes.
 /// Negative values are pseudo-opcodes used to signal special meaning to the compiler.
-/// These opcodes do not appear in the binary (but their arguments may).
+/// These pseudo-opcodes do not appear in the binary (but their arguments may).
 /// </summary>
-public static class Opcode
+public enum Opcode
 {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CA1069 // Enums values should not be duplicated
 
-    public const int VERSION = -1;
-    public const int LABEL = -2;
+    VERSION = -1,
+    LABEL = -2,
 
 """)
         for op in ws2_op_list.formats:
             if op.description is not None:
-                f.write(f"    public const byte WS2_{pascal_to_caps(op.description)}_{op.opcode:02X} = 0x{op.opcode:02X};\n")
+                f.write(f"    WS2_{pascal_to_caps(op.description)}_{op.opcode:02X} = 0x{op.opcode:02X},\n")
 
         f.write("\n")
 
         for op in wsc_op_list.formats:
             if op.description is not None:
-                f.write(f"    public const byte WSC_{pascal_to_caps(op.description)}_{op.opcode:02X} = 0x{op.opcode:02X};\n")
+                f.write(f"    WSC_{pascal_to_caps(op.description)}_{op.opcode:02X} = 0x{op.opcode:02X},\n")
 
         f.write(
 """
+#pragma warning restore CA1069 // Enums values should not be duplicated
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }
 """)

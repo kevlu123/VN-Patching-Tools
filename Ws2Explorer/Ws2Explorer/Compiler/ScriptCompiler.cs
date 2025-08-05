@@ -142,7 +142,7 @@ public static class ScriptCompiler
         {
             var offset = reader.Position;
             var op = ReadOp(reader, version);
-            if (op.Code == 0xFF && reader.Position != reader.Length)
+            if (op.Code == Opcode.WS2_FILE_END_FF /* or WSC_FILE_END_FF */ && reader.Position != reader.Length)
             {
                 throw new InvalidDataException($"Unexpected FileEnd op at offset 0x{offset:X2}.");
             }
@@ -196,7 +196,7 @@ public static class ScriptCompiler
         var format = OpFormat.Formats[(int)version][code]
             ?? throw new InvalidDataException($"Invalid opcode 0x{code:X2} for version {version} at offset 0x{reader.Position - 1:X2}.");
         var args = format.Format.Select(t => ReadArgument(reader, t));
-        return new Op { Code = code, Arguments = [.. args] };
+        return new Op { Code = (Opcode)code, Arguments = [.. args] };
     }
 
     private static Argument ReadArgument(BinaryReader reader, char type)
@@ -318,7 +318,7 @@ public static class ScriptCompiler
         var versionOp = ops.First();
         if (versionOp.Code != Opcode.VERSION)
         {
-            throw new InvalidDataException($"First op must be version, got {versionOp.Code}.");
+            throw new InvalidDataException($"First op must be version, got 0x{(int)versionOp.Code}.");
         }
         return Enum.Parse<ScriptVersion>(versionOp.Arguments[0].String);
     }
@@ -349,9 +349,9 @@ public static class ScriptCompiler
         unresolvedLabels = [];
         foreach (var op in ops.Skip(1))
         {
-            switch (op.Code)
+            switch ((int)op.Code)
             {
-                case Opcode.LABEL:
+                case (int)Opcode.LABEL:
                     break;
                 case (>= 0) and (<= 0xFF):
                     WriteOp(writer, op, labelMap, unresolvedLabels);
@@ -495,7 +495,7 @@ public static class ScriptCompiler
         var versionOp = ops.First();
         if (versionOp.Code != Opcode.VERSION)
         {
-            throw new InvalidDataException($"First op must be version, got 0x{ops.First().Code:X2}.");
+            throw new InvalidDataException($"First op must be version, got 0x{(int)ops.First().Code:X2}.");
         }
         var version = Enum.Parse<ScriptVersion>(versionOp.Arguments[0].String);
         List<string> lines = [

@@ -610,18 +610,21 @@ public readonly struct Op
     /// The opcode.
     /// See <see cref="Opcode"/>.
     /// </summary>
-    public int Code {
+    public Opcode Code {
         get => code;
         init
         {
-            if (code < -3 || code > 0xFF)
+            if (((int)code >= 0 && (int)code <= 0xFF) || Enum.IsDefined(code))
+            {
+                code = value;
+            }
+            else
             {
                 throw new ArgumentOutOfRangeException(nameof(Code));
             }
-            code = value;
         }
     }
-    private readonly int code;
+    private readonly Opcode code;
 
     /// <summary>
     /// The description of the opcode if it is known.
@@ -630,7 +633,7 @@ public readonly struct Op
     {
         Opcode.LABEL => "<Label>",
         Opcode.VERSION => "<Version>",
-        _ => OpFormat.Formats[(int)version][Code]?.Description,
+        _ => OpFormat.Formats[(int)version][(int)Code]?.Description,
     };
 
     /// <summary>
@@ -713,12 +716,12 @@ public readonly struct Op
         {
             Opcode.LABEL => "<Label>",
             Opcode.VERSION => "<Version>",
-            _ when GetDescription(version) != null => $"{Code:X2} ({GetDescription(version)})",
-            _ => $"{Code:X2}",
+            _ when GetDescription(version) != null => $"{(int)Code:X2} ({GetDescription(version)})",
+            _ => $"{(int)Code:X2}",
         };
     }
 
-    private static int GetOpCode(string name)
+    private static Opcode GetOpCode(string name)
     {
         switch (name)
         {
@@ -729,7 +732,7 @@ public readonly struct Op
             default:
                 try
                 {
-                    return byte.Parse(name[..2], System.Globalization.NumberStyles.HexNumber);
+                    return (Opcode)byte.Parse(name[..2], System.Globalization.NumberStyles.HexNumber);
                 }
                 catch (Exception ex)
                 {
@@ -789,8 +792,8 @@ public readonly struct Op
             {
                 Opcode.LABEL => "a",
                 Opcode.VERSION => "s",
-                _ => OpFormat.Formats[(int)version][code]?.Format
-                    ?? throw new InvalidDataException($"Op code {code:X2} is not supported in version {version}"),
+                _ => OpFormat.Formats[(int)version][(int)code]?.Format
+                    ?? throw new InvalidDataException($"Op code 0x{(int)code:X2} is not supported in version {version}"),
             };
             return new Op
             {

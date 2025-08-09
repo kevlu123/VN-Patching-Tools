@@ -17,6 +17,19 @@ namespace Ws2Explorer.Gui;
 
 partial class MainWindow : Form
 {
+    private enum SortMode
+    {
+        Name,
+        FileSize,
+        Type,
+    }
+
+    private static readonly Comparison<FileInfo>[] SortModes = [
+        NameFileSort,
+        FileSizeFileSort,
+        TypeFileSort,
+    ];
+
     private const string CONFIG_FILENAME = "config.json";
 
     private readonly Config config;
@@ -165,7 +178,7 @@ partial class MainWindow : Form
         state = new ApplicationState(openPath ?? config.OpenFolder)
         {
             Progress = new Progress<TaskProgressInfo>(OnProgress),
-            SortFileList = AlphabeticalFileSort,
+            SortFileList = NameFileSort,
             OnError = OnError,
             OnStatus = OnStatus,
             OnFileList = OnFileList,
@@ -195,7 +208,7 @@ partial class MainWindow : Form
             }
             wordWrap_MenuItem.Checked = config.WordWrap;
             panels_SplitContainer.SplitterDistance = config.SplitterDistance;
-            SortFileList(config.SortColumn, config.SortInverted);
+            SortFileList((SortMode)config.SortColumn, config.SortInverted);
             files_ListView.Columns[1].Width = config.FileSizeColumnWidth;
             pnaShowEmpty_MenuItem.Checked = config.ShowEmptyPnaFiles;
         }
@@ -940,9 +953,8 @@ partial class MainWindow : Form
 
     private void Files_ListViewColumnClicked(object sender, ColumnClickEventArgs e)
     {
-        Comparison<FileInfo> sort = e.Column == 0 ? AlphabeticalFileSort : FileSizeFileSort;
-        bool invert = state.SortFileList == sort;
-        SortFileList(e.Column, invert);
+        bool invert = state.SortFileList == SortModes[e.Column];
+        SortFileList((SortMode)e.Column, invert);
     }
 
     private void Panels_SplitContainerSplitterMoving(object sender, SplitterCancelEventArgs e)
@@ -955,11 +967,9 @@ partial class MainWindow : Form
         panels_SplitContainer.SplitterDistance = config.SplitterDistance;
     }
 
-    private void SortFileList(int column, bool invert)
+    private void SortFileList(SortMode sortMode, bool invert)
     {
-        Comparison<FileInfo> sort = column == 0
-            ? AlphabeticalFileSort
-            : FileSizeFileSort;
+        var sort = SortModes[(int)sortMode];
         if (invert)
         {
             state.SortFileList = (a, b) => -sort(a, b);
@@ -969,19 +979,18 @@ partial class MainWindow : Form
             state.SortFileList = sort;
         }
 
-        if (column == 0)
-        {
-            files_ListView.Columns[0].Text = "Name " + (invert ? "⌄" : "⌃");
-            files_ListView.Columns[1].Text = "Size";
-        }
-        else
-        {
-            files_ListView.Columns[0].Text = "Name";
-            files_ListView.Columns[1].Text = (invert ? "⌄" : "⌃") + " Size";
-        }
-
-        config.SortColumn = column;
+        config.SortColumn = (int)sortMode;
         config.SortInverted = invert;
+
+        files_ListView.Columns[0].Text = "Name" + (sortMode == SortMode.Name ? (invert ? " ⌄" : " ⌃") : "");
+        files_ListView.Columns[1].Text = (sortMode == SortMode.FileSize ? (invert ? "⌄ " : "⌃ ") : "") + "Size";
+
+        sortNameAscending_MenuItem.Checked = sortMode == SortMode.Name && !invert;
+        sortNameDescending_MenuItem.Checked = sortMode == SortMode.Name && invert;
+        sortSizeAscending_MenuItem.Checked = sortMode == SortMode.FileSize && !invert;
+        sortSizeDescending_MenuItem.Checked = sortMode == SortMode.FileSize && invert;
+        sortTypeAscending_MenuItem.Checked = sortMode == SortMode.Type && !invert;
+        sortTypeDescending_MenuItem.Checked = sortMode == SortMode.Type && invert;
     }
 
     private static string HexPreview(ReadOnlySpan<byte> data)
@@ -1031,14 +1040,14 @@ partial class MainWindow : Form
         return sb.ToString();
     }
 
-    private static int AlphabeticalFileSort(FileInfo lhs, FileInfo rhs)
+    private static int NameFileSort(FileInfo lhs, FileInfo rhs)
     {
         int r = rhs.IsDirectory.CompareTo(lhs.IsDirectory);
         if (r != 0)
         {
             return r;
         }
-        return string.Compare(lhs.Filename, rhs.Filename, StringComparison.OrdinalIgnoreCase);
+        return string.Compare(lhs.Filename, rhs.Filename, StringComparison.InvariantCultureIgnoreCase);
     }
 
     private static int FileSizeFileSort(FileInfo lhs, FileInfo rhs)
@@ -1053,7 +1062,22 @@ partial class MainWindow : Form
         {
             return r;
         }
-        return string.Compare(lhs.Filename, rhs.Filename, StringComparison.OrdinalIgnoreCase);
+        return string.Compare(lhs.Filename, rhs.Filename, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    private static int TypeFileSort(FileInfo lhs, FileInfo rhs)
+    {
+        int r = rhs.IsDirectory.CompareTo(lhs.IsDirectory);
+        if (r != 0)
+        {
+            return r;
+        }
+        r = string.Compare(Path.GetExtension(lhs.Filename), Path.GetExtension(rhs.Filename), StringComparison.InvariantCultureIgnoreCase);
+        if (r != 0)
+        {
+            return r;
+        }
+        return string.Compare(lhs.Filename, rhs.Filename, StringComparison.InvariantCultureIgnoreCase);
     }
 
     [LibraryImport("user32")]
@@ -1269,5 +1293,35 @@ partial class MainWindow : Form
             var data = new DataObject(DataFormats.FileDrop, filenames);
             files_ListView.DoDragDrop(data, DragDropEffects.Copy);
         });
+    }
+
+    private void SortNameAscending_MenuItemClicked(object sender, EventArgs e)
+    {
+        SortFileList(SortMode.Name, false);
+    }
+
+    private void SortNameDescending_MenuItemClicked(object sender, EventArgs e)
+    {
+        SortFileList(SortMode.Name, true);
+    }
+
+    private void SortSizeAscending_MenuItemClicked(object sender, EventArgs e)
+    {
+        SortFileList(SortMode.FileSize, false);
+    }
+
+    private void SortSizeDescending_MenuItemClicked(object sender, EventArgs e)
+    {
+        SortFileList(SortMode.FileSize, true);
+    }
+
+    private void SortTypeAscending_MenuItemClicked(object sender, EventArgs e)
+    {
+        SortFileList(SortMode.Type, false);
+    }
+
+    private void SortTypeDescending_MenuItemClicked(object sender, EventArgs e)
+    {
+        SortFileList(SortMode.Type, true);
     }
 }

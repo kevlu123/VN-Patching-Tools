@@ -922,7 +922,7 @@ class ApplicationState(string? openPath)
                 string? match = null;
                 foreach (var fileInfo in fileInfos)
                 {
-                    if (!fileInfo.Filename.StartsWith(pattern, StringComparison.OrdinalIgnoreCase))
+                    if (!fileInfo.Filename.StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase))
                     {
                         continue;
                     }

@@ -6,10 +6,12 @@ All types are little endian and all strings are null terminated in their respect
 - [ARC](#arc-archive-file)
 - [ARC (Legacy)](#arc-archive-file-legacy)
 - [PNA](#pna-png-array-file)
+- [WIP](#wip-legacy-image-array-file)
 - [WS2/WSC](#ws2wsc-script-file)
 - [Pan.dat](#pandat-audio-panning-data)
 - [LNG](#lng-language-pack)
 - [PTF](#ptf-compressed-ttfotf-font)
+- [LZ77 Compression Format](#lz77-compressed-data)
 
 ## (ARC) Archive File
 
@@ -47,11 +49,11 @@ All types are little endian and all strings are null terminated in their respect
 
 ### FileHeader
 
-| Type                   | Field         | Description |
-|------------------------|---------------|-------------|
+| Type                     | Field      | Description |
+|--------------------------|------------|-------------|
 | (ASCII?) null padded str | Filename   | The name of the file. Depending on the version, this field is either 9 or 13 bytes. The last byte is always null. |
-| int32                  | DataLen    | The length of the file. |
-| int32                  | DataOffset | The offset from the beginning of the file of the file data. |
+| int32                    | DataLen    | The length of the file. |
+| int32                    | DataOffset | The offset from the beginning of the file of the file data. |
 
 ## (PNA) PNG Array File
 
@@ -63,7 +65,7 @@ All types are little endian and all strings are null terminated in their respect
 | int32        | ImageHeight  | Height of the whole PNA image. |
 | int32        | FileCount    | Number of images in the PNA file. |
 | imgheader[N] | ImageHeaders | Headers for the images. |
-| data         | Images       | Raw data for the images. Some may be 0 bytes. |
+| data         | Images       | PNG data for the images. Some may be 0 bytes. |
 
 ### ImgHeader
 
@@ -73,11 +75,39 @@ All types are little endian and all strings are null terminated in their respect
 | int32        | FileID       | 0-based index of the image counted from the end. If the image is 0 bytes, this is -1. |
 | int32        | OffsetX      | X Offset of this image in the whole PNA image. |
 | int32        | OffsetY      | Y Offset of this image in the whole PNA image. |
-| int32        | Width        | Width this image. |
-| int32        | Height       | Height this image. |
+| int32        | Width        | Width of this image. |
+| int32        | Height       | Height of this image. |
 | int32        | ?            | Unknown. |
 | float64      | Transparency | Transparency. (Unaligned and 64-bits though?) |
 | int32        | DataLen      | Length of the image file. |
+
+## (WIP) Legacy Image Array File
+
+| Type         | Field        | Description |
+|--------------|--------------|-------------|
+| int32        | Signature    | 'WIPF' in ASCII. |
+| int16        | FileCount    | The number of images in the file. |
+| int16        | BitsPerPixel | Image bits per pixel can be 8 (rgba palette), 24 (rgb), or 32 (rgba). |
+| imgheader[N] | ImageHeaders | Headers for the images. |
+| image[N]     | Images       | Image data. |
+
+### ImageHeader
+
+| Type         | Field        | Description |
+|--------------|--------------|-------------|
+| int32        | Width        | Width of this image. |
+| int32        | Height       | Height of this image. |
+| int32        | OffsetX      | X Offset of this image in the whole WIP image. |
+| int32        | OffsetY      | Y Offset of this image in the whole WIP image. |
+| int32        | ?            | Unknown. |
+| int32        | DataLen      | Length of the image file. |
+
+### Image
+
+| Type       | Field        | Description |
+|------------|--------------|-------------|
+| rgba[256]? | Palette | The palette is only present if a palette is used. |
+| LZ77 data  | Pixels  | The raw pixel data LZ77 compressed. |
 
 ## (WS2/WSC) Script File
 
@@ -159,19 +189,37 @@ Each argument can be a
 
 ## LNG (Language Pack)
 
-| Type                 | Field         | Description |
-|----------------------|---------------|-------------|
-| int32                | StringCount   | The number of strings. |
-| int16[N]             | StringLengths | The lengths of the strings in bytes including the null terminator. |
+| Type         | Field         | Description |
+|--------------|---------------|-------------|
+| int32        | StringCount   | The number of strings. |
+| int16[N]     | StringLengths | The lengths of the strings in bytes including the null terminator. |
 | utf16 str[N] | Strings       | The strings. |
 
-The Strings field is XORed with an externally provided value. This value can be easily inferred because after XORing, the last byte in file will always be 00. This is the same value used for PTF files for the same game.
+The Strings field is XORed with an externally provided value.
+This value can be easily inferred since after XORing,
+the last byte in file will always be 00.
+This is the same value used for PTF files for the same game.
 
 ## (PTF) Compressed TTF/OTF Font
 
+| Type           | Field           | Description |
+|----------------|-----------------|-------------|
+| int32          | DecompressedLen | The length of the decompressed data. |
+| LZ77 XOR data  | Data            | The TTF or OTF file compressed with LZ77 and then XORed with a key. |
+
+The XOR key is externally sourced and not found inside the PTF file,
+though it is trivial to infer the key since the first four bytes of a TTF/OTF
+file are `00 01 00 00` or ASCII "OTTO".
+
+The key can also be found by decompiling Script.arc/GameInfo.lua
+and looking at the 4th return value of getHostInfo.
+
+The key is also embedded somewhere inside the game's exe file.
+
+## LZ77 Compressed Data
+
 | Type     | Field           |
 |----------|-----------------|
-| int32    | DecompressedLen |
 | chunk[N] | Chunks          |
 
 ### Chunk
@@ -191,10 +239,6 @@ The Strings field is XORed with an externally provided value. This value can be 
 
 While the output is written, a circular buffer of 4096 bytes keeps
 track of the output history.
-
-After all output has been written, the output is XORed with an
-externally provided value. This value can be easily inferred
-because after XORing, the first 4 bytes should either be 00 01 00 00 or ASCII "OTTO". This is the same value used for LNG files for the same game.
 
 Format bits is an array of 8 bits corresponding to the mode
 of 8 'blocks' of data that follow. This bit array is read

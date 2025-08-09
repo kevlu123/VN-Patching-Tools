@@ -92,6 +92,19 @@ public void WriteBytes(ReadOnlySpan<byte> v)
 
 `v` [ReadOnlySpan&lt;Byte&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.readonlyspan-1)<br>
 
+### **WriteBytes(List&lt;Byte&gt;)**
+
+Writes the specified bytes to the stream at the current position
+ and advances the position.
+
+```csharp
+public void WriteBytes(List<byte> v)
+```
+
+#### Parameters
+
+`v` [List&lt;Byte&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1)<br>
+
 ### **WriteInt8(SByte)**
 
 Writes a int8 to the stream at the current position

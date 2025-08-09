@@ -30,3 +30,19 @@ public interface IFile<T> : IFile
     /// <exception cref="DecodeException" />
     static abstract T Decode(BinaryStream stream, out DecodeConfidence confidence);
 }
+
+/// <summary>
+/// Extensions for <see cref="IFile{T}"/>.
+/// </summary>
+public static class IFileExtensions
+{
+    /// <summary>
+    /// Clones the IFile<typeparamref name="T"/>.
+    /// </summary>
+    /// <returns></returns>
+    public static T Clone<T>(this T file)
+        where T : class, IFile<T>
+    {
+        return T.Decode(file.Stream, out _);
+    }
+}

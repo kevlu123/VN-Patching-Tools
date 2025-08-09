@@ -62,6 +62,18 @@ public ScriptText[] Text { get; }
 
 [ScriptText[]](./ws2explorer.filetypes.scripttext.md)<br>
 
+### **Names**
+
+Get the list of unique speaker names in this script.
+
+```csharp
+public String[] Names { get; }
+```
+
+#### Property Value
+
+[String[]](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
 ### **Version**
 
 The version of the script.
@@ -101,6 +113,23 @@ public Ws2File WithText(String[] text)
 #### Parameters
 
 `text` [String[]](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+#### Returns
+
+[Ws2File](./ws2explorer.filetypes.ws2file.md)<br>
+
+### **WithNames(IDictionary&lt;String, String&gt;)**
+
+Create a new WS2 file with the names replaced according to the given mapping.
+ Names not in the mapping are left unchanged.
+
+```csharp
+public Ws2File WithNames(IDictionary<string, string> mapping)
+```
+
+#### Parameters
+
+`mapping` [IDictionary&lt;String, String&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.idictionary-2)<br>
 
 #### Returns
 

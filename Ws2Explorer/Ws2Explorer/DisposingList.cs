@@ -7,7 +7,7 @@ namespace Ws2Explorer;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public sealed class DisposingList<T> : IList<T>, IDisposable
-    where T : class
+    where T : class?
 {
     private readonly Action<T> dispose;
     private readonly List<T> list = [];

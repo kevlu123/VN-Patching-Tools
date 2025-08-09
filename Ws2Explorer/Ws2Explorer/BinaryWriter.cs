@@ -1,4 +1,5 @@
 ﻿using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Ws2Explorer;
@@ -63,6 +64,18 @@ public class BinaryWriter
     {
         v.CopyTo(stream.Span[Position..]);
         Skip(v.Length);
+    }
+
+    /// <summary>
+    /// Writes the specified bytes to the stream at the current position
+    /// and advances the position.
+    /// </summary>
+    /// <param name="v"></param>
+    public void WriteBytes(List<byte> v)
+    {
+        var span = CollectionsMarshal.AsSpan(v);
+        span.CopyTo(stream.Span[Position..]);
+        Skip(span.Length);
     }
 
     /// <summary>

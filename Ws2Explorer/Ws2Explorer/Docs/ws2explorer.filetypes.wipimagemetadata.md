@@ -1,15 +1,15 @@
-# PnaImageMetadata
+# WipImageMetadata
 
 Namespace: Ws2Explorer.FileTypes
 
-Metadata in a PNA file for a single PNG.
+Metadata in a WIP file for a single image.
 
 ```csharp
-public class PnaImageMetadata : System.IEquatable`1[[Ws2Explorer.FileTypes.PnaImageMetadata, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+public class WipImageMetadata : System.IEquatable`1[[Ws2Explorer.FileTypes.WipImageMetadata, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
 ```
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [PnaImageMetadata](./ws2explorer.filetypes.pnaimagemetadata.md)<br>
-Implements [IEquatable&lt;PnaImageMetadata&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.iequatable-1)<br>
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [WipImageMetadata](./ws2explorer.filetypes.wipimagemetadata.md)<br>
+Implements [IEquatable&lt;WipImageMetadata&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.iequatable-1)<br>
 Attributes [NullableContextAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullablecontextattribute), [NullableAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullableattribute), [RequiredMemberAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.requiredmemberattribute)
 
 ## Properties
@@ -24,59 +24,9 @@ protected Type EqualityContract { get; }
 
 [Type](https://docs.microsoft.com/en-us/dotnet/api/system.type)<br>
 
-### **Unknown00**
-
-Unknown.
-
-```csharp
-public int Unknown00 { get; set; }
-```
-
-#### Property Value
-
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
-
-### **FileId**
-
-The 0-based index of the PNG file in the PNA file counted from the end.
- If the image is empty (0 bytes), this is -1.
- It seems like the engine doesn't really care about this value.
-
-```csharp
-public int FileId { get; set; }
-```
-
-#### Property Value
-
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
-
-### **OffsetX**
-
-The X offset of this PNG image in the full PNA image space.
-
-```csharp
-public int OffsetX { get; set; }
-```
-
-#### Property Value
-
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
-
-### **OffsetY**
-
-The Y offset of this PNG image in the full PNA image space.
-
-```csharp
-public int OffsetY { get; set; }
-```
-
-#### Property Value
-
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
-
 ### **Width**
 
-The width of the PNG image in pixels.
+The width of the image in pixels.
 
 ```csharp
 public int Width { get; set; }
@@ -88,7 +38,7 @@ public int Width { get; set; }
 
 ### **Height**
 
-The height of the PNG image in pixels.
+The height of the image in pixels.
 
 ```csharp
 public int Height { get; set; }
@@ -98,34 +48,45 @@ public int Height { get; set; }
 
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
-### **Unknown24**
+### **OffsetX**
 
-Unknown.
+The X offset of this image in the full WIP image.
 
 ```csharp
-public int Unknown24 { get; set; }
+public int OffsetX { get; set; }
 ```
 
 #### Property Value
 
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
-### **Transparency**
+### **OffsetY**
 
-The transparency of the PNG image between 0 and 1.
- It is strange that this is an unaligned 64-bit float.
+The Y offset of this image in the full WIP image.
 
 ```csharp
-public double Transparency { get; set; }
+public int OffsetY { get; set; }
 ```
 
 #### Property Value
 
-[Double](https://docs.microsoft.com/en-us/dotnet/api/system.double)<br>
+[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
+### **Unknown10**
+
+Unknown.
+
+```csharp
+public int Unknown10 { get; set; }
+```
+
+#### Property Value
+
+[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
 ### **DataLen**
 
-The length of the PNG image data in bytes.
+The length of the compressed image data in bytes.
 
 ```csharp
 public int DataLen { get; set; }
@@ -137,7 +98,7 @@ public int DataLen { get; set; }
 
 ## Constructors
 
-### **PnaImageMetadata(Int32, Int32, Int32, Int32, Int32, Int32, Int32, Double, Int32)**
+### **WipImageMetadata(Int32, Int32, Int32, Int32, Int32, Int32)**
 
 #### Caution
 
@@ -145,33 +106,27 @@ Constructors of types with required members are not supported in this version of
 
 ---
 
-Constructs PNG image metadata.
+Constructs metadata for a single WIP image.
 
 ```csharp
-public PnaImageMetadata(int unknown00, int fileId, int offsetX, int offsetY, int width, int height, int unknown24, double transparency, int dataLen)
+public WipImageMetadata(int width, int height, int offsetX, int offsetY, int unknown10, int dataLen)
 ```
 
 #### Parameters
-
-`unknown00` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
-
-`fileId` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
-
-`offsetX` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
-
-`offsetY` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
 `width` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
 `height` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
-`unknown24` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+`offsetX` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
-`transparency` [Double](https://docs.microsoft.com/en-us/dotnet/api/system.double)<br>
+`offsetY` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
+`unknown10` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
 `dataLen` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
-### **PnaImageMetadata()**
+### **WipImageMetadata()**
 
 #### Caution
 
@@ -179,21 +134,21 @@ Constructors of types with required members are not supported in this version of
 
 ---
 
-Constructs PNG image metadata.
+Constructs metadata for a single WIP image.
 
 ```csharp
-public PnaImageMetadata()
+public WipImageMetadata()
 ```
 
-### **PnaImageMetadata(PnaImageMetadata)**
+### **WipImageMetadata(WipImageMetadata)**
 
 ```csharp
-protected PnaImageMetadata(PnaImageMetadata original)
+protected WipImageMetadata(WipImageMetadata original)
 ```
 
 #### Parameters
 
-`original` [PnaImageMetadata](./ws2explorer.filetypes.pnaimagemetadata.md)<br>
+`original` [WipImageMetadata](./ws2explorer.filetypes.wipimagemetadata.md)<br>
 
 ## Methods
 
@@ -245,15 +200,15 @@ public bool Equals(object obj)
 
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
-### **Equals(PnaImageMetadata)**
+### **Equals(WipImageMetadata)**
 
 ```csharp
-public bool Equals(PnaImageMetadata other)
+public bool Equals(WipImageMetadata other)
 ```
 
 #### Parameters
 
-`other` [PnaImageMetadata](./ws2explorer.filetypes.pnaimagemetadata.md)<br>
+`other` [WipImageMetadata](./ws2explorer.filetypes.wipimagemetadata.md)<br>
 
 #### Returns
 
@@ -262,9 +217,9 @@ public bool Equals(PnaImageMetadata other)
 ### **&lt;Clone&gt;$()**
 
 ```csharp
-public PnaImageMetadata <Clone>$()
+public WipImageMetadata <Clone>$()
 ```
 
 #### Returns
 
-[PnaImageMetadata](./ws2explorer.filetypes.pnaimagemetadata.md)<br>
+[WipImageMetadata](./ws2explorer.filetypes.wipimagemetadata.md)<br>

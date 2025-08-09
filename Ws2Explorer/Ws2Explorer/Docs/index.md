@@ -34,9 +34,13 @@
 
 [IFile&lt;T&gt;](./ws2explorer.ifile-1.md)
 
+[IFileExtensions](./ws2explorer.ifileextensions.md)
+
 [IFolder](./ws2explorer.ifolder.md)
 
 [IFolderExtensions](./ws2explorer.ifolderextensions.md)
+
+[LZ77](./ws2explorer.lz77.md)
 
 [ProgressReporter](./ws2explorer.progressreporter.md)
 
@@ -84,6 +88,8 @@
 
 [FontType](./ws2explorer.filetypes.fonttype.md)
 
+[ImageArchiveFile](./ws2explorer.filetypes.imagearchivefile.md)
+
 [LegacyArc12File](./ws2explorer.filetypes.legacyarc12file.md)
 
 [LegacyArc8File](./ws2explorer.filetypes.legacyarc8file.md)
@@ -127,6 +133,12 @@
 [TtfFile](./ws2explorer.filetypes.ttffile.md)
 
 [VideoFile](./ws2explorer.filetypes.videofile.md)
+
+[WipFile](./ws2explorer.filetypes.wipfile.md)
+
+[WipHeader](./ws2explorer.filetypes.wipheader.md)
+
+[WipImageMetadata](./ws2explorer.filetypes.wipimagemetadata.md)
 
 [Ws2File](./ws2explorer.filetypes.ws2file.md)
 

@@ -381,7 +381,7 @@ class ApplicationState(string? openPath)
     {
         var index = fileList.IndexOf(selectedFile?.Info!);
         await OpenPathInternal(GetCurrentFolderPathInternal(), ct);
-        if (index != -1)
+        if (index != -1 && index < fileList.Count)
         {
             await SelectSingleFileInternal(index, ct);
         }
@@ -561,28 +561,28 @@ class ApplicationState(string? openPath)
         }
     }
 
-    public void AddPnaEntry()
+    public void AddImageArchiveEntry()
     {
         Protect(interruptable: false, async ct =>
         {
-            if (folderStack[^1].Folder is PnaFile pna)
+            if (folderStack[^1].Folder is ImageArchiveFile imgArc)
             {
                 folderStack[^1] = folderStack[^1] with
                 {
-                    Folder = await pna.AddEntry(progress, ct),
+                    Folder = await imgArc.AddEntry(progress, ct),
                 };
                 await FileTool.PropagateModifications(folderStack, progress, ct);
                 await RefreshFolderInternal(ct);
-                OnStatus?.Invoke("Created new PNA entry.");
+                OnStatus?.Invoke("Created new image archive entry.");
             }
             else
             {
-                throw new InvalidOperationException("Not a PNA file.");
+                throw new InvalidOperationException("Not an image archive file.");
             }
         });
     }
 
-    public void SwapSelectedPnaEntries()
+    public void SwapSelectedImageArchiveEntries()
     {
         Protect(interruptable: false, async ct =>
         {
@@ -592,11 +592,11 @@ class ApplicationState(string? openPath)
             }
             var filename1 = fileList[selectedIndices[0]].Filename;
             var filename2 = fileList[selectedIndices[1]].Filename;
-            if (folderStack[^1].Folder is PnaFile pna)
+            if (folderStack[^1].Folder is ImageArchiveFile imgArc)
             {
                 folderStack[^1] = folderStack[^1] with
                 {
-                    Folder = await pna.SwapEntry(
+                    Folder = await imgArc.SwapEntry(
                         filename1,
                         filename2,
                         progress,
@@ -604,11 +604,11 @@ class ApplicationState(string? openPath)
                 };
                 await FileTool.PropagateModifications(folderStack, progress, ct);
                 await RefreshFolderInternal(ct);
-                OnStatus?.Invoke($"Swapped PNA entries '{filename1}' <-> '{filename2}'.");
+                OnStatus?.Invoke($"Swapped image archive entries '{filename1}' <-> '{filename2}'.");
             }
             else
             {
-                throw new InvalidOperationException("Not a PNA file.");
+                throw new InvalidOperationException("Not an image archive file.");
             }
         });
     }
@@ -1394,7 +1394,8 @@ class ApplicationState(string? openPath)
             OggFile ogg => $"OGG ({ogg.Duration / 60:00}:{ogg.Duration % 60:00})",
             OtfFile => "OTF",
             PanFile => "PAN",
-            PnaFile pna => $"PNA ({pna.Header.ImageWidth}x{pna.Header.ImageHeight})",
+            PnaFile pna => $"PNA ({pna.ImageWidth}x{pna.ImageHeight})",
+            WipFile wip => $"WIP ({wip.ImageWidth}x{wip.ImageHeight})",
             PngFile png => $"PNG ({png.ImageWidth}x{png.ImageHeight})",
             PtfFile ptf => $"PTF ({ptf.FontType})",
             TextFile txt => $"TXT ({txt.Encoding.GetPrettyEncodingName()})",
@@ -1431,8 +1432,13 @@ class ApplicationState(string? openPath)
             OtfFile => "(OTF) OpenType font file",
             PanFile => "(PAN) Audio panning data file?",
             PnaFile pna => "(PNA) PNG array file\n\n"
-                         + $"Dimensions: {pna.Header.ImageWidth}x{pna.Header.ImageHeight}\n"
-                         + $"File count: {pna.Header.FileCount}",
+                         + $"Dimensions: {pna.ImageWidth}x{pna.ImageHeight}\n"
+                         + $"Image count: {pna.ImageCount}",
+            WipFile wip => "(WIP) Legacy image array file\n\n"
+                         + $"Image count: {wip.ImageCount}\n"
+                         + $"Dimensions: {wip.ImageWidth}x{wip.ImageHeight}\n"
+                         + $"Bits per pixel: {wip.Header.BitsPerPixel}"
+                            + (wip.Header.BitsPerPixel == 8 ? " (uses palette)" : ""),
             PngFile png => "(PNG) Image file\n\n"
                          + $"Dimensions: {png.ImageWidth}x{png.ImageHeight}\n",
             PtfFile ptf => "(PTF) Compressed font file\n\n"

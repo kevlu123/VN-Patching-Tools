@@ -175,18 +175,17 @@ public sealed class BinaryStream : IDisposable
         Length = len;
     }
 
-    /// <summary>
-    /// Constructs a new binary stream from a part of another binary stream.
-    /// </summary>
-    /// <param name="data"></param>
-    /// <param name="offset"></param>
-    /// <param name="len"></param>
-    private BinaryStream(BinaryStream data, int offset, int len)
+    private BinaryStream(BinaryStream data, int offset, int len, bool freeze)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(offset, nameof(offset));
         ArgumentOutOfRangeException.ThrowIfNegative(len, nameof(len));
         this.offset = data.offset + offset;
         Length = len;
+        if (freeze)
+        {
+            data.Freeze();
+            Freeze();
+        }
         if (data.allocation != null)
         {
             allocation = data.allocation;
@@ -203,10 +202,22 @@ public sealed class BinaryStream : IDisposable
     /// </summary>
     /// <param name="offset"></param>
     /// <param name="len"></param>
+    /// <param name="freeze">Whether to freeze the current and new stream.</param>
     /// <returns></returns>
-    public BinaryStream SubStream(int offset, int len)
+    public BinaryStream SubStream(int offset, int len, bool freeze = true)
     {
-        return new BinaryStream(this, offset, len);
+        return new BinaryStream(this, offset, len, freeze);
+    }
+
+    /// <summary>
+    /// Creates a new binary stream from this stream.
+    /// This freezes both the current and the new stream.
+    /// </summary>
+    /// <param name="freeze">Whether to freeze the current and new stream.</param>
+    /// <returns></returns>
+    public BinaryStream Clone(bool freeze = true)
+    {
+        return new BinaryStream(this, 0, Length, freeze);
     }
 
     /// <summary>
@@ -358,7 +369,8 @@ public sealed class BinaryStream : IDisposable
         return ext switch
         {
             ".png" =>            DecodeWithHint<PngFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
-            ".pna" or ".mos" =>  DecodeWithHint<PnaFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".pna" =>            DecodeWithHint<PnaFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".wip" or ".msk" =>  DecodeWithHint<WipFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".lua" =>            DecodeWithHint<LuacFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".ogg" =>            DecodeWithHint<OggFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".dat" =>            DecodeWithHint<VideoFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
@@ -370,6 +382,8 @@ public sealed class BinaryStream : IDisposable
             ".lng" =>            DecodeWithHint<LngFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".ptf" =>            DecodeWithHint<PtfFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
             ".txt" or ".json" => DecodeWithHint<TextFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence),
+            ".mos" =>            DecodeWithHintOr<PnaFile>(decRef: decRef,
+                                    () => DecodeWithHint<WipFile>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence)),
             ".arc" =>            DecodeWithHintOr<ArcFile>(decRef: decRef,
                                     () => DecodeWithHintOr<LegacyArc12File>(decRef: decRef,
                                         () => DecodeWithHint<LegacyArc8File>(progress, ct, decRef: decRef, requiredHintConfidence: requiredHintConfidence))),
@@ -493,6 +507,7 @@ public sealed class BinaryStream : IDisposable
                 // Try signature verified types first in order of commonality
                 TryType<PngFile>() ||
                 TryType<PnaFile>() ||
+                TryType<WipFile>() ||
                 TryType<LuacFile>() ||
                 TryType<OggFile>() ||
                 TryType<VideoFile>() ||

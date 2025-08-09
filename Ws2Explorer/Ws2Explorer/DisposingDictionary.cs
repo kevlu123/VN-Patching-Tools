@@ -10,7 +10,7 @@ namespace Ws2Explorer;
 /// <typeparam name="V"></typeparam>
 public sealed class DisposingDictionary<K, V> : IDictionary<K, V>, IDisposable
     where K : notnull
-    where V : class
+    where V : class?
 {
     private readonly Action<V> dispose;
     private readonly Dictionary<K, V> dictionary = [];

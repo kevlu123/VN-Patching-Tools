@@ -1,88 +1,28 @@
-# PnaFile
+# WipFile
 
 Namespace: Ws2Explorer.FileTypes
 
-A PNG array file.
+A legacy image array file.
 
 ```csharp
-public sealed class PnaFile : ImageArchiveFile, Ws2Explorer.IArchive, Ws2Explorer.IFile, System.IDisposable, Ws2Explorer.IFolder, Ws2Explorer.IArchive`1[[Ws2Explorer.FileTypes.PnaFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], Ws2Explorer.IFile`1[[Ws2Explorer.FileTypes.PnaFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+public sealed class WipFile : ImageArchiveFile, Ws2Explorer.IArchive, Ws2Explorer.IFile, System.IDisposable, Ws2Explorer.IFolder, Ws2Explorer.IArchive`1[[Ws2Explorer.FileTypes.WipFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], Ws2Explorer.IFile`1[[Ws2Explorer.FileTypes.WipFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
 ```
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ImageArchiveFile](./ws2explorer.filetypes.imagearchivefile.md) → [PnaFile](./ws2explorer.filetypes.pnafile.md)<br>
-Implements [IArchive](./ws2explorer.iarchive.md), [IFile](./ws2explorer.ifile.md), [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable), [IFolder](./ws2explorer.ifolder.md), [IArchive&lt;PnaFile&gt;](./ws2explorer.iarchive-1.md), [IFile&lt;PnaFile&gt;](./ws2explorer.ifile-1.md)<br>
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ImageArchiveFile](./ws2explorer.filetypes.imagearchivefile.md) → [WipFile](./ws2explorer.filetypes.wipfile.md)<br>
+Implements [IArchive](./ws2explorer.iarchive.md), [IFile](./ws2explorer.ifile.md), [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable), [IFolder](./ws2explorer.ifolder.md), [IArchive&lt;WipFile&gt;](./ws2explorer.iarchive-1.md), [IFile&lt;WipFile&gt;](./ws2explorer.ifile-1.md)<br>
 Attributes [NullableContextAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullablecontextattribute), [NullableAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullableattribute)
 
 ## Fields
 
 ### **SIGNATURE**
 
-The PNA file signature (PNAP).
+WIP file signature as a little-endian 4-byte integer.
 
 ```csharp
 public static int SIGNATURE;
 ```
 
 ## Properties
-
-### **Header**
-
-The PNA file header.
-
-```csharp
-public PnaHeader Header { get; }
-```
-
-#### Property Value
-
-[PnaHeader](./ws2explorer.filetypes.pnaheader.md)<br>
-
-### **ImageMetadata**
-
-The PNG image metadata.
-
-```csharp
-public ImmutableArray<PnaImageMetadata> ImageMetadata { get; }
-```
-
-#### Property Value
-
-ImmutableArray&lt;PnaImageMetadata&gt;<br>
-
-### **ImageCount**
-
-The number of images in the PNA file including empty images.
-
-```csharp
-public int ImageCount { get; }
-```
-
-#### Property Value
-
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
-
-### **ImageWidth**
-
-The width of the space that the PNA image array takes up.
-
-```csharp
-public int ImageWidth { get; }
-```
-
-#### Property Value
-
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
-
-### **ImageHeight**
-
-The height of the space that the PNA image array takes up.
-
-```csharp
-public int ImageHeight { get; }
-```
-
-#### Property Value
-
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
 ### **Stream**
 
@@ -96,14 +36,74 @@ public BinaryStream Stream { get; }
 
 [BinaryStream](./ws2explorer.binarystream.md)<br>
 
+### **Header**
+
+The WIP file header.
+
+```csharp
+public WipHeader Header { get; }
+```
+
+#### Property Value
+
+[WipHeader](./ws2explorer.filetypes.wipheader.md)<br>
+
+### **ImageMetadata**
+
+The image metadata for each image in the WIP file.
+
+```csharp
+public ImmutableArray<WipImageMetadata> ImageMetadata { get; }
+```
+
+#### Property Value
+
+ImmutableArray&lt;WipImageMetadata&gt;<br>
+
+### **ImageCount**
+
+The number of images in the WIP file including empty images.
+
+```csharp
+public int ImageCount { get; }
+```
+
+#### Property Value
+
+[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
+### **ImageWidth**
+
+The width of the space that the WIP image array takes up.
+
+```csharp
+public int ImageWidth { get; }
+```
+
+#### Property Value
+
+[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
+### **ImageHeight**
+
+The height of the space that the WIP image array takes up.
+
+```csharp
+public int ImageHeight { get; }
+```
+
+#### Property Value
+
+[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
 ## Methods
 
 ### **Decode(BinaryStream, DecodeConfidence&)**
 
-Decodes a PNA file from a binary stream.
+Decodes a WIP file from a binary stream.
 
 ```csharp
-public static PnaFile Decode(BinaryStream stream, DecodeConfidence& confidence)
+public static WipFile Decode(BinaryStream stream, DecodeConfidence& confidence)
 ```
 
 #### Parameters
@@ -114,23 +114,7 @@ public static PnaFile Decode(BinaryStream stream, DecodeConfidence& confidence)
 
 #### Returns
 
-[PnaFile](./ws2explorer.filetypes.pnafile.md)<br>
-
-### **Create(IDictionary&lt;String, BinaryStream&gt;)**
-
-Constructs a PNA file from subfiles.
-
-```csharp
-public IArchive Create(IDictionary<string, BinaryStream> contents)
-```
-
-#### Parameters
-
-`contents` [IDictionary&lt;String, BinaryStream&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.idictionary-2)<br>
-
-#### Returns
-
-[IArchive](./ws2explorer.iarchive.md)<br>
+[WipFile](./ws2explorer.filetypes.wipfile.md)<br>
 
 ### **ListFiles()**
 
@@ -164,3 +148,19 @@ public Task<BinaryStream> OpenFile(string filename, IProgress<TaskProgressInfo> 
 #### Returns
 
 [Task&lt;BinaryStream&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1)<br>
+
+### **Create(IDictionary&lt;String, BinaryStream&gt;)**
+
+Constructs a WIP file from subfiles.
+
+```csharp
+public IArchive Create(IDictionary<string, BinaryStream> contents)
+```
+
+#### Parameters
+
+`contents` [IDictionary&lt;String, BinaryStream&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.idictionary-2)<br>
+
+#### Returns
+
+[IArchive](./ws2explorer.iarchive.md)<br>

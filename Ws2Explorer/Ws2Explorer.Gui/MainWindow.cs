@@ -575,14 +575,14 @@ partial class MainWindow : Form
         });
     }
 
-    private void PnaAddEntry_MenuItemClicked(object sender, EventArgs e)
+    private void PnaWipAddEntry_MenuItemClicked(object sender, EventArgs e)
     {
-        state.AddPnaEntry();
+        state.AddImageArchiveEntry();
     }
 
-    private void PnaSwap_MenuItemClicked(object sender, EventArgs e)
+    private void PnaWipSwap_MenuItemClicked(object sender, EventArgs e)
     {
-        state.SwapSelectedPnaEntries();
+        state.SwapSelectedImageArchiveEntries();
     }
 
     private void Refresh_MenuItemClicked(object sender, EventArgs e)
@@ -737,6 +737,15 @@ partial class MainWindow : Form
         }
     }
 
+    private void OpenAsWip_MenuItemClicked(object sender, EventArgs e)
+    {
+        if (files_ListView.SelectedIndices.Count == 1)
+        {
+            var index = files_ListView.SelectedIndices[0];
+            state.OpenArchiveAs<WipFile>(index);
+        }
+    }
+
     private void OpenAsPan_MenuItemClicked(object sender, EventArgs e)
     {
         if (files_ListView.SelectedIndices.Count == 1)
@@ -800,6 +809,11 @@ partial class MainWindow : Form
     private void CreatePna_MenuItemClicked(object sender, EventArgs e)
     {
         CreateArchive<PnaFile>(new CommonFileDialogFilter("PNA file", "*.pna"));
+    }
+
+    private void CreateWip_MenuItemClicked(object sender, EventArgs e)
+    {
+        CreateArchive<WipFile>(new CommonFileDialogFilter("WIP file", "*.WIP"));
     }
 
     private void CreatePan_MenuItemClicked(object sender, EventArgs e)

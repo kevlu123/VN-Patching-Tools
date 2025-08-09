@@ -55,7 +55,7 @@ public record PnaHeader
 }
 
 /// <summary>
-/// PNG image metadata in a PNA file.
+/// Metadata in a PNA file for a single PNG.
 /// </summary>
 public record PnaImageMetadata
 {
@@ -84,12 +84,12 @@ public record PnaImageMetadata
     public required int OffsetY { get; init; }
 
     /// <summary>
-    /// The width of the PNG image.
+    /// The width of the PNG image in pixels.
     /// </summary>
     public required int Width { get; init; }
 
     /// <summary>
-    ///  The height of the PNG image.
+    ///  The height of the PNG image in pixels.
     /// </summary>
     public required int Height { get; init; }
 
@@ -125,7 +125,7 @@ public record PnaImageMetadata
     public PnaImageMetadata(int unknown00, int fileId, int offsetX, int offsetY, int width, int height, int unknown24, double transparency, int dataLen)
         => (Unknown00, FileId, OffsetX, OffsetY, Width, Height, Unknown24, Transparency, DataLen)
         = (unknown00, fileId, offsetX, offsetY, width, height, unknown24, transparency, dataLen);
-    
+
     /// <summary>
     /// Constructs PNG image metadata.
     /// </summary>
@@ -135,17 +135,12 @@ public record PnaImageMetadata
 /// <summary>
 /// A PNG array file.
 /// </summary>
-public sealed class PnaFile : IArchive<PnaFile>
+public sealed class PnaFile : ImageArchiveFile, IArchive<PnaFile>
 {
     /// <summary>
     /// The PNA file signature (PNAP).
     /// </summary>
     public const int SIGNATURE = 0x50414E50;
-
-    /// <summary>
-    /// The header file filename.
-    /// </summary>
-    public const string HEADER_FILENAME = "header.json";
 
     /// <summary>
     /// The PNA file header.
@@ -158,12 +153,26 @@ public sealed class PnaFile : IArchive<PnaFile>
     public ImmutableArray<PnaImageMetadata> ImageMetadata => [.. imageMetas];
 
     private readonly List<PnaImageMetadata> imageMetas;
-    private bool disposedValue;
+
+    /// <summary>
+    /// The number of images in the PNA file including empty images.
+    /// </summary>
+    public override int ImageCount => Header.FileCount;
+
+    /// <summary>
+    /// The width of the space that the PNA image array takes up.
+    /// </summary>
+    public override int ImageWidth => Header.ImageWidth;
+
+    /// <summary>
+    /// The height of the space that the PNA image array takes up.
+    /// </summary>
+    public override int ImageHeight => Header.ImageHeight;
 
     /// <summary>
     /// The underlying binary stream.
     /// </summary>
-    public BinaryStream Stream { get; }
+    public override BinaryStream Stream { get; }
 
     private PnaFile(BinaryStream stream, out DecodeConfidence confidence)
     {
@@ -215,106 +224,159 @@ public sealed class PnaFile : IArchive<PnaFile>
 
     private PnaFile(IDictionary<string, BinaryStream> contents)
     {
-        var pngs = new List<PngFile?>();
-        var metaStreams = new List<BinaryStream>();
-        BinaryStream? headerStream = null;
-
-        var exampleMeta = new BinaryStream(
-            JsonSerializer.SerializeToUtf8Bytes(new PnaImageMetadata
-            {
-                Unknown00 = 0,
-                FileId = 0,
-                OffsetX = 0,
-                OffsetY = 0,
-                Width = PngFile.Example.ImageHeight,
-                Height = PngFile.Example.ImageWidth,
-                Unknown24 = 0,
-                Transparency = 1.0,
-                DataLen = 0,
-            }));
-
-        foreach (var (name, stream) in contents)
+        // Group files into header, metadata, and images.
+        var groups = contents.ToLookup(kvp =>
         {
-            if (name == HEADER_FILENAME)
+            if (MetaIndex(kvp.Key) != null)
             {
-                headerStream = stream;
-                continue;
+                return "meta";
             }
-
-            int? imageIndex = ImageIndex(name);
-            int? metaIndex = MetaIndex(name);
-            int index = imageIndex ?? metaIndex ?? throw new ArchiveCreationException($"Invalid file name '{name}'.");
-
-            while (pngs.Count <= index)
+            else if (ImageIndex(kvp.Key) != null)
             {
-                pngs.Add(PngFile.Example);
+                return "image";
             }
-            while (metaStreams.Count <= index)
+            else if (kvp.Key.Equals(HEADER_FILENAME, StringComparison.InvariantCultureIgnoreCase))
             {
-                metaStreams.Add(exampleMeta);
+                return "header";
             }
-
-            if (imageIndex != null)
+            else
             {
-                if (stream.Length == 0)
+                throw new ArchiveCreationException($"Invalid file name '{kvp.Key}'.");
+            }
+        });
+
+        if (!groups["header"].Any())
+        {
+            throw new ArchiveCreationException($"Missing {HEADER_FILENAME}.");
+        }
+        else if (groups["header"].Count() > 1)
+        {
+            throw new ArchiveCreationException($"Multiple {HEADER_FILENAME}.");
+        }
+
+        var headerStream = groups["header"].First().Value;
+        var metaStreams = groups["meta"]
+            .Select(kvp => new { Index = MetaIndex(kvp.Key)!.Value, Stream = kvp.Value })
+            .OrderByDescending(x => x.Index)
+            .ToList();
+        var imageStreams = groups["image"]
+            .Select(kvp => new { Index = ImageIndex(kvp.Key)!.Value, Stream = kvp.Value })
+            .OrderByDescending(x => x.Index)
+            .ToList();
+
+        // Deserialise
+        Header = JsonSerializer.Deserialize<PnaHeader>(headerStream.Span)
+            ?? throw new ArchiveCreationException("Invalid header.");
+
+        imageMetas = [];
+        using var images = new DisposingList<PngFile?>();
+        var count = Math.Max(
+            metaStreams.Count > 0 ? metaStreams.Max(x => x.Index + 1) : 0,
+            imageStreams.Count > 0 ? imageStreams.Max(x => x.Index + 1) : 0);
+        if (count >= 10000)
+        {
+            throw new ArchiveCreationException("PNA files with more than 10000 images are not supported.");
+        }
+        for (int i = 0; i < count; i++)
+        {
+            if (imageStreams.Count > 0 && imageStreams[^1].Index == i)
+            {
+                if (imageStreams[^1].Stream.Length == 0)
                 {
-                    pngs[index] = null;
+                    images.Add(null);
                 }
                 else
                 {
-                    pngs[index] = PngFile.Decode(stream, out _);
+                    images.Add(PngFile.Decode(imageStreams[^1].Stream, out _));
+                }
+                imageStreams.RemoveAt(imageStreams.Count - 1);
+                if (imageStreams.Count > 0 && imageStreams[^1].Index == i)
+                {
+                    throw new ArchiveCreationException($"Duplicate image index found: {i}");
                 }
             }
             else
             {
-                metaStreams[index] = stream;
+                images.Add(null);
+            }
+
+            if (metaStreams.Count > 0 && metaStreams[^1].Index == i)
+            {
+                imageMetas.Add(JsonSerializer.Deserialize<PnaImageMetadata>(
+                    metaStreams[^1].Stream.Span));
+                metaStreams.RemoveAt(metaStreams.Count - 1);
+                if (metaStreams.Count > 0 && metaStreams[^1].Index == i)
+                {
+                    throw new ArchiveCreationException($"Duplicate metadata index found: {i}");
+                }
+            }
+            else
+            {
+                imageMetas.Add(new PnaImageMetadata
+                {
+                    Unknown00 = 0,
+                    FileId = 0, // Adjusted later
+                    OffsetX = 0,
+                    OffsetY = 0,
+                    Width = 0, // Adjusted later
+                    Height = 0, // Adjusted later
+                    Unknown24 = 0,
+                    Transparency = 1.0,
+                    DataLen = 0, // Adjusted later
+                });
             }
         }
 
-        if (headerStream == null)
+        // Adjust fields
+        for (int i = 0; i < count; i++)
         {
-            throw new ArchiveCreationException($"Missing {HEADER_FILENAME}.");
+            var image = images[i];
+            imageMetas[i] = imageMetas[i] with
+            {
+                FileId = image == null ? -1 : count - i - 1,
+                Width = image?.ImageWidth ?? 0,
+                Height = image?.ImageHeight ?? 0,
+                DataLen = image?.Stream.Length ?? 0,
+            };
         }
+        Header = Header with
+        {
+            Signature = SIGNATURE,
+            FileCount = count,
+        };
 
-        imageMetas = metaStreams.ConvertAll(stream =>
-            JsonSerializer.Deserialize<PnaImageMetadata>(stream.Span));
-
-        Header = JsonSerializer.Deserialize<PnaHeader>(headerStream.Span);
-
-        var totalLen = PnaHeader.Size
-            + (imageMetas.Count * PnaImageMetadata.Size)
-            + Enumerable.Range(0, imageMetas.Count)
-                .Sum(i => pngs[i]?.Stream.Length ?? 0);
-        Stream = new BinaryStream(totalLen);
-        var writer = new BinaryWriter(Stream);
-        writer.WriteInt32(SIGNATURE);
+        // Serialise
+        using var stream = new BinaryStream(PnaHeader.Size
+            + (PnaImageMetadata.Size * count)
+            + images.Sum(img => img?.Stream.Length ?? 0));
+        var writer = new BinaryWriter(stream);
+        writer.WriteInt32(Header.Signature);
         writer.WriteInt32(Header.Unknown04);
         writer.WriteInt32(Header.ImageWidth);
         writer.WriteInt32(Header.ImageHeight);
-        writer.WriteInt32(imageMetas.Count);
-        int i = 0;
+        writer.WriteInt32(Header.FileCount);
         foreach (var meta in imageMetas)
         {
             writer.WriteInt32(meta.Unknown00);
             writer.WriteInt32(meta.FileId);
             writer.WriteInt32(meta.OffsetX);
             writer.WriteInt32(meta.OffsetY);
-            writer.WriteInt32(pngs[i]?.ImageWidth ?? 0);
-            writer.WriteInt32(pngs[i]?.ImageHeight ?? 0);
+            writer.WriteInt32(meta.Width);
+            writer.WriteInt32(meta.Height);
             writer.WriteInt32(meta.Unknown24);
             writer.WriteFloat64(meta.Transparency);
-            writer.WriteInt32(pngs[i]?.Stream.Length ?? 0);
-            i++;
+            writer.WriteInt32(meta.DataLen);
         }
-        foreach (var png in pngs)
+        foreach (var image in images)
         {
-            if (png != null)
+            if (image != null)
             {
-                writer.WriteBytes(png.Stream.Span);
+                writer.WriteBytes(image.Stream.Span);
             }
         }
-
-        Stream.Freeze();
+        stream.IncRef();
+        stream.Freeze();
+        Stream = stream;
     }
 
     /// <summary>
@@ -335,26 +397,26 @@ public sealed class PnaFile : IArchive<PnaFile>
     /// </summary>
     /// <param name="contents"></param>
     /// <returns></returns>
-    public static PnaFile Create(IDictionary<string, BinaryStream> contents)
+    static PnaFile IArchive<PnaFile>.Create(IDictionary<string, BinaryStream> contents)
     {
         return ArchiveCreationException.Wrap(() => new PnaFile(contents));
     }
 
     /// <summary>
-    /// See <see cref="Create(IDictionary{string, BinaryStream})"/>.
+    /// Constructs a PNA file from subfiles.
     /// </summary>
     /// <param name="contents"></param>
     /// <returns></returns>
-    IArchive IArchive.Create(IDictionary<string, BinaryStream> contents)
+    public override IArchive Create(IDictionary<string, BinaryStream> contents)
     {
-        return Create(contents);
+        return ArchiveCreationException.Wrap(() => new PnaFile(contents));
     }
 
     /// <summary>
     /// Lists the (possibly virtual) subfiles.
     /// </summary>
     /// <returns></returns>
-    public List<FileInfo> ListFiles()
+    public override List<FileInfo> ListFiles()
     {
         var fileList = imageMetas
             .Select((_, i) => new FileInfo
@@ -382,7 +444,7 @@ public sealed class PnaFile : IArchive<PnaFile>
     /// <param name="progress"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    public Task<BinaryStream> OpenFile(
+    public override Task<BinaryStream> OpenFile(
         string filename,
         IProgress<TaskProgressInfo>? progress = null,
         CancellationToken ct = default)
@@ -414,170 +476,5 @@ public sealed class PnaFile : IArchive<PnaFile>
         }
 
         throw new FileNotFoundException(filename);
-    }
-
-    /// <summary>
-    /// Adds a dummy PNG image and metadata to the PNA file,
-    /// increasing the file count by 1.
-    /// </summary>
-    /// <param name="progress"></param>
-    /// <param name="ct"></param>
-    /// <returns>The new PNA file.</returns>
-    public async Task<PnaFile> AddEntry(
-        IProgress<TaskProgressInfo>? progress = null,
-        CancellationToken ct = default)
-    {
-        var content = await this.LoadAllStreams(progress, ct);
-        var header = Header with { FileCount = Header.FileCount + 1 };
-        var meta = new PnaImageMetadata
-        {
-            Unknown00 = 0,
-            FileId = 0,
-            OffsetX = 0,
-            OffsetY = 0,
-            Width = PngFile.Example.ImageHeight,
-            Height = PngFile.Example.ImageWidth,
-            Unknown24 = 0,
-            Transparency = 1.0,
-            DataLen = PngFile.Example.Stream.Length,
-        };
-        var headerJson = JsonSerializer.SerializeToUtf8Bytes(header);
-        var metaJson = JsonSerializer.SerializeToUtf8Bytes(meta);
-        content[HEADER_FILENAME] = new BinaryStream(headerJson);
-        content[MetaName(Header.FileCount)] = new BinaryStream(metaJson);
-        content[ImageName(Header.FileCount)] = PngFile.Example.Stream;
-        return Create(content);
-    }
-
-    /// <summary>
-    /// Swaps the index of two (possibly empty) PNG images and their metadata.
-    /// </summary>
-    /// <param name="filename1">
-    /// The PNG filename or PNG metadata filename of the image to swap.
-    /// </param>
-    /// <param name="filename2">
-    /// The PNG filename or PNG metadata filename of the image to swap.
-    /// </param>
-    /// <param name="progress"></param>
-    /// <param name="ct"></param>
-    /// <returns>The new PNA file.</returns>
-    public async Task<PnaFile> SwapEntry(
-        string filename1,
-        string filename2,
-        IProgress<TaskProgressInfo>? progress = null,
-        CancellationToken ct = default)
-    {
-        int index1 = ImageIndex(filename1) ?? MetaIndex(filename1) ?? throw new FileNotFoundException(filename1);
-        int index2 = ImageIndex(filename2) ?? MetaIndex(filename2) ?? throw new FileNotFoundException(filename2);
-        return await SwapEntry(index1, index2, progress, ct);
-    }
-
-    /// <summary>
-    /// Swaps the index of two (possibly empty) PNG images and their metadata.
-    /// </summary>
-    /// <param name="index1"></param>
-    /// <param name="index2"></param>
-    /// <param name="progress"></param>
-    /// <param name="ct"></param>
-    /// <returns>The new PNA file.</returns>
-    public async Task<PnaFile> SwapEntry(
-        int index1,
-        int index2,
-        IProgress<TaskProgressInfo>? progress = null,
-        CancellationToken ct = default)
-    {
-        var content = await this.LoadAllStreams(progress, ct);
-        if (index1 != index2 || index1 < Header.FileCount)
-        {
-            var meta1 = MetaName(index1);
-            var meta2 = MetaName(index2);
-            (content[meta1], content[meta2]) = (content[meta2], content[meta1]);
-
-            var image1 = ImageName(index1);
-            var image2 = ImageName(index2);
-            (content[image1], content[image2]) = (content[image2], content[image1]);
-        }
-        return Create(content);
-    }
-
-    /// <summary>
-    /// Gets the PNG filename from the index.
-    /// </summary>
-    /// <param name="index"></param>
-    /// <returns></returns>
-    public static string ImageName(int index)
-    {
-        if (index < 0 || index >= 1000)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
-        return $"img{index:D3}.png";
-    }
-
-    /// <summary>
-    /// Gets the PNG metadata filename from the index.
-    /// </summary>
-    /// <param name="index"></param>
-    /// <returns></returns>
-    public static string MetaName(int index)
-    {
-        if (index < 0 || index >= 1000)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
-        return $"meta{index:D3}.json";
-    }
-
-    /// <summary>
-    /// Gets the index of the PNG file from the filename.
-    /// e.g. "img21.png" -> 21
-    /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    public static int? ImageIndex(string name)
-    {
-        name = name.ToLowerInvariant();
-        if (name.StartsWith("img") && name.EndsWith(".png") && int.TryParse(name[3..^4], out int v))
-        {
-            return v;
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// Gets the index of the corresponding PNG file from a PNG metadata filename.
-    /// e.g. "meta21.json" -> 21
-    /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    public static int? MetaIndex(string name)
-    {
-        name = name.ToLowerInvariant();
-        if (name.StartsWith("meta") && name.EndsWith(".json") && int.TryParse(name[4..^5], out int v))
-        {
-            return v;
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// Disposes the PNA file.
-    /// </summary>
-    public void Dispose()
-    {
-        if (!disposedValue)
-        {
-            Stream?.DecRef();
-            disposedValue = true;
-        }
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Disposes the PNA file.
-    /// </summary>
-    ~PnaFile()
-    {
-        Dispose();
     }
 }

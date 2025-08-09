@@ -19,12 +19,12 @@ The opcode.
  See [Opcode](./ws2explorer.compiler.opcode.md).
 
 ```csharp
-public int Code { get; set; }
+public Opcode Code { get; set; }
 ```
 
 #### Property Value
 
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+[Opcode](./ws2explorer.compiler.opcode.md)<br>
 
 ### **Arguments**
 

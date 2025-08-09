@@ -23,22 +23,22 @@ and perform common operations to modify the game.
 
 ### Recognised file types
 
-| Name    | Description                     |
-|---------|---------------------------------|
-| .arc    | Archive/Legacy archive          |
-| .ws2    | Script                          |
-| .wsc    | Legacy Script                   |
-| .dat    | Video                           |
-| .ogg    | Audio                           |
-| .lua    | Compiled Lua                    |
-| .lng    | Language pack                   |
-| .ptf    | Compressed font                 |
-| .otf    | Open type font                  |
-| .ttf    | True type font                  |
-| .pna    | PNG array archive               |
-| .mos    | Same as .pna but used for masks |
-| .png    | PNG image                       |
-| pan.dat | Audio panning data?             |
+| Name             | Description                     |
+|------------------|---------------------------------|
+| .arc             | Archive/Legacy archive          |
+| .ws2             | Script                          |
+| .wsc             | Legacy Script                   |
+| .dat             | Video                           |
+| .ogg             | Audio                           |
+| .lua             | Compiled Lua                    |
+| .lng             | Language pack                   |
+| .ptf             | Compressed font                 |
+| .otf             | Open type font                  |
+| .ttf             | True type font                  |
+| .pna, .mos       | PNG array archive               |
+| .wip, .msk, .mos | Legacy image array archive      |
+| .png             | PNG image                       |
+| pan.dat          | Audio panning data?             |
 
 ### Features
 
@@ -48,8 +48,8 @@ and perform common operations to modify the game.
 - Decompile/compile WS2 and WSC scripts.
 - Create archives.
 - Edit file in editor or your choice.
-- Add new images to PNA files.
-- Rearrange images in PNA files.
+- Add new images to PNA/WIP files.
+- Rearrange images in PNA/WIP files.
 - Run game with Locale Emulator
 - Set WS2 entry point.
 - Edit character names.

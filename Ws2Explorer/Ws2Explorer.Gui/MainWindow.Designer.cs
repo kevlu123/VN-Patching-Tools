@@ -59,6 +59,7 @@
             createLegacyArc8_MenuItem = new ToolStripMenuItem();
             createLegacyArc12_MenuItem = new ToolStripMenuItem();
             createPna_MenuItem = new ToolStripMenuItem();
+            createWip_MenuItem = new ToolStripMenuItem();
             createPan_MenuItem = new ToolStripMenuItem();
             createPtf_MenuItem = new ToolStripMenuItem();
             createWs2_MenuItem = new ToolStripMenuItem();
@@ -86,6 +87,7 @@
             editAsText_MenuItem = new ToolStripMenuItem();
             editAsImage_MenuItem = new ToolStripMenuItem();
             editAsHex_MenuItem = new ToolStripMenuItem();
+            editScript_MenuItem = new ToolStripMenuItem();
             toolStripSeparator4 = new ToolStripSeparator();
             rename_MenuItem = new ToolStripMenuItem();
             delete_MenuItem = new ToolStripMenuItem();
@@ -96,7 +98,7 @@
             toolStripSeparator6 = new ToolStripSeparator();
             changePath_MenuItem = new ToolStripMenuItem();
             toolStripSeparator13 = new ToolStripSeparator();
-            editPna_MenuItem = new ToolStripMenuItem();
+            editPnaWip_MenuItem = new ToolStripMenuItem();
             pnaAddEntry_MenuItem = new ToolStripMenuItem();
             swap_MenuItem = new ToolStripMenuItem();
             view_MenuItem = new ToolStripMenuItem();
@@ -124,7 +126,7 @@
             mermaidFlowchart_MenuItem = new ToolStripMenuItem();
             jsonFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
-            editScript_MenuItem = new ToolStripMenuItem();
+            openAsWip_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -336,7 +338,7 @@
             // 
             // createArchive_MenuItem
             // 
-            createArchive_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { createArc_MenuItem, createLegacyArc8_MenuItem, createLegacyArc12_MenuItem, createPna_MenuItem, createPan_MenuItem, createPtf_MenuItem, createWs2_MenuItem, createWsc_MenuItem, createLng_MenuItem });
+            createArchive_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { createArc_MenuItem, createLegacyArc8_MenuItem, createLegacyArc12_MenuItem, createPna_MenuItem, createWip_MenuItem, createPan_MenuItem, createPtf_MenuItem, createWs2_MenuItem, createWsc_MenuItem, createLng_MenuItem });
             createArchive_MenuItem.Name = "createArchive_MenuItem";
             createArchive_MenuItem.Size = new Size(244, 22);
             createArchive_MenuItem.Text = "Create Archive";
@@ -373,10 +375,18 @@
             createPna_MenuItem.Text = "PNA";
             createPna_MenuItem.Click += CreatePna_MenuItemClicked;
             // 
+            // createWip_MenuItem
+            // 
+            createWip_MenuItem.Name = "createWip_MenuItem";
+            createWip_MenuItem.ShortcutKeys = Keys.Control | Keys.F5;
+            createWip_MenuItem.Size = new Size(235, 22);
+            createWip_MenuItem.Text = "WIP";
+            createWip_MenuItem.Click += CreateWip_MenuItemClicked;
+            // 
             // createPan_MenuItem
             // 
             createPan_MenuItem.Name = "createPan_MenuItem";
-            createPan_MenuItem.ShortcutKeys = Keys.Control | Keys.F5;
+            createPan_MenuItem.ShortcutKeys = Keys.Control | Keys.F6;
             createPan_MenuItem.Size = new Size(235, 22);
             createPan_MenuItem.Text = "PAN";
             createPan_MenuItem.Click += CreatePan_MenuItemClicked;
@@ -384,7 +394,7 @@
             // createPtf_MenuItem
             // 
             createPtf_MenuItem.Name = "createPtf_MenuItem";
-            createPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.F6;
+            createPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.F7;
             createPtf_MenuItem.Size = new Size(235, 22);
             createPtf_MenuItem.Text = "PTF...";
             createPtf_MenuItem.Click += CreatePtf_MenuItemClicked;
@@ -392,7 +402,7 @@
             // createWs2_MenuItem
             // 
             createWs2_MenuItem.Name = "createWs2_MenuItem";
-            createWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.F7;
+            createWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.F8;
             createWs2_MenuItem.Size = new Size(235, 22);
             createWs2_MenuItem.Text = "WS2";
             createWs2_MenuItem.Click += CreateWs2_MenuItemClicked;
@@ -400,7 +410,7 @@
             // createWsc_MenuItem
             // 
             createWsc_MenuItem.Name = "createWsc_MenuItem";
-            createWsc_MenuItem.ShortcutKeys = Keys.Control | Keys.F8;
+            createWsc_MenuItem.ShortcutKeys = Keys.Control | Keys.F9;
             createWsc_MenuItem.Size = new Size(235, 22);
             createWsc_MenuItem.Text = "WSC";
             createWsc_MenuItem.Click += CreateWsc_MenuItemClicked;
@@ -408,14 +418,14 @@
             // createLng_MenuItem
             // 
             createLng_MenuItem.Name = "createLng_MenuItem";
-            createLng_MenuItem.ShortcutKeys = Keys.Control | Keys.F9;
+            createLng_MenuItem.ShortcutKeys = Keys.Control | Keys.F10;
             createLng_MenuItem.Size = new Size(235, 22);
             createLng_MenuItem.Text = "LNG...";
             createLng_MenuItem.Click += CreateLng_MenuItemClicked;
             // 
             // openArchiveAs_MenuItem
             // 
-            openArchiveAs_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { openAsArc_MenuItem, openAsLegacyArc8_MenuItem, openAsLegacyArc12_MenuItem, openAsPna_MenuItem, openAsPan_MenuItem, openAsPtf_MenuItem, openAsWs2_MenuItem, openAsWsc_MenuItem, openAsLng_MenuItem });
+            openArchiveAs_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { openAsArc_MenuItem, openAsLegacyArc8_MenuItem, openAsLegacyArc12_MenuItem, openAsPna_MenuItem, openAsWip_MenuItem, openAsPan_MenuItem, openAsPtf_MenuItem, openAsWs2_MenuItem, openAsWsc_MenuItem, openAsLng_MenuItem });
             openArchiveAs_MenuItem.Name = "openArchiveAs_MenuItem";
             openArchiveAs_MenuItem.Size = new Size(244, 22);
             openArchiveAs_MenuItem.Text = "Open Archive As";
@@ -455,7 +465,7 @@
             // openAsPan_MenuItem
             // 
             openAsPan_MenuItem.Name = "openAsPan_MenuItem";
-            openAsPan_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F5;
+            openAsPan_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F6;
             openAsPan_MenuItem.Size = new Size(267, 22);
             openAsPan_MenuItem.Text = "PAN";
             openAsPan_MenuItem.Click += OpenAsPan_MenuItemClicked;
@@ -463,7 +473,7 @@
             // openAsPtf_MenuItem
             // 
             openAsPtf_MenuItem.Name = "openAsPtf_MenuItem";
-            openAsPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F6;
+            openAsPtf_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F7;
             openAsPtf_MenuItem.Size = new Size(267, 22);
             openAsPtf_MenuItem.Text = "PTF";
             openAsPtf_MenuItem.Click += OpenAsPtf_MenuItemClicked;
@@ -471,7 +481,7 @@
             // openAsWs2_MenuItem
             // 
             openAsWs2_MenuItem.Name = "openAsWs2_MenuItem";
-            openAsWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F7;
+            openAsWs2_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F8;
             openAsWs2_MenuItem.Size = new Size(267, 22);
             openAsWs2_MenuItem.Text = "WS2";
             openAsWs2_MenuItem.Click += OpenAsWs2_MenuItemClicked;
@@ -479,7 +489,7 @@
             // openAsWsc_MenuItem
             // 
             openAsWsc_MenuItem.Name = "openAsWsc_MenuItem";
-            openAsWsc_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F8;
+            openAsWsc_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F9;
             openAsWsc_MenuItem.Size = new Size(267, 22);
             openAsWsc_MenuItem.Text = "WSC";
             openAsWsc_MenuItem.Click += OpenAsWsc_MenuItemClicked;
@@ -487,7 +497,7 @@
             // openAsLng_MenuItem
             // 
             openAsLng_MenuItem.Name = "openAsLng_MenuItem";
-            openAsLng_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F9;
+            openAsLng_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F10;
             openAsLng_MenuItem.Size = new Size(267, 22);
             openAsLng_MenuItem.Text = "LNG";
             openAsLng_MenuItem.Click += OpenAsLng_MenuItemClicked;
@@ -537,7 +547,7 @@
             // 
             // edit_MenuItem
             // 
-            edit_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { editInApp_MenuItem, editAs_MenuItem, editScript_MenuItem, toolStripSeparator4, rename_MenuItem, delete_MenuItem, duplicate_MenuItem, toolStripSeparator5, copy_MenuItem, paste_MenuItem, toolStripSeparator6, changePath_MenuItem, toolStripSeparator13, editPna_MenuItem });
+            edit_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { editInApp_MenuItem, editAs_MenuItem, editScript_MenuItem, toolStripSeparator4, rename_MenuItem, delete_MenuItem, duplicate_MenuItem, toolStripSeparator5, copy_MenuItem, paste_MenuItem, toolStripSeparator6, changePath_MenuItem, toolStripSeparator13, editPnaWip_MenuItem });
             edit_MenuItem.Name = "edit_MenuItem";
             edit_MenuItem.Size = new Size(39, 20);
             edit_MenuItem.Text = "Edit";
@@ -580,6 +590,14 @@
             editAsHex_MenuItem.Size = new Size(156, 22);
             editAsHex_MenuItem.Text = "Hex...";
             editAsHex_MenuItem.Click += EditAsHex_MenuItemClicked;
+            // 
+            // editScript_MenuItem
+            // 
+            editScript_MenuItem.Name = "editScript_MenuItem";
+            editScript_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.E;
+            editScript_MenuItem.Size = new Size(246, 22);
+            editScript_MenuItem.Text = "Edit WS2/WSC Text";
+            editScript_MenuItem.Click += EditScriptInApp_MenuItemClicked;
             // 
             // toolStripSeparator4
             // 
@@ -649,12 +667,12 @@
             toolStripSeparator13.Name = "toolStripSeparator13";
             toolStripSeparator13.Size = new Size(243, 6);
             // 
-            // editPna_MenuItem
+            // editPnaWip_MenuItem
             // 
-            editPna_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { pnaAddEntry_MenuItem, swap_MenuItem });
-            editPna_MenuItem.Name = "editPna_MenuItem";
-            editPna_MenuItem.Size = new Size(246, 22);
-            editPna_MenuItem.Text = "PNA";
+            editPnaWip_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { pnaAddEntry_MenuItem, swap_MenuItem });
+            editPnaWip_MenuItem.Name = "editPnaWip_MenuItem";
+            editPnaWip_MenuItem.Size = new Size(246, 22);
+            editPnaWip_MenuItem.Text = "PNA/WIP";
             // 
             // pnaAddEntry_MenuItem
             // 
@@ -662,7 +680,7 @@
             pnaAddEntry_MenuItem.ShortcutKeys = Keys.Control | Keys.H;
             pnaAddEntry_MenuItem.Size = new Size(182, 22);
             pnaAddEntry_MenuItem.Text = "Add Entry";
-            pnaAddEntry_MenuItem.Click += PnaAddEntry_MenuItemClicked;
+            pnaAddEntry_MenuItem.Click += PnaWipAddEntry_MenuItemClicked;
             // 
             // swap_MenuItem
             // 
@@ -670,7 +688,7 @@
             swap_MenuItem.ShortcutKeys = Keys.Control | Keys.G;
             swap_MenuItem.Size = new Size(182, 22);
             swap_MenuItem.Text = "Swap Entries";
-            swap_MenuItem.Click += PnaSwap_MenuItemClicked;
+            swap_MenuItem.Click += PnaWipSwap_MenuItemClicked;
             // 
             // view_MenuItem
             // 
@@ -782,7 +800,7 @@
             launchGame_MenuItem.Name = "launchGame_MenuItem";
             launchGame_MenuItem.ShortcutKeys = Keys.F10;
             launchGame_MenuItem.Size = new Size(249, 22);
-            launchGame_MenuItem.Text = "Launch Game";
+            launchGame_MenuItem.Text = "Launch Game (advhd.exe)";
             launchGame_MenuItem.Click += LaunchGame_MenuItemClicked;
             // 
             // toolStripSeparator11
@@ -803,7 +821,7 @@
             modifyNames_MenuItem.Name = "modifyNames_MenuItem";
             modifyNames_MenuItem.ShortcutKeys = Keys.F12;
             modifyNames_MenuItem.Size = new Size(249, 22);
-            modifyNames_MenuItem.Text = "Modify Names...";
+            modifyNames_MenuItem.Text = "Edit Names...";
             modifyNames_MenuItem.Click += ModifyNames_MenuItemClicked;
             // 
             // convertLuacToText_MenuItem
@@ -861,13 +879,13 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
-            // editScript_MenuItem
+            // openAsWip_MenuItem
             // 
-            editScript_MenuItem.Name = "editScript_MenuItem";
-            editScript_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.E;
-            editScript_MenuItem.Size = new Size(246, 22);
-            editScript_MenuItem.Text = "Edit WS2/WSC Text";
-            editScript_MenuItem.Click += EditScriptInApp_MenuItemClicked;
+            openAsWip_MenuItem.Name = "openAsWip_MenuItem";
+            openAsWip_MenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F5;
+            openAsWip_MenuItem.Size = new Size(267, 22);
+            openAsWip_MenuItem.Text = "WIP";
+            openAsWip_MenuItem.Click += OpenAsWip_MenuItemClicked;
             // 
             // MainWindow
             // 
@@ -936,7 +954,7 @@
         private ToolStripMenuItem copy_MenuItem;
         private ToolStripMenuItem paste_MenuItem;
         private ToolStripSeparator toolStripSeparator6;
-        private ToolStripMenuItem editPna_MenuItem;
+        private ToolStripMenuItem editPnaWip_MenuItem;
         private ToolStripMenuItem pnaAddEntry_MenuItem;
         private ToolStripMenuItem refresh_MenuItem;
         private ToolStripSeparator toolStripSeparator7;
@@ -995,5 +1013,7 @@
         private ToolStripMenuItem createLng_MenuItem;
         private ToolStripMenuItem openAsLng_MenuItem;
         private ToolStripMenuItem editScript_MenuItem;
+        private ToolStripMenuItem createWip_MenuItem;
+        private ToolStripMenuItem openAsWip_MenuItem;
     }
 }

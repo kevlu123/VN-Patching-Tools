@@ -131,12 +131,12 @@ public BinaryStream(int len)
 
 ## Methods
 
-### **SubStream(Int32, Int32)**
+### **SubStream(Int32, Int32, Boolean)**
 
 Constructs a new binary stream from a part of another binary stream.
 
 ```csharp
-public BinaryStream SubStream(int offset, int len)
+public BinaryStream SubStream(int offset, int len, bool freeze)
 ```
 
 #### Parameters
@@ -144,6 +144,27 @@ public BinaryStream SubStream(int offset, int len)
 `offset` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
 `len` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
+`freeze` [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+Whether to freeze the current and new stream.
+
+#### Returns
+
+[BinaryStream](./ws2explorer.binarystream.md)<br>
+
+### **Clone(Boolean)**
+
+Creates a new binary stream from this stream.
+ This freezes both the current and the new stream.
+
+```csharp
+public BinaryStream Clone(bool freeze)
+```
+
+#### Parameters
+
+`freeze` [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+Whether to freeze the current and new stream.
 
 #### Returns
 

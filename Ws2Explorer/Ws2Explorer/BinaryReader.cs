@@ -76,6 +76,19 @@ public class BinaryReader
     }
 
     /// <summary>
+    /// Reads the specified number of bytes at the
+    /// current position and advances the position.
+    /// </summary>
+    /// <param name="v"></param>
+    public void ReadBytes(List<byte> v)
+    {
+        var span = CollectionsMarshal.AsSpan(v);
+        int length = span.Length;
+        stream.Span.Slice(Position, length).CopyTo(span);
+        Skip(length);
+    }
+
+    /// <summary>
     /// Reads a int8 at the current position and advances the position.
     /// </summary>
     public sbyte ReadInt8()

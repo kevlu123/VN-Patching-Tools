@@ -105,6 +105,19 @@ public void ReadBytes(Span<byte> v)
 
 `v` [Span&lt;Byte&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.span-1)<br>
 
+### **ReadBytes(List&lt;Byte&gt;)**
+
+Reads the specified number of bytes at the
+ current position and advances the position.
+
+```csharp
+public void ReadBytes(List<byte> v)
+```
+
+#### Parameters
+
+`v` [List&lt;Byte&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1)<br>
+
 ### **ReadInt8()**
 
 Reads a int8 at the current position and advances the position.

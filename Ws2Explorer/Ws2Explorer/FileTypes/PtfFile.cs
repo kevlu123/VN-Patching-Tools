@@ -239,13 +239,13 @@ public sealed class PtfFile : IArchive<PtfFile>
         if (data.Length >= 4)
         {
             // OTF file (signature 0x4F 0x54 0x54 0x4F)
-            if (data[0] == data[3] && data[1] == data[2])
+            if (data[0] == data[3] && data[1] == data[2] && data[0] != data[1])
             {
                 return FontType.OTF;
             }
 
             // TTF file (signature 0x00 0x01 0x00 0x00)
-            if (data[0] == data[2] && data[2] == data[3])
+            if (data[0] == data[2] && data[2] == data[3] && data[0] != data[1])
             {
                 return FontType.TTF;
             }
@@ -285,86 +285,28 @@ public sealed class PtfFile : IArchive<PtfFile>
         {
             throw new InvalidDataException("Decompressed data too short");
         }
-        var outputBuffer = new List<byte>();
 
-        var history = new byte[0x1000];
-        var historyWriteIndex = 1;
-
-        byte? key = null;
-        FontType ft = default;
-
-        void CheckXorKey()
+        using var compressed = stream.SubStream(4, stream.Length - 4);
+        using var decompressed = LZ77.Decompress(compressed, output =>
         {
-            if (!key.HasValue && outputBuffer.Count >= 4)
+            if (output.Count >= 4 && InferXorKey(CollectionsMarshal.AsSpan(output), out _) == null)
             {
-                key = InferXorKey(CollectionsMarshal.AsSpan(outputBuffer), out ft);
-                if (!key.HasValue)
-                {
-                    throw new InvalidDataException("Invalid signature. Decompressed data is neither TTF nor OTF format.");
-                }
+                throw new InvalidDataException("Invalid signature. Decompressed data is neither TTF nor OTF format.");
             }
-        }
+        });
 
-        while (true)
-        {
-            var formatBits = reader.ReadUInt8();
-            for (int i = 0; i < 8; i++, formatBits >>= 1)
-            {
-                if ((formatBits & 1) == 1)
-                {
-                    var input = reader.ReadUInt8();
-                    outputBuffer.Add(input);
-                    history[historyWriteIndex] = input;
-                    historyWriteIndex = (historyWriteIndex + 1) & 0xFFF;
-                }
-                else
-                {
-                    var b1 = reader.ReadUInt8();
-                    var b2 = reader.ReadUInt8();
-                    var historyReadIndex = (b1 << 4) | (b2 >> 4);
-                    if (historyReadIndex == 0)
-                    {
-                        goto end;
-                    }
-
-                    var length = (b2 & 0xF) + 2;
-                    for (int j = 0; j < length; j++)
-                    {
-                        var input = history[historyReadIndex];
-                        outputBuffer.Add(input);
-                        history[historyWriteIndex] = input;
-                        historyWriteIndex = (historyWriteIndex + 1) & 0xFFF;
-                        historyReadIndex = (historyReadIndex + 1) & 0xFFF;
-                    }
-                }
-            }
-
-            // If key is invalid, quick fail
-            CheckXorKey();
-        }
-
-    end:
-        if (reader.Length != reader.Position)
-        {
-            throw new InvalidDataException("Length mismatch.");
-        }
-        CheckXorKey();
-        if (!key.HasValue)
-        {
-            throw new InvalidDataException("Data is too short.");
-        }
-        else if (outputBuffer.Count < outputLen)
+        if (decompressed.Length < outputLen)
         {
             throw new InvalidDataException("Output length field does not match actual output length.");
         }
-        fontType = ft;
-        xorKey = key.Value;
-        for (int j = 0; j < outputBuffer.Count; j++)
+
+        xorKey = InferXorKey(decompressed.Span, out fontType)!.Value;
+        for (int j = 0; j < decompressed.Length; j++)
         {
-            outputBuffer[j] ^= xorKey;
+            decompressed.Span[j] ^= xorKey;
         }
 
-        return new BinaryStream([.. outputBuffer]);
+        return decompressed.Clone();
     }
 
     /// <summary>
@@ -382,52 +324,8 @@ public sealed class PtfFile : IArchive<PtfFile>
             input[i] = (byte)(reader.ReadUInt8() ^ xorKey);
         }
 
-        var output = new List<byte>();
-        output.AddRange(BitConverter.GetBytes(input.Length));
-
-        var inputIndex = 0;
-
-        var formatBits = new List<byte>();
-        var blockData = new List<byte>();
-
-        bool exit = false;
-        while (!exit)
-        {
-            formatBits.Clear();
-            blockData.Clear();
-
-            for (int i = 0; i < 8; i++)
-            {
-                if (inputIndex >= input.Length)
-                {
-                    exit = true;
-                    formatBits.Add(0);
-                    blockData.Add(0);
-                    blockData.Add(0);
-                    break;
-                }
-                formatBits.Add(1);
-                blockData.Add(input[inputIndex++]);
-            }
-
-            while (formatBits.Count < 8)
-            {
-                formatBits.Add(0);
-            }
-
-            var format = formatBits[0]
-                | (formatBits[1] << 1)
-                | (formatBits[2] << 2)
-                | (formatBits[3] << 3)
-                | (formatBits[4] << 4)
-                | (formatBits[5] << 5)
-                | (formatBits[6] << 6)
-                | (formatBits[7] << 7);
-            output.Add((byte)format);
-            output.AddRange(blockData);
-        }
-
-        return new BinaryStream([.. output]);
+        using var inputStream = new BinaryStream(input);
+        return LZ77.Compress(inputStream, BitConverter.GetBytes(input.Length));
     }
 
     /// <summary>

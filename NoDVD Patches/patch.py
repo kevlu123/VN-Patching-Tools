@@ -9,24 +9,22 @@ class Patch:
         self.patched_sha256 = patched_sha256
         self.changes = changes
         self.is_reverse = is_reverse
-    
+
     def __str__(self):
         return f"<Patch {self.name}>"
 
 PATCHES = [
     # Moshi Ashita Ga Hare Naraba - NoDVD Patch
-    # 
+    #
     # offset  bytes           x86 assembly
     # ------------------------------------
     # 1355    83 F8 01        cmp eax, 0x1
     # 1358    75 01           jne 0x135A
-    # 1359    C3              ret
     # ------------------------------------
     #                  |
     #                  v
     # ------------------------------------
     # 1355    B8 01 00 00 00  mov eax, 0x1
-    # 1359    C3              ret
     # ------------------------------------
     Patch(
         "もしも明日が晴れならば/Moshi Ashita Ga Hare Naraba - NoDVD Patch",
@@ -39,20 +37,18 @@ PATCHES = [
             (0x1358, 0x75, 0x00),
             (0x1359, 0x01, 0x00),
         ]),
-        
+
     # Sakura Strasse - NoDVD Patch
-    # 
+    #
     # offset  bytes           x86 assembly
     # ------------------------------------
     # 1F4F5   83 F8 01        cmp eax, 0x1
     # 1F4F8   75 01           jne 0x1F4FA
-    # 1F4F9   C3              ret
     # ------------------------------------
     #                  |
     #                  v
     # ------------------------------------
     # 1F4F5   B8 01 00 00 00  mov eax, 0x1
-    # 1F4F9   C3              ret
     # ------------------------------------
     Patch(
         "さくらシュトラッセ/Sakura Strasse",
@@ -64,6 +60,25 @@ PATCHES = [
             (0x1F4F7, 0x01, 0x00),
             (0x1F4F8, 0x75, 0x00),
             (0x1F4F9, 0x01, 0x00),
+        ]),
+
+    # Yume Miru Kusuri - NoDVD Patch
+    #
+    # offset  bytes           x86 assembly
+    # ------------------------------------
+    # 2D4CF   75 2F           jne 0x2D500
+    # ------------------------------------
+    #                  |
+    #                  v
+    # ------------------------------------
+    # 2D4CF   EB 2F           jmp 0x2D500
+    # ------------------------------------
+    Patch(
+        "Yume Miru Kusuri",
+        "c66b6c49b409656b3d723cd8d296eca274e0903785a36285e81c72395d983917",
+        "00058c1d4173ae675eb04f7d1d4a9775fdbfec977e1ffe79ca4229835fd4bbc9",
+        [
+            (0x2D4CF, 0x75, 0xEB),
         ]),
 ]
 
@@ -100,13 +115,13 @@ def do_patch(in_file):
     print(f"Applying {patch.name}")
     for offset, _, patched in patch.changes:
         data[offset] = patched
-    
+
     # Check SHA256 hash
     new_sha256 = hashlib.sha256(data).hexdigest()
     if new_sha256 != patch.patched_sha256:
         print(f"Error: Final SHA256 hash is {new_sha256}, expected {patch.patched_sha256}.\nNot patching.")
         exit()
-    
+
     # Write file
     if patch.is_reverse:
         out_file = in_file_no_ext + "_original.exe"

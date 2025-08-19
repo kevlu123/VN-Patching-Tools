@@ -1123,7 +1123,7 @@ partial class MainWindow : Form
                     if (choice.JumpOp.Code == Opcode.WS2_JUMP_06)
                     {
                         // Jump
-                        texts.Add($"  \"{choice.Text}\" -> Label {choice.JumpOp.Arguments[0].Label}");
+                        texts.Add($"  \"{choice.Text}\" -> Label {choice.JumpOp.Arguments[0].Label.Address}");
                     }
                     else if (choice.JumpOp.Code == Opcode.WS2_JUMP_FILE_07)
                     {
@@ -1136,7 +1136,7 @@ partial class MainWindow : Form
                     if (choice.JumpOp.Code == Opcode.WSC_JUMP_06)
                     {
                         // Jump
-                        texts.Add($"  \"{choice.Text}\" -> Label {choice.JumpOp.Arguments[0].Label}");
+                        texts.Add($"  \"{choice.Text}\" -> Label {choice.JumpOp.Arguments[0].Label.Address}");
                     }
                     else if (choice.JumpOp.Code == Opcode.WSC_JUMP_FILE_07)
                     {

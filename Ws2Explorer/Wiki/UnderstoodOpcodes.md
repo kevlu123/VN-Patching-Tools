@@ -1,7 +1,14 @@
+## Information Base
 
-# Instructions
+- [Tested Games](TestedGames.md)
+- [File Formats](FileFormats.md)
+- [List of Understood Opcodes](UnderstoodOpcodes.md)
+- [Reverse Engineering Opcodes](ReverseEngineeringOpcodes.md)
+- [Ws2Explorer API Reference](Ws2ExplorerAPI/index.md)
 
-- [Instructions](#instructions)
+# List of Understood Opcodes
+
+- [List of Understood Opcodes](#list-of-understood-opcodes)
   - [CONDITIONAL\_JUMP\_01](#conditional_jump_01)
   - [JUMP\_02](#jump_02)
   - [CALL\_FILE\_04](#call_file_04)

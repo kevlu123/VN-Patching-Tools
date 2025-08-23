@@ -1,3 +1,11 @@
+## Information Base
+
+- [Tested Games](TestedGames.md)
+- [File Formats](FileFormats.md)
+- [List of Understood Opcodes](UnderstoodOpcodes.md)
+- [Reverse Engineering Opcodes](ReverseEngineeringOpcodes.md)
+- [Ws2Explorer API Reference](Ws2ExplorerAPI/index.md)
+
 # File Formats
 
 All types are little endian and all strings are null terminated in their respective encoding.
@@ -113,7 +121,7 @@ All types are little endian and all strings are null terminated in their respect
 
 The arguments of each opcode are specific to the script version.
 
-See the [WS2 Instruction Documentation](Instructions.md).
+See the [WS2 Instruction Documentation](UnderstoodOpcodes.md.md).
 
 There is no documentation for WSC instructions yet.
 

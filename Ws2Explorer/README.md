@@ -6,11 +6,14 @@ A comprehensive set of tools for editing games based on WillPlus' AdvHD engine.
 - [GUI Editor](#gui-editor)
 - [Dokan Virtual Filesystem](#dokan-virtual-filesystem)
 - [Ws2Explorer C# Library](#ws2explorer-c-library)
-- [File Formats Documentation](FileFormats.md)
 
-See a list of [games have been tested](CompilerCoverage.md).
+## Information Base
 
-I am available to help with modifying any AdvHD game. Submit an issue for any queries.
+- [Tested Games](Wiki/TestedGames.md)
+- [File Formats](Wiki/FileFormats.md)
+- [List of Understood Opcodes](Wiki/UnderstoodOpcodes.md)
+- [Reverse Engineering Opcodes](Wiki/ReverseEngineeringOpcodes.md)
+- [Ws2Explorer API Reference](Wiki/Ws2ExplorerAPI/index.md)
 
 ## GUI Editor
 
@@ -41,28 +44,30 @@ and perform common operations to modify the game.
 | pan.dat          | Audio panning data?             |
 
 ### Features
+- File management
+    - Extract and create archives
+    - Diff archives
+    - Windows File Explorer/desktop drag and drop
 
-- Copy files to and from Windows File Explorer.
-- Extract files from archives.
-- Recursively extract files.
-- Decompile/compile WS2 and WSC scripts.
-- Create archives.
-- Edit file in editor or your choice.
-- Add new images to PNA/WIP files.
-- Rearrange images in PNA/WIP files.
-- Run game with Locale Emulator
-- Set WS2 entry point.
-- Edit character names.
-- Convert compiled Lua to text (does not decompile).
-- Generate diff archives.
-- Find all string references e.g. to an asset file.
-- Find all choice locations.
-- Generate JSON/Mermaid flowchart.
-- Media preview for PNG, OGG, TTF/OTF, text, and hex.
+- Asset editing
+    - Edit text and character names
+    - Edit in-place (without needing to extract and repack)
+    - Set WS2 entry point
+    - Decompile/compile WS2 and WSC scripts
+    - Edit images/text/hex in chosen editor
+    - Add or rearrange images to PNA/WIP files
+    - Convert compiled Lua to text (by converting binary to hex string, not by decompiling)
+    - Shortcut to run game with Locale Emulator
 
-![](Screenshots/gui1.png)
-![](Screenshots/gui2.png)
-![](Screenshots/gui3.png)
+- Analysis
+    - Media preview for PNG, OGG, TTF/OTF, text, and hex
+    - Find all string references
+    - Find all choice locations
+    - Generate JSON/Mermaid flowchart
+
+![](Wiki/Screenshots/gui1.png)
+![](Wiki/Screenshots/gui2.png)
+![](Wiki/Screenshots/gui3.png)
 
 ## Dokan Virtual Filesystem
 
@@ -85,12 +90,12 @@ Run the executable.
 ./bin/Debug/net8.0-windows/Ws2Explorer.Dokan.exe path/to/archive [path/to/mountpoint/or/default/to/W:]
 ```
 
-![](Screenshots/dokan1.png)
-![](Screenshots/dokan2.png)
+![](Wiki/Screenshots/dokan1.png)
+![](Wiki/Screenshots/dokan2.png)
 
 ## Ws2Explorer C# Library
 
-[Full API Reference](Ws2Explorer/Docs/index.md)
+[Full API Reference](Wiki/Ws2ExplorerAPI/index.md)
 
 [Examples](Examples) (or see how [Ws2Explorer.Gui](Ws2Explorer.Gui/ApplicationState.cs) uses this library).
 

@@ -61,7 +61,7 @@
             cancel_Button.UseVisualStyleBackColor = true;
             cancel_Button.Click += Cancel_ButtonClicked;
             // 
-            // Ws2EntryPointWindow
+            // SetWs2EntryWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -69,9 +69,11 @@
             Controls.Add(ok_Button);
             Controls.Add(cancel_Button);
             Controls.Add(text_ComboBox);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             MinimizeBox = false;
-            Name = "Ws2EntryPointWindow";
+            Name = "SetWs2EntryWindow";
+            SizeGripStyle = SizeGripStyle.Hide;
             Text = "Set WS2 Entry Point";
             ResumeLayout(false);
         }

@@ -52,6 +52,7 @@ and perform common operations to modify the game.
 - Asset editing
     - Edit text and character names
     - Edit in-place (without needing to extract and repack)
+    - Word wrapping by pixel width or character count
     - Set WS2 entry point
     - Decompile/compile WS2 and WSC scripts
     - Edit images/text/hex in chosen editor

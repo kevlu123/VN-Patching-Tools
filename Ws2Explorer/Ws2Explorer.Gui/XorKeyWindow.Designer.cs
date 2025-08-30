@@ -43,7 +43,7 @@
             // 
             // ok_Button
             // 
-            ok_Button.Location = new Point(226, 35);
+            ok_Button.Location = new Point(145, 35);
             ok_Button.Name = "ok_Button";
             ok_Button.Size = new Size(75, 23);
             ok_Button.TabIndex = 4;
@@ -53,7 +53,7 @@
             // 
             // cancel_Button
             // 
-            cancel_Button.Location = new Point(145, 35);
+            cancel_Button.Location = new Point(226, 35);
             cancel_Button.Name = "cancel_Button";
             cancel_Button.Size = new Size(75, 23);
             cancel_Button.TabIndex = 5;
@@ -79,7 +79,11 @@
             Controls.Add(cancel_Button);
             Controls.Add(ok_Button);
             Controls.Add(key_TextBox);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            MinimizeBox = false;
             Name = "XorKeyWindow";
+            SizeGripStyle = SizeGripStyle.Hide;
             Text = "Enter XOR key";
             ResumeLayout(false);
             PerformLayout();

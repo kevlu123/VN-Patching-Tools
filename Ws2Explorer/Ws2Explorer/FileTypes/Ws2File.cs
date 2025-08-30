@@ -41,7 +41,7 @@ public sealed class Ws2File : ScriptFile, IArchive<Ws2File>
                         return op.Arguments[0].Ws2ChoiceArray
                             .Select(c => new ScriptText { Text = c.Text, Name = "", IsChoice = true });
                     case Opcode.WS2_DISPLAY_NAME_15:
-                        currentName = op.Arguments[0].AffixedString.String;
+                        currentName = op.Arguments[0].AffixedString.String.Trim(' ', '\u3000');
                         return [];
                     case Opcode.WS2_DISPLAY_TEXT_14:
                         return [new ScriptText { Text = op.Arguments[2].AffixedString.String, Name = currentName, IsChoice = false }];
@@ -66,9 +66,9 @@ public sealed class Ws2File : ScriptFile, IArchive<Ws2File>
     /// </summary>
     /// <param name="text"></param>
     /// <returns></returns>
-    public override Ws2File WithText(string[] text)
+    public override Ws2File WithText(IEnumerable<string> text)
     {
-        return ArchiveCreationException.Wrap(() => new Ws2File(OpsWithText(Ops, text)));
+        return ArchiveCreationException.Wrap(() => new Ws2File(OpsWithText(Ops, text.ToArray())));
     }
 
     private static List<Op> OpsWithText(IEnumerable<Op> ops, string[] text)

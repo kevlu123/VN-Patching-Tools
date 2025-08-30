@@ -5,12 +5,11 @@ Namespace: Ws2Explorer.FileTypes
 An open type font file.
 
 ```csharp
-public sealed class OtfFile : Ws2Explorer.IFile`1[[Ws2Explorer.FileTypes.OtfFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], Ws2Explorer.IFile, System.IDisposable
+public sealed class OtfFile : FontFile, Ws2Explorer.IFile, System.IDisposable, Ws2Explorer.IFile`1[[Ws2Explorer.FileTypes.OtfFile, Ws2Explorer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
 ```
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [OtfFile](./ws2explorer.filetypes.otffile.md)<br>
-Implements [IFile&lt;OtfFile&gt;](./ws2explorer.ifile-1.md), [IFile](./ws2explorer.ifile.md), [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable)<br>
-Attributes [NullableContextAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullablecontextattribute), [NullableAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullableattribute)
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [FontFile](./ws2explorer.filetypes.fontfile.md) → [OtfFile](./ws2explorer.filetypes.otffile.md)<br>
+Implements [IFile](./ws2explorer.ifile.md), [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable), [IFile&lt;OtfFile&gt;](./ws2explorer.ifile-1.md)
 
 ## Fields
 
@@ -36,6 +35,18 @@ public BinaryStream Stream { get; }
 
 [BinaryStream](./ws2explorer.binarystream.md)<br>
 
+### **FontMeasurer**
+
+Gets a font measurer object.
+
+```csharp
+public FontMeasurer FontMeasurer { get; }
+```
+
+#### Property Value
+
+[FontMeasurer](./ws2explorer.fontmeasurer.md)<br>
+
 ## Methods
 
 ### **Decode(BinaryStream, DecodeConfidence&)**
@@ -55,19 +66,3 @@ public static OtfFile Decode(BinaryStream stream, DecodeConfidence& confidence)
 #### Returns
 
 [OtfFile](./ws2explorer.filetypes.otffile.md)<br>
-
-### **Dispose()**
-
-Disposes the OTF file.
-
-```csharp
-public void Dispose()
-```
-
-### **Finalize()**
-
-Disposes the OTF file.
-
-```csharp
-protected void Finalize()
-```

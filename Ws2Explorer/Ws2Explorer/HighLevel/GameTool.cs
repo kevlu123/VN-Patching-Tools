@@ -1,6 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Ws2Explorer.Compiler;
 using Ws2Explorer.FileTypes;
 using Directory = Ws2Explorer.FileTypes.Directory;
@@ -194,13 +192,13 @@ public static class GameTool
         using var rioFiles = new DisposingList<NamedFolder>();
         foreach (var rioFilename in GetRioFilenames(gameFolder))
         {
-            using var file = await gameFolder.OpenFile(rioFilename, progress, ct)
+            var file = await gameFolder.OpenFile(rioFilename, progress, ct)
                 .DecodeWithHint(rioFilename);
             if (file is not IArchive arc)
             {
+                file.Dispose();
                 continue;
             }
-            arc.Stream.IncRef();
             rioFiles.Add(new() { Name = rioFilename, Folder = arc });
         }
 
@@ -514,13 +512,13 @@ end
         using var rioArcs = new DisposingDictionary<string, IFolder>();
         foreach (var rioFilename in GetRioFilenames(gameFolder))
         {
-            using var file = await gameFolder.OpenFile(rioFilename, progress, ct)
+            var file = await gameFolder.OpenFile(rioFilename, progress, ct)
                 .DecodeWithHint(rioFilename);
             if (file is not IArchive arc)
             {
+                file.Dispose();
                 continue;
             }
-            arc.Stream.IncRef();
             rioArcs.Add(rioFilename, arc);
         }
 
@@ -535,13 +533,9 @@ end
         {
             foreach (var child in children.Values)
             {
-                if (child is Ws2File ws2)
+                if (child is ScriptFile script)
                 {
-                    names.UnionWith(ws2.Names);
-                }
-                else if (child is WscFile wsc)
-                {
-                    names.UnionWith(wsc.Names);
+                    names.UnionWith(script.Names);
                 }
             }
         }
@@ -559,30 +553,90 @@ end
             throw new Exception("Cannot map names to empty strings.");
         }
 
-        foreach (var (rioArc, (arcName, children)) in rioArcs.Zip(arcChildren))
+        foreach (var (arcName, children) in arcChildren)
         {
             using var streams = new DisposingDictionary<string, BinaryStream>();
             foreach (var (childName, child) in children)
             {
-                if (child is Ws2File ws2)
+                if (child is ScriptFile script)
                 {
-                    using var newWs2 = ws2.WithNames(nameMapping);
-                    newWs2.Stream.IncRef();
-                    streams.Add(childName, newWs2.Stream);
-                }
-                else if (child is WscFile wsc)
-                {
-                    using var newWsc = wsc.WithNames(nameMapping);
-                    newWsc.Stream.IncRef();
-                    streams.Add(childName, newWsc.Stream);
+                    using var newScript = script.WithNames(nameMapping);
+                    newScript.Stream.IncRef();
+                    streams.Add(childName, newScript.Stream);
                 }
                 else
                 {
                     streams.Add(childName, child.Stream);
                 }
-
             }
-            using var newArc = ((IArchive)rioArc.Value).Create(streams);
+            using var newArc = ((IArchive)rioArcs[arcName]).Create(streams);
+            await gameFolder.WriteFile(arcName, newArc.Stream, progress, ct);
+        }
+    }
+
+    /// <summary>
+    /// Apply a transformation to the text of all scripts in the game's WS2/WSC files.
+    /// This only applies to message and choice text, and not name text.
+    /// This function is especially useful for applying word wrapping or spell checking.
+    /// </summary>
+    /// <param name="gameFolder"></param>
+    /// <param name="transform">The transformation function to apply to each string.</param>
+    /// <param name="progress"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    public static async Task TransformText(
+        Directory gameFolder,
+        Func<string, string> transform,
+        IProgress<TaskProgressInfo>? progress = null,
+        CancellationToken ct = default)
+    {
+        using var rioArcs = new DisposingDictionary<string, IFolder>();
+        foreach (var rioFilename in GetRioFilenames(gameFolder))
+        {
+            var file = await gameFolder.OpenFile(rioFilename, progress, ct)
+                .DecodeWithHint(rioFilename);
+            if (file is not IArchive arc)
+            {
+                file.Dispose();
+                continue;
+            }
+            rioArcs.Add(rioFilename, arc);
+        }
+
+        using var arcChildren = new DisposingDictionary<string, DisposingDictionary<string, IFile>>();
+        foreach (var (name, rioArc) in rioArcs)
+        {
+            arcChildren.Add(name, await rioArc.LoadAllFiles(progress, ct));
+        }
+
+        using var pr = new ProgressReporter(
+            "Transforming text",
+            progress,
+            arcChildren.Values.Sum(children => children.Count));
+        foreach (var (arcName, children) in arcChildren)
+        {
+            using var streams = new DisposingDictionary<string, BinaryStream>();
+            foreach (var (childName, child) in children)
+            {
+                if (child is ScriptFile script)
+                {
+                    var newText = new List<string>();
+                    foreach (var text in script.Text.AsParallel().Select(t => transform(t.Text)))
+                    {
+                        newText.Add(text);
+                        await Task.Yield();
+                    }
+                    using var newScript = script.WithText(newText);
+                    newScript.Stream.IncRef();
+                    streams.Add(childName, newScript.Stream);
+                }
+                else
+                {
+                    streams.Add(childName, child.Stream);
+                }
+                pr.Step();
+            }
+            using var newArc = ((IArchive)rioArcs[arcName]).Create(streams);
             await gameFolder.WriteFile(arcName, newArc.Stream, progress, ct);
         }
     }

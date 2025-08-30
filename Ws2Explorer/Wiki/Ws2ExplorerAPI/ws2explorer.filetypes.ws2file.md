@@ -102,17 +102,17 @@ public Ws2File(IEnumerable<Op> ops)
 
 ## Methods
 
-### **WithText(String[])**
+### **WithText(IEnumerable&lt;String&gt;)**
 
 Create a new WS2 file with the message and choice text replaced.
 
 ```csharp
-public Ws2File WithText(String[] text)
+public Ws2File WithText(IEnumerable<string> text)
 ```
 
 #### Parameters
 
-`text` [String[]](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`text` [IEnumerable&lt;String&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1)<br>
 
 #### Returns
 

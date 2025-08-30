@@ -111,6 +111,11 @@
             toolStripSeparator8 = new ToolStripSeparator();
             sortBy_MenuItem = new ToolStripMenuItem();
             sortNameAscending_MenuItem = new ToolStripMenuItem();
+            sortNameDescending_MenuItem = new ToolStripMenuItem();
+            sortSizeAscending_MenuItem = new ToolStripMenuItem();
+            sortSizeDescending_MenuItem = new ToolStripMenuItem();
+            sortTypeAscending_MenuItem = new ToolStripMenuItem();
+            sortTypeDescending_MenuItem = new ToolStripMenuItem();
             wordWrap_MenuItem = new ToolStripMenuItem();
             toolStripSeparator9 = new ToolStripSeparator();
             listFiles_MenuItem = new ToolStripMenuItem();
@@ -129,11 +134,7 @@
             mermaidFlowchart_MenuItem = new ToolStripMenuItem();
             jsonFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
-            sortNameDescending_MenuItem = new ToolStripMenuItem();
-            sortSizeAscending_MenuItem = new ToolStripMenuItem();
-            sortSizeDescending_MenuItem = new ToolStripMenuItem();
-            sortTypeAscending_MenuItem = new ToolStripMenuItem();
-            sortTypeDescending_MenuItem = new ToolStripMenuItem();
+            wrapText_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -766,9 +767,44 @@
             sortNameAscending_MenuItem.Checked = true;
             sortNameAscending_MenuItem.CheckState = CheckState.Checked;
             sortNameAscending_MenuItem.Name = "sortNameAscending_MenuItem";
-            sortNameAscending_MenuItem.Size = new Size(180, 22);
+            sortNameAscending_MenuItem.Size = new Size(178, 22);
             sortNameAscending_MenuItem.Text = "Name";
             sortNameAscending_MenuItem.Click += SortNameAscending_MenuItemClicked;
+            // 
+            // sortNameDescending_MenuItem
+            // 
+            sortNameDescending_MenuItem.Name = "sortNameDescending_MenuItem";
+            sortNameDescending_MenuItem.Size = new Size(178, 22);
+            sortNameDescending_MenuItem.Text = "Name (descending)";
+            sortNameDescending_MenuItem.Click += SortNameDescending_MenuItemClicked;
+            // 
+            // sortSizeAscending_MenuItem
+            // 
+            sortSizeAscending_MenuItem.Name = "sortSizeAscending_MenuItem";
+            sortSizeAscending_MenuItem.Size = new Size(178, 22);
+            sortSizeAscending_MenuItem.Text = "Size";
+            sortSizeAscending_MenuItem.Click += SortSizeAscending_MenuItemClicked;
+            // 
+            // sortSizeDescending_MenuItem
+            // 
+            sortSizeDescending_MenuItem.Name = "sortSizeDescending_MenuItem";
+            sortSizeDescending_MenuItem.Size = new Size(178, 22);
+            sortSizeDescending_MenuItem.Text = "Size (descending)";
+            sortSizeDescending_MenuItem.Click += SortSizeDescending_MenuItemClicked;
+            // 
+            // sortTypeAscending_MenuItem
+            // 
+            sortTypeAscending_MenuItem.Name = "sortTypeAscending_MenuItem";
+            sortTypeAscending_MenuItem.Size = new Size(178, 22);
+            sortTypeAscending_MenuItem.Text = "Type";
+            sortTypeAscending_MenuItem.Click += SortTypeAscending_MenuItemClicked;
+            // 
+            // sortTypeDescending_MenuItem
+            // 
+            sortTypeDescending_MenuItem.Name = "sortTypeDescending_MenuItem";
+            sortTypeDescending_MenuItem.Size = new Size(178, 22);
+            sortTypeDescending_MenuItem.Text = "Type (descending)";
+            sortTypeDescending_MenuItem.Click += SortTypeDescending_MenuItemClicked;
             // 
             // wordWrap_MenuItem
             // 
@@ -821,7 +857,7 @@
             // 
             // game_MenuItem
             // 
-            game_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, toolStripSeparator11, setEntry_MenuItem, modifyNames_MenuItem, convertLuacToText_MenuItem, toolStripSeparator10, findReferences_MenuItem, showChoices_MenuItem, mermaidFlowchart_MenuItem, jsonFlowchart_MenuItem });
+            game_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, toolStripSeparator11, setEntry_MenuItem, modifyNames_MenuItem, wrapText_MenuItem, convertLuacToText_MenuItem, toolStripSeparator10, findReferences_MenuItem, showChoices_MenuItem, mermaidFlowchart_MenuItem, jsonFlowchart_MenuItem });
             game_MenuItem.Name = "game_MenuItem";
             game_MenuItem.Size = new Size(50, 20);
             game_MenuItem.Text = "Game";
@@ -910,40 +946,13 @@
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
             // 
-            // sortNameDescending_MenuItem
+            // wrapText_MenuItem
             // 
-            sortNameDescending_MenuItem.Name = "sortNameDescending_MenuItem";
-            sortNameDescending_MenuItem.Size = new Size(180, 22);
-            sortNameDescending_MenuItem.Text = "Name (descending)";
-            sortNameDescending_MenuItem.Click += SortNameDescending_MenuItemClicked;
-            // 
-            // sortSizeAscending_MenuItem
-            // 
-            sortSizeAscending_MenuItem.Name = "sortSizeAscending_MenuItem";
-            sortSizeAscending_MenuItem.Size = new Size(180, 22);
-            sortSizeAscending_MenuItem.Text = "Size";
-            sortSizeAscending_MenuItem.Click += SortSizeAscending_MenuItemClicked;
-            // 
-            // sortSizeDescending_MenuItem
-            // 
-            sortSizeDescending_MenuItem.Name = "sortSizeDescending_MenuItem";
-            sortSizeDescending_MenuItem.Size = new Size(180, 22);
-            sortSizeDescending_MenuItem.Text = "Size (descending)";
-            sortSizeDescending_MenuItem.Click += SortSizeDescending_MenuItemClicked;
-            // 
-            // sortTypeAscending_MenuItem
-            // 
-            sortTypeAscending_MenuItem.Name = "sortTypeAscending_MenuItem";
-            sortTypeAscending_MenuItem.Size = new Size(180, 22);
-            sortTypeAscending_MenuItem.Text = "Type";
-            sortTypeAscending_MenuItem.Click += SortTypeAscending_MenuItemClicked;
-            // 
-            // sortTypeDescending_MenuItem
-            // 
-            sortTypeDescending_MenuItem.Name = "sortTypeDescending_MenuItem";
-            sortTypeDescending_MenuItem.Size = new Size(180, 22);
-            sortTypeDescending_MenuItem.Text = "Type (descending)";
-            sortTypeDescending_MenuItem.Click += SortTypeDescending_MenuItemClicked;
+            wrapText_MenuItem.Name = "wrapText_MenuItem";
+            wrapText_MenuItem.ShortcutKeys = Keys.F9;
+            wrapText_MenuItem.Size = new Size(249, 22);
+            wrapText_MenuItem.Text = "Wrap Text...";
+            wrapText_MenuItem.Click += WrapText_ButtonClicked;
             // 
             // MainWindow
             // 
@@ -1080,5 +1089,6 @@
         private ToolStripMenuItem sortSizeDescending_MenuItem;
         private ToolStripMenuItem sortTypeAscending_MenuItem;
         private ToolStripMenuItem sortTypeDescending_MenuItem;
+        private ToolStripMenuItem wrapText_MenuItem;
     }
 }

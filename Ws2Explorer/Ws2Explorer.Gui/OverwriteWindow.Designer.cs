@@ -97,6 +97,7 @@
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "OverwriteWindow";
+            SizeGripStyle = SizeGripStyle.Hide;
             Text = "Overwrite files";
             ResumeLayout(false);
             PerformLayout();

@@ -1324,4 +1324,30 @@ partial class MainWindow : Form
     {
         SortFileList(SortMode.Type, true);
     }
+
+    private void WrapText_ButtonClicked(object sender, EventArgs e)
+    {
+        WordWrapWindow.Stats stats = null!;
+        state.WordWrap(() =>
+        {
+            using var dialog = new WordWrapWindow();
+            dialog.ShowDialog();
+            stats = dialog.WordWrapStats;
+            return dialog.WordWrapFunction;
+        },
+        () =>
+        {
+            if (stats.TextsExceedingMaxLines.Count > 0)
+            {
+                using var dialog = new InfoWindow(
+                    "Warning",
+                    $"{stats.TextsExceedingMaxLines.Count}/{stats.TotalTextsProcessed} texts exceeded the maximum line count. \r\n\r\n"
+                        + "=================================== \r\n\r\n"
+                        + string.Join(
+                            "\r\n\r\n",
+                            stats.TextsExceedingMaxLines.Select(s => s.Replace("\\n", "\r\n"))));
+                dialog.ShowDialog();
+            }
+        });
+    }
 }

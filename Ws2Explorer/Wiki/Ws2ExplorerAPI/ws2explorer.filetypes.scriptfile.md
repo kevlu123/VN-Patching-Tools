@@ -138,17 +138,17 @@ protected ScriptFile()
 
 ## Methods
 
-### **WithText(String[])**
+### **WithText(IEnumerable&lt;String&gt;)**
 
 Create a new script file with the message and choice text replaced.
 
 ```csharp
-public abstract ScriptFile WithText(String[] text)
+public abstract ScriptFile WithText(IEnumerable<string> text)
 ```
 
 #### Parameters
 
-`text` [String[]](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`text` [IEnumerable&lt;String&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1)<br>
 
 #### Returns
 

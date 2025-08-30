@@ -283,6 +283,7 @@
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "DiffWindow";
+            SizeGripStyle = SizeGripStyle.Hide;
             Text = "Diff Archives";
             FormClosed += DiffForm_Closed;
             ResumeLayout(false);

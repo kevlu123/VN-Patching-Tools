@@ -117,8 +117,9 @@ public readonly struct AffixedString
 
     private int GetPrefixLength()
     {
+        var suffixLength = GetSuffixLength();
         int i = 0;
-        while (i + 3 <= FullString.Length && FullString[i] == '%')
+        while (i + 3 <= FullString.Length - suffixLength && FullString[i] == '%')
         {
             i += 3;
         }

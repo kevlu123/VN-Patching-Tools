@@ -26,6 +26,8 @@
 
 [FileInfo](./ws2explorer.fileinfo.md)
 
+[FontMeasurer](./ws2explorer.fontmeasurer.md)
+
 [IArchive](./ws2explorer.iarchive.md)
 
 [IArchive&lt;T&gt;](./ws2explorer.iarchive-1.md)
@@ -47,6 +49,8 @@
 [SjisEncoding](./ws2explorer.sjisencoding.md)
 
 [TaskProgressInfo](./ws2explorer.taskprogressinfo.md)
+
+[WordWrap](./ws2explorer.wordwrap.md)
 
 ## Ws2Explorer.Compiler
 
@@ -85,6 +89,8 @@
 [Directory](./ws2explorer.filetypes.directory.md)
 
 [EncodingExtensions](./ws2explorer.filetypes.encodingextensions.md)
+
+[FontFile](./ws2explorer.filetypes.fontfile.md)
 
 [FontType](./ws2explorer.filetypes.fonttype.md)
 

@@ -126,7 +126,7 @@ public abstract class ScriptFile : IArchive
     /// </summary>
     /// <param name="text"></param>
     /// <returns></returns>
-    public abstract ScriptFile WithText(string[] text);
+    public abstract ScriptFile WithText(IEnumerable<string> text);
 
     /// <summary>
     /// Create a new script file with the names replaced according to the given mapping.

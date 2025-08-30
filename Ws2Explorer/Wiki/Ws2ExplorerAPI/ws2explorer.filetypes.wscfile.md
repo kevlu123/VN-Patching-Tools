@@ -102,17 +102,17 @@ public WscFile(IEnumerable<Op> ops)
 
 ## Methods
 
-### **WithText(String[])**
+### **WithText(IEnumerable&lt;String&gt;)**
 
 Create a new WSC file with the message and choice text replaced.
 
 ```csharp
-public WscFile WithText(String[] text)
+public WscFile WithText(IEnumerable<string> text)
 ```
 
 #### Parameters
 
-`text` [String[]](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`text` [IEnumerable&lt;String&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1)<br>
 
 #### Returns
 

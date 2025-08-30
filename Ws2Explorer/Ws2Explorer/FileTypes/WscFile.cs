@@ -60,9 +60,9 @@ public sealed class WscFile : ScriptFile, IArchive<WscFile>
     /// </summary>
     /// <param name="text"></param>
     /// <returns></returns>
-    public override WscFile WithText(string[] text)
+    public override WscFile WithText(IEnumerable<string> text)
     {
-        return ArchiveCreationException.Wrap(() => new WscFile(OpsWithText(Ops, text)));
+        return ArchiveCreationException.Wrap(() => new WscFile(OpsWithText(Ops, text.ToArray())));
     }
 
     private static List<Op> OpsWithText(IEnumerable<Op> ops, string[] text)

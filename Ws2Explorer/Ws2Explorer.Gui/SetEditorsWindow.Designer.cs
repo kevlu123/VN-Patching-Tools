@@ -248,7 +248,10 @@
             Controls.Add(ok_Button);
             Controls.Add(cancel_Button);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            MinimizeBox = false;
             Name = "SetEditorsWindow";
+            SizeGripStyle = SizeGripStyle.Hide;
             Text = "Set Editors";
             textEditor_GroupBox.ResumeLayout(false);
             textEditor_GroupBox.PerformLayout();

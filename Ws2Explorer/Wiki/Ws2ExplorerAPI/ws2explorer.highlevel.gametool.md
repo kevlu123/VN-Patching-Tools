@@ -238,3 +238,28 @@ A function to get the name change mapping. Names that do not appear
 #### Returns
 
 [Task](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.task)<br>
+
+### **TransformText(Directory, Func&lt;String, String&gt;, IProgress&lt;TaskProgressInfo&gt;, CancellationToken)**
+
+Apply a transformation to the text of all scripts in the game's WS2/WSC files.
+ This only applies to message and choice text, and not name text.
+ This function is especially useful for applying word wrapping or spell checking.
+
+```csharp
+public static Task TransformText(Directory gameFolder, Func<string, string> transform, IProgress<TaskProgressInfo> progress, CancellationToken ct)
+```
+
+#### Parameters
+
+`gameFolder` [Directory](./ws2explorer.filetypes.directory.md)<br>
+
+`transform` [Func&lt;String, String&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.func-2)<br>
+The transformation function to apply to each string.
+
+`progress` [IProgress&lt;TaskProgressInfo&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.iprogress-1)<br>
+
+`ct` [CancellationToken](https://docs.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken)<br>
+
+#### Returns
+
+[Task](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.task)<br>

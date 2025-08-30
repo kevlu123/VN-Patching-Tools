@@ -1285,6 +1285,29 @@ class ApplicationState(string? openPath)
         });
     }
 
+    public void WordWrap(Func<Func<string, string>?> transform, Action completeCallback)
+    {
+        Protect(interruptable: false, async ct =>
+        {
+            if (GetGameFolderOrCurrentInternal() is Ws2Directory dir)
+            {
+                var transformFunc = transform();
+                if (transformFunc == null)
+                {
+                    return;
+                }
+                await GameTool.TransformText(dir, transformFunc, progress, ct);
+                await RefreshFolderInternal(ct);
+                OnStatus?.Invoke("Word wrap complete.");
+                completeCallback();
+            }
+            else
+            {
+                throw new QuietError("Navigate to the game directory.");
+            }
+        });
+    }
+
     public void ExtractSelectedFilesToTemp(Action<string[]> filenamesCallback)
     {
         Protect(interruptable: false, async ct =>
@@ -1554,3 +1577,4 @@ enum EditorType
     Image,
     Hex,
 }
+ 

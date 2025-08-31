@@ -42,7 +42,9 @@ var newText = scriptFile.Text
         WordWrap.RemoveNewlines(text.Text),
         pixelWrapWidth,
         fontFile.FontMeasurer,
-        fontSize))
+        fontSize,
+        FontMeasurer.FontStyle.Regular,
+        out _))
     .ToArray();
 using ScriptFile newScriptFile = scriptFile.WithText(newText);
 

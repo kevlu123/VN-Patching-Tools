@@ -7,7 +7,7 @@ partial class WordWrapWindow : Form
 {
     public class Stats
     {
-        public List<string> TextsExceedingMaxLines { get; } = [];
+        public List<List<string>> TextsExceedingMaxLines { get; } = [];
         public int TotalTextsProcessed { get; set; }
     }
 
@@ -18,7 +18,6 @@ partial class WordWrapWindow : Form
     private static bool bold = false;
     private static bool italic = false;
     private static int charCount = 24;
-    private static bool removeExistingNewlines = true;
     private static int maxLines = 4;
 
     public Func<string, string>? WordWrapFunction { get; private set; }
@@ -36,7 +35,6 @@ partial class WordWrapWindow : Form
         bold_CheckBox.Checked = bold;
         italic_CheckBox.Checked = italic;
         chars_TextBox.Text = charCount.ToString();
-        removeExistingNewlines_CheckBox.Checked = removeExistingNewlines;
         maxLines_TextBox.Text = maxLines.ToString();
 
         pixels_GroupBox.Enabled = pixels_Radio.Checked;
@@ -65,8 +63,6 @@ partial class WordWrapWindow : Form
 
     private async void OK_ButtonClicked(object sender, EventArgs e)
     {
-        bool removeExistingNewlines = removeExistingNewlines_CheckBox.Checked;
-
         if (!int.TryParse(maxLines_TextBox.Text, out var maxLines) || maxLines <= 0)
         {
             MessageBox.Show(
@@ -75,15 +71,6 @@ partial class WordWrapWindow : Form
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
             return;
-        }
-
-        void UpdateStats(string text)
-        {
-            WordWrapStats.TotalTextsProcessed++;
-            if (text.Split("\\n").Length > maxLines)
-            {
-                WordWrapStats.TextsExceedingMaxLines.Add(text);
-            }
         }
 
         if (pixels_Radio.Checked)
@@ -133,6 +120,16 @@ partial class WordWrapWindow : Form
                 return;
             }
 
+            var fontStyle = FontMeasurer.FontStyle.Regular;
+            if (bold_CheckBox.Checked)
+            {
+                fontStyle |= FontMeasurer.FontStyle.Bold;
+            }
+            if (italic_CheckBox.Checked)
+            {
+                fontStyle |= FontMeasurer.FontStyle.Italic;
+            }
+
             WordWrapWindow.pixelWidth = pixelWrapWidth;
             WordWrapWindow.fontPath = font_TextBox.Text;
             WordWrapWindow.fontSize = fontSize;
@@ -141,12 +138,12 @@ partial class WordWrapWindow : Form
 
             WordWrapFunction = text =>
             {
-                var newText = WordWrap.WrapByPixelWidth(
-                    removeExistingNewlines ? WordWrap.RemoveNewlines(text) : text,
-                    pixelWrapWidth,
-                    fontMeasurer,
-                    fontSize);
-                UpdateStats(newText);
+                var newText = WordWrap.WrapByPixelWidth(text, pixelWrapWidth, fontMeasurer, fontSize, fontStyle, out var lines);
+                WordWrapStats.TotalTextsProcessed++;
+                if (lines.Count > maxLines)
+                {
+                    WordWrapStats.TextsExceedingMaxLines.Add(lines);
+                }
                 return newText;
             };
         }
@@ -166,16 +163,17 @@ partial class WordWrapWindow : Form
 
             WordWrapFunction = text =>
             {
-                var newText = WordWrap.WrapByCharCount(
-                    removeExistingNewlines ? WordWrap.RemoveNewlines(text) : text,
-                    charCount);
-                UpdateStats(newText);
+                var newText = WordWrap.WrapByCharCount(text, charCount, out var lines);
+                WordWrapStats.TotalTextsProcessed++;
+                if (lines.Count > maxLines)
+                {
+                    WordWrapStats.TextsExceedingMaxLines.Add(lines);
+                }
                 return newText;
             };
         }
 
         WordWrapWindow.usePixels = pixels_Radio.Checked;
-        WordWrapWindow.removeExistingNewlines = removeExistingNewlines;
         WordWrapWindow.maxLines = maxLines;
         Close();
     }

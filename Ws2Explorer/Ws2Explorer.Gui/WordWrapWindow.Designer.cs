@@ -42,7 +42,6 @@
             italic_CheckBox = new CheckBox();
             fontPath_Label = new Label();
             pixelWidth_Label = new Label();
-            removeExistingNewlines_CheckBox = new CheckBox();
             measure_Button = new Button();
             cancel_Button = new Button();
             ok_Button = new Button();
@@ -197,18 +196,6 @@
             pixelWidth_Label.TabIndex = 5;
             pixelWidth_Label.Text = "Max line width";
             // 
-            // removeExistingNewlines_CheckBox
-            // 
-            removeExistingNewlines_CheckBox.AutoSize = true;
-            removeExistingNewlines_CheckBox.Checked = true;
-            removeExistingNewlines_CheckBox.CheckState = CheckState.Checked;
-            removeExistingNewlines_CheckBox.Location = new Point(12, 314);
-            removeExistingNewlines_CheckBox.Name = "removeExistingNewlines_CheckBox";
-            removeExistingNewlines_CheckBox.Size = new Size(162, 19);
-            removeExistingNewlines_CheckBox.TabIndex = 7;
-            removeExistingNewlines_CheckBox.Text = "Remove existing newlines";
-            removeExistingNewlines_CheckBox.UseVisualStyleBackColor = true;
-            // 
             // measure_Button
             // 
             measure_Button.Location = new Point(295, 12);
@@ -221,7 +208,7 @@
             // 
             // cancel_Button
             // 
-            cancel_Button.Location = new Point(432, 343);
+            cancel_Button.Location = new Point(432, 302);
             cancel_Button.Name = "cancel_Button";
             cancel_Button.Size = new Size(75, 23);
             cancel_Button.TabIndex = 9;
@@ -231,7 +218,7 @@
             // 
             // ok_Button
             // 
-            ok_Button.Location = new Point(351, 343);
+            ok_Button.Location = new Point(351, 302);
             ok_Button.Name = "ok_Button";
             ok_Button.Size = new Size(75, 23);
             ok_Button.TabIndex = 10;
@@ -271,7 +258,7 @@
             // maxLines_Label
             // 
             maxLines_Label.AutoSize = true;
-            maxLines_Label.Location = new Point(12, 347);
+            maxLines_Label.Location = new Point(12, 306);
             maxLines_Label.Name = "maxLines_Label";
             maxLines_Label.Size = new Size(168, 15);
             maxLines_Label.TabIndex = 12;
@@ -279,7 +266,7 @@
             // 
             // maxLines_TextBox
             // 
-            maxLines_TextBox.Location = new Point(186, 343);
+            maxLines_TextBox.Location = new Point(186, 302);
             maxLines_TextBox.Name = "maxLines_TextBox";
             maxLines_TextBox.Size = new Size(63, 23);
             maxLines_TextBox.TabIndex = 13;
@@ -290,14 +277,13 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(525, 379);
+            ClientSize = new Size(525, 336);
             Controls.Add(maxLines_TextBox);
             Controls.Add(maxLines_Label);
             Controls.Add(chars_GroupBox);
             Controls.Add(ok_Button);
             Controls.Add(cancel_Button);
             Controls.Add(measure_Button);
-            Controls.Add(removeExistingNewlines_CheckBox);
             Controls.Add(pixels_GroupBox);
             Controls.Add(chars_Radio);
             Controls.Add(pixels_Radio);
@@ -321,7 +307,6 @@
         private TextBox font_TextBox;
         private Button fontBrowse_Button;
         private GroupBox pixels_GroupBox;
-        private CheckBox removeExistingNewlines_CheckBox;
         private Button measure_Button;
         private Button cancel_Button;
         private Button ok_Button;

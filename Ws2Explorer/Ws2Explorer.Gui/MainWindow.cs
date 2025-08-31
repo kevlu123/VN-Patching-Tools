@@ -1345,7 +1345,7 @@ partial class MainWindow : Form
                         + "=================================== \r\n\r\n"
                         + string.Join(
                             "\r\n\r\n",
-                            stats.TextsExceedingMaxLines.Select(s => s.Replace("\\n", "\r\n"))));
+                            stats.TextsExceedingMaxLines.Select(lines => string.Join("\r\n", lines))));
                 dialog.ShowDialog();
             }
         });

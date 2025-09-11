@@ -49,10 +49,11 @@ Successfully decompiled 3231/3236 WS2 scripts.
 
 ## WSC
 
-Successfully decompiled 453/730 WSC scripts.
+Successfully decompiled 730/894 WSC scripts.
 
 | Title                                       | VNDB                    | Status   |
 |---------------------------------------------|-------------------------|----------|
 | Otome ga Tsumugu Koi no Canvas (JP)         | https://vndb.org/r44726 | Pass     |
-| Re:Birthday Song Koi o Utau Shinigami (JP)  | https://vndb.org/r33515 | **Fail** |
+| Re:Birthday Song Koi o Utau Shinigami (JP)  | https://vndb.org/r33515 | Pass     |
 | Tokoya no Oba-chan Oka no Ue no Barber (JP) | https://vndb.org/r71191 | Pass     |
+| Yume Miru Kusuri                            | https://vndb.org/r37546 | **Fail** |

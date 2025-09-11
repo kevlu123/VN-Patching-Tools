@@ -10,6 +10,11 @@ namespace Ws2Explorer.Compiler;
 public static class ScriptCompiler
 {
     /// <summary>
+    /// Enable to print debug information to stdout.
+    /// </summary>
+    public static bool Debug { get; set; } = false;
+
+    /// <summary>
     /// Decompile a WS2 file to a list of ops.
     /// </summary>
     /// <param name="stream">The input data.</param>
@@ -146,7 +151,10 @@ public static class ScriptCompiler
             {
                 throw new InvalidDataException($"Unexpected FileEnd op at offset 0x{offset:X2}.");
             }
-            // Console.WriteLine($"Op 0x{op.Code:X2} ({op.GetDescription(version)}) at 0x{offset:X2}"); // TODO: comment out
+            if (Debug)
+            {
+                Console.WriteLine($"Op 0x{(int)op.Code:X2} ({op.GetDescription(version)}) at 0x{offset:X2}");
+            }
             ops.Add((op, offset));
         }
 

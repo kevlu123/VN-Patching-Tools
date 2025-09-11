@@ -1,7 +1,7 @@
 import sys
 
-rotate = int(sys.argv[1])
-inp = sys.argv[2]
+rotate = int(sys.argv[2]) if 2 < len(sys.argv) else 2
+inp = sys.argv[1]
 outp = inp + ".bin"
 
 with open(inp, "rb") as f:

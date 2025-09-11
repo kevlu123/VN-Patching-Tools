@@ -53,7 +53,7 @@ async Task<TestResult> TestDir(string dirName, string ext, DecompileFn decompile
             try
             {
                 using var stream = await archive.OpenFile(fileInfo.Filename);
-                var ops = decompile(stream, out var version);
+                var ops = Decompile(stream, decompile, out var version);
                 Console.Write($" ({version})");
                 using var recompiled = ScriptCompiler.Compile(ops);
                 if (!BinaryStream.StreamEquals(stream, recompiled))
@@ -69,6 +69,22 @@ async Task<TestResult> TestDir(string dirName, string ext, DecompileFn decompile
         }
     }
     return result;
+}
+
+static List<Op> Decompile(BinaryStream stream, DecompileFn decompile, out ScriptVersion version)
+{
+    try
+    {
+        return decompile(stream, out version);
+    }
+    catch
+    {
+        // Run again with debug enabled
+        ScriptCompiler.Debug = true;
+        try { decompile(stream, out _); } catch { }
+        ScriptCompiler.Debug = false;
+        throw;
+    }
 }
 
 delegate List<Op> DecompileFn(BinaryStream stream, out ScriptVersion version);

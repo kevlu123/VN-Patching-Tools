@@ -11,6 +11,20 @@ public static class ScriptCompiler
 Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ScriptCompiler](./ws2explorer.compiler.scriptcompiler.md)<br>
 Attributes [NullableContextAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullablecontextattribute), [NullableAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.nullableattribute)
 
+## Properties
+
+### **Debug**
+
+Enable to print debug information to stdout.
+
+```csharp
+public static bool Debug { get; set; }
+```
+
+#### Property Value
+
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+
 ## Methods
 
 ### **DecompileWs2(BinaryStream, ScriptVersion&, Boolean&)**

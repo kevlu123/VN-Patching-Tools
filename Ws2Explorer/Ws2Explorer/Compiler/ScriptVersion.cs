@@ -26,9 +26,14 @@ public enum ScriptVersion
     WS2_V3_1,
 
     /// <summary>
-    /// WSC script format used in older games.
+    /// WSC script version 1.
     /// </summary>
     WSC_V1,
+
+    /// <summary>
+    /// WSC script version 2.
+    /// </summary>
+    WSC_V2,
 }
 
 /// <summary>

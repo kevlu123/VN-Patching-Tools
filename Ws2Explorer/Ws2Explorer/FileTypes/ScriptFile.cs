@@ -109,7 +109,7 @@ public abstract class ScriptFile : IArchive
     /// <summary>
     /// The version of the script.
     /// </summary>
-    public ScriptVersion Version => Enum.Parse<ScriptVersion>(Ops[0].Arguments[0].String);
+    public ScriptVersion Version => ScriptCompiler.GetScriptVersion(Ops);
 
     /// <summary>
     /// Get the message and choice text.

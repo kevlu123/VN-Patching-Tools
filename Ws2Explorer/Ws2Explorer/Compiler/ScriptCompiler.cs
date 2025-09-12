@@ -65,6 +65,7 @@ public static class ScriptCompiler
     public static List<Op> DecompileWsc(BinaryStream stream, out ScriptVersion version, out bool hasUnresolvedLabels)
     {
         var versions = new ScriptVersion[] {
+            ScriptVersion.WSC_V2,
             ScriptVersion.WSC_V1,
         };
         return Decompile(stream, versions, false, out version, out hasUnresolvedLabels);
@@ -79,6 +80,7 @@ public static class ScriptCompiler
     public static List<Op> DecompileWsc(BinaryStream stream, out ScriptVersion version)
     {
         var versions = new ScriptVersion[] {
+            ScriptVersion.WSC_V2,
             ScriptVersion.WSC_V1,
         };
         return Decompile(stream, versions, true, out version, out _);

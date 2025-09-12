@@ -34,6 +34,7 @@ def get_op_formats():
         ("Ws2V3Formats",   [None if op.v3   is None else OpFormat(op.opcode, op.description, op.v3)   for op in ws2_op_list.formats]),
         ("Ws2V3_1Formats", [None if op.v3_1 is None else OpFormat(op.opcode, op.description, op.v3_1) for op in ws2_op_list.formats]),
         ("WscV1Formats",   [None if op.v1   is None else OpFormat(op.opcode, op.description, op.v1)   for op in wsc_op_list.formats]),
+        ("WscV2Formats",   [None if op.v2   is None else OpFormat(op.opcode, op.description, op.v2)   for op in wsc_op_list.formats]),
     ]
 
 def pascal_to_caps(desc):

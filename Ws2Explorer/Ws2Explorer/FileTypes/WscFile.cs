@@ -25,6 +25,9 @@ public sealed class WscFile : ScriptFile, IArchive<WscFile>
     public override bool HasUnresolvedLabels => hasUnresolvedLabels;
     private readonly bool hasUnresolvedLabels;
 
+    private static int GetOp42TextIndex(ScriptVersion version) => version >= ScriptVersion.WSC_V2 ? 5 : 4;
+    private static int GetOp42NameIndex(ScriptVersion version) => version >= ScriptVersion.WSC_V2 ? 4 : 3;
+
     /// <summary>
     /// Get the message and choice text.
     /// </summary>
@@ -38,8 +41,8 @@ public sealed class WscFile : ScriptFile, IArchive<WscFile>
             case Opcode.WSC_DISPLAY_TEXT_41:
                 return [new ScriptText { Text = op.Arguments[3].AffixedString.String, Name = "", IsChoice = false }];
             case Opcode.WSC_DISPLAY_TEXT_AND_NAME_42:
-                var text = op.Arguments[5].AffixedString.String;
-                var name = op.Arguments[4].AffixedString.String;
+                var text = op.Arguments[GetOp42TextIndex(Version)].AffixedString.String;
+                var name = op.Arguments[GetOp42NameIndex(Version)].AffixedString.String;
                 return [new ScriptText { Text = text, Name = name, IsChoice = false }];
             default:
                 return [];
@@ -51,7 +54,7 @@ public sealed class WscFile : ScriptFile, IArchive<WscFile>
     /// </summary>
     public override string[] Names => Ops
         .Where(op => op.Code == Opcode.WSC_DISPLAY_TEXT_AND_NAME_42)
-        .Select(op => op.Arguments[4].AffixedString.String)
+        .Select(op => op.Arguments[GetOp42NameIndex(Version)].AffixedString.String)
         .Distinct()
         .ToArray();
 
@@ -69,6 +72,7 @@ public sealed class WscFile : ScriptFile, IArchive<WscFile>
     {
         var newOps = new List<Op>();
         int i = 0;
+        var version = ScriptCompiler.GetScriptVersion(ops);
         foreach (var op in ops)
         {
             switch (op.Code)
@@ -97,8 +101,8 @@ public sealed class WscFile : ScriptFile, IArchive<WscFile>
                     {
                         throw new ArgumentException("Not enough strings supplied");
                     }
-                    var newArg2 = op.Arguments[5].AffixedString.WithString(text[i++]);
-                    newOps.Add(op.WithArgument(5, Argument.NewAffixedString(newArg2)));
+                    var newArg2 = op.Arguments[GetOp42TextIndex(version)].AffixedString.WithString(text[i++]);
+                    newOps.Add(op.WithArgument(GetOp42TextIndex(version), Argument.NewAffixedString(newArg2)));
                     break;
                 default:
                     newOps.Add(op);
@@ -125,11 +129,11 @@ public sealed class WscFile : ScriptFile, IArchive<WscFile>
         {
             if (op.Code == Opcode.WSC_DISPLAY_TEXT_AND_NAME_42)
             {
-                var oldNameString = op.Arguments[4].AffixedString;
+                var oldNameString = op.Arguments[GetOp42NameIndex(Version)].AffixedString;
                 var oldName = oldNameString.String;
                 var newName = mapping.TryGetValue(oldName, out var value) ? value : oldName;
                 var newOp = op.WithArgument(
-                    4,
+                    GetOp42NameIndex(Version),
                     Argument.NewAffixedString(oldNameString.WithString(newName)));
                 newOps.Add(newOp);
             }

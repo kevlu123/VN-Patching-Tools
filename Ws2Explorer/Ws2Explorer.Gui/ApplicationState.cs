@@ -1440,7 +1440,8 @@ class ApplicationState(string? openPath)
                         + $"File count: {arc.ListFiles().Count}",
             LegacyArc12File arc => "(ARC) Legacy archive file with max 12 character filename\n\n"
                         + $"File count: {arc.ListFiles().Count}",
-            LngFile => "(LNG) Language pack file",
+            LngFile lng => "(LNG) Language pack file\n\n"
+                         + $"XOR key: 0x{lng.XorKey:X2}",
             LuacFile luac => "(LUAC) Compiled Lua file\n\n"
                          + $"Lua version: {luac.LuaVersion:X2}",
             OggFile ogg => "(OGG) Audio file\n\n"

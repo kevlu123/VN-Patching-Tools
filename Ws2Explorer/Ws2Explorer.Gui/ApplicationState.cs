@@ -1058,12 +1058,7 @@ class ApplicationState(string? openPath)
         });
     }
 
-    public void GetJsonFlowchart(Action<Flowchart> onResult)
-    {
-        Protect(interruptable: false, async ct => await GetFlowChartInternal(onResult, ct));
-    }
-
-    public void GetMermaidFlowchart(Action<Flowchart> onResult)
+    public void GetFlowchart(Action<Flowchart> onResult)
     {
         Protect(interruptable: false, async ct => await GetFlowChartInternal(onResult, ct));
     }

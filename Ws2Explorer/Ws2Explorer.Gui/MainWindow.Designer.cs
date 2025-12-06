@@ -127,14 +127,13 @@
             toolStripSeparator11 = new ToolStripSeparator();
             setEntry_MenuItem = new ToolStripMenuItem();
             modifyNames_MenuItem = new ToolStripMenuItem();
+            wrapText_MenuItem = new ToolStripMenuItem();
             convertLuacToText_MenuItem = new ToolStripMenuItem();
             toolStripSeparator10 = new ToolStripSeparator();
             findReferences_MenuItem = new ToolStripMenuItem();
             showChoices_MenuItem = new ToolStripMenuItem();
-            mermaidFlowchart_MenuItem = new ToolStripMenuItem();
-            jsonFlowchart_MenuItem = new ToolStripMenuItem();
+            showFlowchart_MenuItem = new ToolStripMenuItem();
             back_Panel = new Panel();
-            wrapText_MenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)panels_SplitContainer).BeginInit();
             panels_SplitContainer.Panel1.SuspendLayout();
             panels_SplitContainer.SuspendLayout();
@@ -857,7 +856,7 @@
             // 
             // game_MenuItem
             // 
-            game_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, toolStripSeparator11, setEntry_MenuItem, modifyNames_MenuItem, wrapText_MenuItem, convertLuacToText_MenuItem, toolStripSeparator10, findReferences_MenuItem, showChoices_MenuItem, mermaidFlowchart_MenuItem, jsonFlowchart_MenuItem });
+            game_MenuItem.DropDownItems.AddRange(new ToolStripItem[] { launchGame_MenuItem, toolStripSeparator11, setEntry_MenuItem, modifyNames_MenuItem, wrapText_MenuItem, convertLuacToText_MenuItem, toolStripSeparator10, findReferences_MenuItem, showChoices_MenuItem, showFlowchart_MenuItem });
             game_MenuItem.Name = "game_MenuItem";
             game_MenuItem.Size = new Size(50, 20);
             game_MenuItem.Text = "Game";
@@ -866,20 +865,20 @@
             // 
             launchGame_MenuItem.Name = "launchGame_MenuItem";
             launchGame_MenuItem.ShortcutKeys = Keys.F10;
-            launchGame_MenuItem.Size = new Size(249, 22);
+            launchGame_MenuItem.Size = new Size(240, 22);
             launchGame_MenuItem.Text = "Launch Game (advhd.exe)";
             launchGame_MenuItem.Click += LaunchGame_MenuItemClicked;
             // 
             // toolStripSeparator11
             // 
             toolStripSeparator11.Name = "toolStripSeparator11";
-            toolStripSeparator11.Size = new Size(246, 6);
+            toolStripSeparator11.Size = new Size(237, 6);
             // 
             // setEntry_MenuItem
             // 
             setEntry_MenuItem.Name = "setEntry_MenuItem";
             setEntry_MenuItem.ShortcutKeys = Keys.F11;
-            setEntry_MenuItem.Size = new Size(249, 22);
+            setEntry_MenuItem.Size = new Size(240, 22);
             setEntry_MenuItem.Text = "Set WS2 Entry Point...";
             setEntry_MenuItem.Click += SetEntry_MenuItemClicked;
             // 
@@ -887,28 +886,36 @@
             // 
             modifyNames_MenuItem.Name = "modifyNames_MenuItem";
             modifyNames_MenuItem.ShortcutKeys = Keys.F12;
-            modifyNames_MenuItem.Size = new Size(249, 22);
+            modifyNames_MenuItem.Size = new Size(240, 22);
             modifyNames_MenuItem.Text = "Edit Names...";
             modifyNames_MenuItem.Click += ModifyNames_MenuItemClicked;
+            // 
+            // wrapText_MenuItem
+            // 
+            wrapText_MenuItem.Name = "wrapText_MenuItem";
+            wrapText_MenuItem.ShortcutKeys = Keys.F9;
+            wrapText_MenuItem.Size = new Size(240, 22);
+            wrapText_MenuItem.Text = "Wrap Text...";
+            wrapText_MenuItem.Click += WrapText_ButtonClicked;
             // 
             // convertLuacToText_MenuItem
             // 
             convertLuacToText_MenuItem.Name = "convertLuacToText_MenuItem";
             convertLuacToText_MenuItem.ShortcutKeys = Keys.F8;
-            convertLuacToText_MenuItem.Size = new Size(249, 22);
+            convertLuacToText_MenuItem.Size = new Size(240, 22);
             convertLuacToText_MenuItem.Text = "Convert Luac to Text...";
             convertLuacToText_MenuItem.Click += ConvertLuacToText_MenuItemClicked;
             // 
             // toolStripSeparator10
             // 
             toolStripSeparator10.Name = "toolStripSeparator10";
-            toolStripSeparator10.Size = new Size(246, 6);
+            toolStripSeparator10.Size = new Size(237, 6);
             // 
             // findReferences_MenuItem
             // 
             findReferences_MenuItem.Name = "findReferences_MenuItem";
             findReferences_MenuItem.ShortcutKeys = Keys.Control | Keys.F;
-            findReferences_MenuItem.Size = new Size(249, 22);
+            findReferences_MenuItem.Size = new Size(240, 22);
             findReferences_MenuItem.Text = "Find String References...";
             findReferences_MenuItem.Click += FindReferences_MenuItemClicked;
             // 
@@ -916,25 +923,17 @@
             // 
             showChoices_MenuItem.Name = "showChoices_MenuItem";
             showChoices_MenuItem.ShortcutKeys = Keys.F7;
-            showChoices_MenuItem.Size = new Size(249, 22);
+            showChoices_MenuItem.Size = new Size(240, 22);
             showChoices_MenuItem.Text = "Show Choices...";
             showChoices_MenuItem.Click += ShowChoices_MenuItem;
             // 
-            // mermaidFlowchart_MenuItem
+            // showFlowchart_MenuItem
             // 
-            mermaidFlowchart_MenuItem.Name = "mermaidFlowchart_MenuItem";
-            mermaidFlowchart_MenuItem.ShortcutKeys = Keys.F6;
-            mermaidFlowchart_MenuItem.Size = new Size(249, 22);
-            mermaidFlowchart_MenuItem.Text = "Show Mermaid Flowchart...";
-            mermaidFlowchart_MenuItem.Click += MermaidFlowchart_MenuItemClicked;
-            // 
-            // jsonFlowchart_MenuItem
-            // 
-            jsonFlowchart_MenuItem.Name = "jsonFlowchart_MenuItem";
-            jsonFlowchart_MenuItem.ShortcutKeys = Keys.Shift | Keys.F6;
-            jsonFlowchart_MenuItem.Size = new Size(249, 22);
-            jsonFlowchart_MenuItem.Text = "Show JSON Flowchart...";
-            jsonFlowchart_MenuItem.Click += JsonFlowchart_MenuItemClicked;
+            showFlowchart_MenuItem.Name = "showFlowchart_MenuItem";
+            showFlowchart_MenuItem.ShortcutKeys = Keys.F6;
+            showFlowchart_MenuItem.Size = new Size(240, 22);
+            showFlowchart_MenuItem.Text = "Show Flowchart...";
+            showFlowchart_MenuItem.Click += ShowFlowchart_MenuItemClicked;
             // 
             // back_Panel
             // 
@@ -945,14 +944,6 @@
             back_Panel.Name = "back_Panel";
             back_Panel.Size = new Size(792, 396);
             back_Panel.TabIndex = 6;
-            // 
-            // wrapText_MenuItem
-            // 
-            wrapText_MenuItem.Name = "wrapText_MenuItem";
-            wrapText_MenuItem.ShortcutKeys = Keys.F9;
-            wrapText_MenuItem.Size = new Size(249, 22);
-            wrapText_MenuItem.Text = "Wrap Text...";
-            wrapText_MenuItem.Click += WrapText_ButtonClicked;
             // 
             // MainWindow
             // 
@@ -1059,8 +1050,7 @@
         private ToolStripMenuItem launchGame_MenuItem;
         private ToolStripMenuItem convertLuacToText_MenuItem;
         private ToolStripMenuItem showChoices_MenuItem;
-        private ToolStripMenuItem jsonFlowchart_MenuItem;
-        private ToolStripMenuItem mermaidFlowchart_MenuItem;
+        private ToolStripMenuItem showFlowchart_MenuItem;
         private ToolStripSeparator toolStripSeparator11;
         private ToolStripSeparator toolStripSeparator10;
         private ToolStripMenuItem modifyNames_MenuItem;

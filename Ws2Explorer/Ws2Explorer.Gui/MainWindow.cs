@@ -1151,44 +1151,11 @@ partial class MainWindow : Form
         });
     }
 
-    private void JsonFlowchart_MenuItemClicked(object sender, EventArgs e)
+    private void ShowFlowchart_MenuItemClicked(object sender, EventArgs e)
     {
-        state.GetJsonFlowchart(flowchart =>
+        state.GetFlowchart(flowchart =>
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("{");
-            var i = 0;
-            foreach (var (src, dsts) in flowchart.OrderBy(kvp => kvp.Key == "start" ? 0 : 1))
-            {
-                sb.Append($"  \"{src}\": ");
-                sb.Append(JsonSerializer.Serialize(dsts));
-                if (i < flowchart.Count - 1)
-                {
-                    sb.Append(',');
-                }
-                sb.AppendLine();
-                i++;
-            }
-            sb.AppendLine("]");
-            using var dialog = new InfoWindow("Flowchart", sb.ToString());
-            dialog.ShowDialog();
-        });
-    }
-
-    private void MermaidFlowchart_MenuItemClicked(object sender, EventArgs e)
-    {
-        state.GetMermaidFlowchart(flowchart =>
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine("graph TD;");
-            foreach (var (src, dsts) in flowchart.OrderBy(kvp => kvp.Key == "start" ? 0 : 1))
-            {
-                foreach (var dst in dsts)
-                {
-                    sb.AppendLine($"  {src}-->{dst}");
-                }
-            }
-            using var dialog = new InfoWindow("Flowchart", sb.ToString());
+            using var dialog = new FlowchartWindow(flowchart);
             dialog.ShowDialog();
         });
     }

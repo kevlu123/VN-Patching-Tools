@@ -14,6 +14,7 @@ A comprehensive set of tools for editing games based on WillPlus' AdvHD engine.
 - [List of Understood Opcodes](Wiki/UnderstoodOpcodes.md)
 - [Reverse Engineering Opcodes](Wiki/ReverseEngineeringOpcodes.md)
 - [Ws2Explorer API Reference](Wiki/Ws2ExplorerAPI/index.md)
+- [Ws2Explorer GUI User Guide](Wiki/Ws2ExplorerGuiUserGuide.md)
 
 ## GUI Editor
 
@@ -65,6 +66,13 @@ and perform common operations to modify the game.
     - Find all string references
     - Find all choice locations
     - Generate JSON/Mermaid flowchart
+
+### Upcoming Features
+
+- Recursive repacking (opposite of Recursive Extract)
+- Flag analysis and editing
+
+### Screenshots
 
 ![](Wiki/Screenshots/gui1.png)
 ![](Wiki/Screenshots/gui2.png)

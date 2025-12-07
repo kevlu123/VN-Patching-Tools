@@ -5,6 +5,7 @@
 - [List of Understood Opcodes](UnderstoodOpcodes.md)
 - [Reverse Engineering Opcodes](ReverseEngineeringOpcodes.md)
 - [Ws2Explorer API Reference](Ws2ExplorerAPI/index.md)
+- [Ws2Explorer GUI User Guide](Ws2ExplorerGuiUserGuide.md)
 
 # Compiler Coverage
 

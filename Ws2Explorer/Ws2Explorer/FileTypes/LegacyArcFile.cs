@@ -145,6 +145,14 @@ internal sealed class LegacyArcFileBase : IDisposable
         {
             throw new ArchiveCreationException("Legacy ARC files cannot contain files without an extension.");
         }
+        if (groups.Any(g => g.Key.Length != 3))
+        {
+            throw new ArchiveCreationException("File extensions must be exactly 3 characters long.");
+        }
+        if (groups.Any(g => g.Value.Keys.Any(name => Encoding.UTF8.GetByteCount(Path.GetFileNameWithoutExtension(name)) > maxNameLength)))
+        {
+            throw new ArchiveCreationException($"Filenames cannot exceed {maxNameLength} bytes excluding the dot and extension.");
+        }
 
         GroupCount = groups.Count;
         groupHeaders = [];
@@ -160,11 +168,7 @@ internal sealed class LegacyArcFileBase : IDisposable
                 ListingOffset = position,
                 FileCount = group.Count,
             });
-            foreach (var (nameWithExt, _) in group)
-            {
-                var name = Path.GetFileNameWithoutExtension(nameWithExt);
-                position += maxNameLength + 9;
-            }
+            position += (maxNameLength + 9) * group.Count;
         }
 
         foreach (var (_, group) in groups)

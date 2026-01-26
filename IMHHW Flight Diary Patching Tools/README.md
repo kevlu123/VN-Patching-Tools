@@ -29,7 +29,7 @@ Everything below is intended for developers.
 To derive the patch:
 - Start with a copy of the [Steam version](https://vndb.org/r58996).
 - Apply [DarthFly's patch](https://www.reddit.com/r/IMHHW/comments/10ul2nc/if_my_heart_had_wings_flight_diary_restoration/).
-- Use [Ws2Explorer](../Ws2Explorer) to edit the .arc and .ws2 files and replace the corresponding content in the `patch` folder.
+- Use [Ws2Explorer v1.5](../Ws2Explorer) to edit the .arc and .ws2 files and replace the corresponding content in the `patch` folder.
 
 ## Lua Hacking
 

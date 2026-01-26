@@ -1,6 +1,7 @@
 import pathlib
 import os
 import json
+import cg_list
 
 this_dir = pathlib.Path(__file__).parent
 os.chdir(this_dir)
@@ -75,6 +76,8 @@ def reconstruct(cgs: list[list[CGFlag]], page: int) -> str:
         result.append({"op":"Op01_ConditionalJump","args":[130,105,cg_number,0,index+1000]})
 
         for cg in index_cgs:
+            if cg.name.lower() not in cg_list.FILES:
+                continue
             # Add flag check
             if cg.flag:
                 result.append({"op":"Op01_ConditionalJump","args":[2,cg.flag,1,0,label]})

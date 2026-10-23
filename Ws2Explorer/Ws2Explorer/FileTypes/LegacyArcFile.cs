@@ -85,7 +85,7 @@ internal sealed class LegacyArcFileBase : IDisposable
         }
 
         var readerPosition = reader.Position;
-        subHeaders = new SortedDictionary<string, LegacyArcSubHeader>(StringComparer.InvariantCultureIgnoreCase);
+        subHeaders = new SortedDictionary<string, LegacyArcSubHeader>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var groupHeader in groupHeaders)
         {
